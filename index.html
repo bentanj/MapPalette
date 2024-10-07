@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MapPalette - Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Custom font styling for the app name */
+    .app-name {
+      font-family: 'Lobster', cursive;
+      font-size: 3rem;
+      color: #007bff;
+    }
+
+    /* Video section styling */
+    .video-container {
+      text-align: center;
+    }
+    
+    /* Styling for About Us section */
+    .about-us {
+      background-color: #f8f9fa;
+      padding: 50px 0;
+    }
+    
+    .about-us h2 {
+      font-family: 'Pacifico', cursive;
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- Navbar -->
+  <nav class="navbar navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand app-name" href="#">MapPalette</a>
+      <div>
+        <a href="#" class="btn btn-primary">Sign Up</a>
+        <a href="#" class="btn btn-outline-primary">Login</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Section -->
+  <section class="container py-5">
+    <div class="row align-items-center">
+      <!-- Login Form -->
+      <div class="col-md-6">
+        <h2 class="mb-4">Login to MapPalette</h2>
+        <form>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" placeholder="Enter your email">
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Enter your password">
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+          <div class="text-center mt-3">
+            <a href="#">Forgot your password?</a> | <a href="#">Create an account</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Video Tutorial -->
+      <div class="col-md-6">
+        <div class="video-container">
+          <h3 class="mb-4">Watch How MapPalette Works</h3>
+          <video width="100%" height="auto" autoplay muted loop>
+            <source src="your-video-url.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Features Section -->
+  <section class="container py-5 text-center">
+    <h2>Why Choose MapPalette?</h2>
+    <div class="row mt-4">
+      <div class="col-md-4">
+        <h4>Creative Route Drawing</h4>
+        <p>Design and follow fun, custom running routes on the map.</p>
+      </div>
+      <div class="col-md-4">
+        <h4>Share Your Routes</h4>
+        <p>Easily share your routes with friends or on social media.</p>
+      </div>
+      <div class="col-md-4">
+        <h4>Seamless Integration</h4>
+        <p>Connect with fitness apps like Strava to track your runs.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Us Section -->
+  <section class="about-us">
+    <div class="container">
+      <h2 class="text-center">About Us</h2>
+      <p class="text-center mt-4">MapPalette is developed by RunGoWhere Pte Ltd, a passionate team from SMU. Our app allows you to draw creative routes on maps while exercising, making fitness more fun and purposeful. Whether you're a casual runner or looking to spice up your workouts, MapPalette offers a unique way to stay fit and express your creativity.</p>
+      
+      <div class="row text-center mt-5">
+        <div class="col-md-4">
+          <h5>Ben Tan Kiat</h5>
+          <p>Route drawing feature / Backend</p>
+        </div>
+        <div class="col-md-4">
+          <h5>Benjamin Daniel Loh Wayne</h5>
+          <p>BackEnd database</p>
+        </div>
+        <div class="col-md-4">
+          <h5>Koh En Wei Alvin</h5>
+          <p>Homepage maps modal & profile setting</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-light text-center py-3">
+    <div class="container">
+      <p>&copy; 2024 MapPalette. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
