@@ -27,55 +27,61 @@
     .about-us h2 {
       font-family: 'Pacifico', cursive;
     }
+
     .carousel-container {
-        position: relative;
-        max-width: 100%;
-        margin: auto;
-        overflow: hidden;
+      position: relative;
+      max-width: 100%;
+      margin: auto;
+      overflow: hidden;
     }
     
     .carousel-slide {
-        display: flex;
-        transition: transform 0.5s ease-in-out;
+      display: flex;
+      transition: transform 0.5s ease-in-out;
     }
     
     .carousel-item {
-        min-width: 100%;
-        text-align: center;
+      min-width: 100%;
+      text-align: center;
+      opacity: 1;
+      visibility: visible;
     }
     
     .person-image {
-        width: 150px;
-        border-radius: 50%;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
     }
     
     .person-name {
-        font-size: 1.5em;
-        margin: 10px 0;
+      font-size: 1.5em;
+      margin: 10px 0;
     }
     
     .person-description {
-        font-size: 1em;
-        color: #666;
+      font-size: 1em;
+      color: #666;
     }
     
     .prev, .next {
-        cursor: pointer;
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 2em;
-        color: #333;
-        background-color: transparent;
-        border: none;
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2em;
+      color: #333;
+      background-color: transparent;
+      border: none;
+      padding: 0 10px;
     }
     
     .prev {
-        left: 10px;
+      left: 10px;
     }
     
     .next {
-        right: 10px;
+      right: 10px;
     }    
   </style>
 </head>
@@ -151,42 +157,30 @@
   <!-- About Us Section -->
   <section class="about-us">
     <div class="container">
-      <h2 class="text-center">About Us</h2>
-      <p class="text-center mt-4">MapPalette is developed by RunGoWhere Pte Ltd, a passionate team from SMU. Our app allows you to draw creative routes on maps while exercising, making fitness more fun and purposeful. Whether you're a casual runner or looking to spice up your workouts, MapPalette offers a unique way to stay fit and express your creativity.</p>
-      
-      <!-- <div class="row text-center mt-5">
-        <div class="col-md-4">
-          <h5>Ben Tan Kiat</h5>
-          <p>Route drawing feature / Backend</p>
-        </div>
-        <div class="col-md-4">
-          <h5>Benjamin Daniel Loh Wayne</h5>
-          <p>BackEnd database</p>
-        </div>
-        <div class="col-md-4">
-          <h5>Koh En Wei Alvin</h5>
-          <p>Homepage maps modal & profile setting</p>
-        </div>
-      </div> -->
-      <div class="carousel-container">
-        <div class="carousel-slide">
-            <div class="carousel-item">
-                <img src="about_us/bentan.jpg" alt="Person 1" class="person-image">
-                <h3 class="person-name">Ben Tan Kiat</h3>
-                <p class="person-description">Route drawing feature / Backend</p>
-            </div>
-            <div class="carousel-item">
-                <img src="person2.jpg" alt="Person 2" class="person-image">
-                <h3 class="person-name">Jane Smith</h3>
-                <p class="person-description">Project Manager with 10 years of experience in managing tech teams.</p>
-            </div>
-            <!-- Add more items as needed -->
-        </div>
-        <button class="prev" onclick="moveSlide(-1)">&#10094;</button>
-        <button class="next" onclick="moveSlide(1)">&#10095;</button>
-    </div>
-    
+        <h2 class="text-center">About Us</h2>
+        <p class="text-center mt-4">MapPalette is developed by RunGoWhere Pte Ltd, a passionate team from SMU. Our app allows you to draw creative routes on maps while exercising, making fitness more fun and purposeful. Whether you're a casual runner or looking to spice up your workouts, MapPalette offers a unique way to stay fit and express your creativity.</p>
 
+        <div class="carousel-container">
+            <div class="carousel-slide">
+                <div class="carousel-item">
+                    <img src="about_us/bentan.jpg" alt="Ben Tan Kiat" class="person-image">
+                    <h3 class="person-name">Ben Tan Kiat</h3>
+                    <p class="person-description">Route drawing feature / Backend</p>
+                </div>
+                <div class="carousel-item">
+                    <img src="about_us/bendan.jpg" alt="Benjamin Daniel Loh Wayne" class="person-image">
+                    <h3 class="person-name">Benjamin Daniel Loh Wayne</h3>
+                    <p class="person-description">BackEnd database</p>
+                </div>
+                <div class="carousel-item">
+                    <img src="about_us/alvin.jpg" alt="Koh En Wei Alvin" class="person-image">
+                    <h3 class="person-name">Koh En Wei Alvin</h3>
+                    <p class="person-description">Homepage maps modal & profile setting</p>
+                </div>
+            </div>
+            <button class="prev" onclick="moveSlide(-1)">&#10094;</button>
+            <button class="next" onclick="moveSlide(1)">&#10095;</button>
+        </div>
     </div>
   </section>
 
@@ -198,6 +192,32 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="index.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let slideIndex = 0;
+        const slideContainer = document.querySelector('.carousel-slide');
+        const slides = document.querySelectorAll('.carousel-item');
+
+        function moveSlide(n) {
+            slideIndex += n;
+            if (slideIndex >= slides.length) {
+                slideIndex = 0;
+            }
+            if (slideIndex < 0) {
+                slideIndex = slides.length - 1;
+            }
+            updateSlide();
+        }
+
+        function updateSlide() {
+            slideContainer.style.transform = `translateX(-${slideIndex * 100}%)`;
+        }
+
+        // Optional: Auto-slide functionality
+        setInterval(() => {
+            moveSlide(1);
+        }, 5000); // Change slide every 5 seconds
+    });
+  </script>
 </body>
 </html>
