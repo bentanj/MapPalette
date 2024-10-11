@@ -27,6 +27,56 @@
     .about-us h2 {
       font-family: 'Pacifico', cursive;
     }
+    .carousel-container {
+        position: relative;
+        max-width: 100%;
+        margin: auto;
+        overflow: hidden;
+    }
+    
+    .carousel-slide {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+    }
+    
+    .carousel-item {
+        min-width: 100%;
+        text-align: center;
+    }
+    
+    .person-image {
+        width: 150px;
+        border-radius: 50%;
+    }
+    
+    .person-name {
+        font-size: 1.5em;
+        margin: 10px 0;
+    }
+    
+    .person-description {
+        font-size: 1em;
+        color: #666;
+    }
+    
+    .prev, .next {
+        cursor: pointer;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 2em;
+        color: #333;
+        background-color: transparent;
+        border: none;
+    }
+    
+    .prev {
+        left: 10px;
+    }
+    
+    .next {
+        right: 10px;
+    }    
   </style>
 </head>
 <body>
@@ -48,7 +98,7 @@
       <!-- Login Form -->
       <div class="col-md-6">
         <h2 class="mb-4">Login to MapPalette</h2>
-        <form>
+        <form action="homepage.html">
           <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <input type="email" class="form-control" id="email" placeholder="Enter your email">
@@ -104,7 +154,7 @@
       <h2 class="text-center">About Us</h2>
       <p class="text-center mt-4">MapPalette is developed by RunGoWhere Pte Ltd, a passionate team from SMU. Our app allows you to draw creative routes on maps while exercising, making fitness more fun and purposeful. Whether you're a casual runner or looking to spice up your workouts, MapPalette offers a unique way to stay fit and express your creativity.</p>
       
-      <div class="row text-center mt-5">
+      <!-- <div class="row text-center mt-5">
         <div class="col-md-4">
           <h5>Ben Tan Kiat</h5>
           <p>Route drawing feature / Backend</p>
@@ -117,7 +167,26 @@
           <h5>Koh En Wei Alvin</h5>
           <p>Homepage maps modal & profile setting</p>
         </div>
-      </div>
+      </div> -->
+      <div class="carousel-container">
+        <div class="carousel-slide">
+            <div class="carousel-item">
+                <img src="about_us/bentan.jpg" alt="Person 1" class="person-image">
+                <h3 class="person-name">Ben Tan Kiat</h3>
+                <p class="person-description">Route drawing feature / Backend</p>
+            </div>
+            <div class="carousel-item">
+                <img src="person2.jpg" alt="Person 2" class="person-image">
+                <h3 class="person-name">Jane Smith</h3>
+                <p class="person-description">Project Manager with 10 years of experience in managing tech teams.</p>
+            </div>
+            <!-- Add more items as needed -->
+        </div>
+        <button class="prev" onclick="moveSlide(-1)">&#10094;</button>
+        <button class="next" onclick="moveSlide(1)">&#10095;</button>
+    </div>
+    
+
     </div>
   </section>
 
@@ -129,5 +198,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="index.js"></script>
 </body>
 </html>
