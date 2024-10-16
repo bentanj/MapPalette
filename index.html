@@ -184,19 +184,21 @@
 
   <!-- Key Features -->
   <section class="container py-5 text-center">
-    <h2>Why Choose MapPalette?</h2>
+    <div class="mb-5">
+        <h2>Why Choose MapPalette?</h2>
+    </div>
     <div class="row mt-4">
-      <div class="col-md-4">
+      <div class="col-sm-4">
         <img class="features-image" src="index/features/maps.png" alt="">
         <h4>Creative Route Drawing</h4>
         <p>Design and follow fun, custom running routes on the map.</p>
       </div>
-      <div class="col-md-4">
+      <div class="col-sm-4">
         <img class="features-image" src="index/features/share.png" alt="">
         <h4>Share Your Routes</h4>
         <p>Easily share your routes with friends or on social media.</p>
       </div>
-      <div class="col-md-4">
+      <div class="col-sm-4">
         <img class="features-image" src="index/features/integration.png" alt="">
         <h4>Seamless Integration</h4>
         <p>Connect with fitness apps like Strava to track your runs.</p>
@@ -205,14 +207,18 @@
   </section>
 
   <!-- Video Section -->
-  <div class="bg-light">
-    <div class="container py-5 video-container">
-        <h3 class="mb-4">Watch How MapPalette Works</h3>
-        <video width="50%" height="auto" autoplay muted loop>
-            <source src="index/placeholder_vid.mp4" type="video/mp4">
-        </video>
+    <div class="bg-light">
+        <div class="container py-5 video-container">
+            <h3 class="mb-4">Watch How MapPalette Works</h3>
+            <div class="row justify-content-center">
+                <div class="col-sm-8">
+                    <video class="w-100" height="auto" autoplay muted loop>
+                        <source src="index/placeholder_vid.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
   <!-- About Us Section -->
   <section class="about-us">
@@ -220,46 +226,50 @@
         <h2 class="text-center mb-2">About Us</h2>
         <p class="text-center mt-3 mb-4 about-us-description h5">MapPalette is developed by RunGoWhere Pte Ltd, a passionate team of IS students from SMU. <br> Meet the brilliant minds behind our application!</p>
 
-        <div class="carousel-container">
-            <div class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <img src="index/about_us/bentan.jpg" alt="Ben Tan Kiat" class="d-block w-100 person-image">
-                        <h3 class="person-name">Ben Tan Kiat</h3>
-                        <p class="person-description">Resident Route Artist</p>
+        <div class="row justify-content-center">
+            <div class="col-sm-5">
+                <div class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <img src="index/about_us/bentan.jpg" alt="Ben Tan Kiat" class="d-block w-100 person-image">
+                            <h3 class="person-name">Ben Tan Kiat</h3>
+                            <p class="person-description">Resident Route Artist</p>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="index/about_us/bendan.jpeg" alt="Benjamin Daniel Loh Wayne" class="d-block w-100 person-image">
+                            <h3 class="person-name">Benjamin Daniel Loh Wayne</h3>
+                            <p class="person-description"><b>The</b> Firebase/Backend Guy</p>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="index/about_us/alvin.jpeg" alt="Koh En Wei, Alvin" class="d-block w-100 person-image">
+                            <h3 class="person-name">Koh En Wei, Alvin</h3>
+                            <p class="person-description">Social Media Influencer</p>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="index/about_us/weishen.png" alt="Lo Wei Shen" class="d-block w-100 person-image">
+                            <h3 class="person-name">Lo Wei Shen</h3>
+                            <p class="person-description">Accounts Manager (Account..ant?)</p>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="index/about_us/zhongyan.png" alt="Tan Zhong Yan" class="d-block w-100 person-image">
+                            <h3 class="person-name">Tan Zhong Yan</h3>
+                            <p class="person-description">All Things API</p>
+                        </div>
                     </div>
-                    <div class="carousel-item">
-                        <img src="index/about_us/bendan.jpeg" alt="Benjamin Daniel Loh Wayne" class="d-block w-100 person-image">
-                        <h3 class="person-name">Benjamin Daniel Loh Wayne</h3>
-                        <p class="person-description"><b>The</b> Firebase/Backend Guy</p>
-                    </div>
-                    <div class="carousel-item">
-                        <img src="index/about_us/alvin.jpeg" alt="Koh En Wei, Alvin" class="d-block w-100 person-image">
-                        <h3 class="person-name">Koh En Wei, Alvin</h3>
-                        <p class="person-description">Social Media Influencer</p>
-                    </div>
-                    <div class="carousel-item">
-                        <img src="index/about_us/weishen.png" alt="Lo Wei Shen" class="d-block w-100 person-image">
-                        <h3 class="person-name">Lo Wei Shen</h3>
-                        <p class="person-description">Accounts Manager (Account..ant?)</p>
-                    </div>
-                    <div class="carousel-item">
-                        <img src="index/about_us/zhongyan.png" alt="Tan Zhong Yan" class="d-block w-100 person-image">
-                        <h3 class="person-name">Tan Zhong Yan</h3>
-                        <p class="person-description">All Things API</p>
-                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target=".carousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target=".carousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target=".carousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target=".carousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
             </div>
+        </div>
     </div>
-  </section>
+</section>
+
 
   <!-- Footer -->
   <footer class="bg-light text-center text-lg-start">
