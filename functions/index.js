@@ -124,53 +124,71 @@ app.delete('/api/posts', async (req, res) => {
 // 
 
 
-// Liking a post by ID
-// NOTE: Firestore has a soft limit of 1 write per second to a single document
-// Front-end developers should try to limit the time taken for each button click to be about 1 second
+// LIKE a post by ID (only once per user)
 app.put('/api/posts/like', async (req, res) => {
-  const postID = req.query.id; // Retrieve ID from query parameter
+  const postID = req.query.id;
+  const { userID } = req.body; // User ID should be in the request body
 
-  if (!postID) {
-    return res.status(400).json({ message: 'Post ID is required.' });
+  if (!postID || !userID) {
+    return res.status(400).json({ message: 'Post ID and User ID are required.' });
   }
 
   try {
     const postRef = db.collection('routes').doc(postID);
+    const likeRef = postRef.collection('likes').doc(userID); // Track individual user's like
 
-    // Atomically increment the likeCount by 1
-    await postRef.update({
-      likeCount: FieldValue.increment(1),
+    await db.runTransaction(async (transaction) => {
+      const likeDoc = await transaction.get(likeRef);
+
+      if (likeDoc.exists) {
+        throw new Error('User has already liked this post.');
+      }
+
+      // Add user's like and increment likeCount atomically
+      transaction.set(likeRef, { likedAt: FieldValue.serverTimestamp() });
+      transaction.update(postRef, {
+        likeCount: FieldValue.increment(1),
+      });
     });
 
     return res.status(200).json({ message: 'Post liked successfully!' });
   } catch (error) {
     console.error('Error liking post:', error);
-    return res.status(500).send(error);
+    return res.status(500).json({ message: error.message });
   }
 });
 
-// Unliking a post by ID
-// NOTE: Firestore has a soft limit of 1 write per second to a single document
-// Front-end developers should try to limit the time taken for each button click to be about 1 second
+// UNLIKE a post by ID (only if user previously liked)
 app.put('/api/posts/unlike', async (req, res) => {
-  const postID = req.query.id; // Retrieve ID from query parameter
+  const postID = req.query.id;
+  const { userID } = req.body; // User ID should be in the request body
 
-  if (!postID) {
-    return res.status(400).json({ message: 'Post ID is required.' });
+  if (!postID || !userID) {
+    return res.status(400).json({ message: 'Post ID and User ID are required.' });
   }
 
   try {
     const postRef = db.collection('routes').doc(postID);
+    const likeRef = postRef.collection('likes').doc(userID); // Track individual user's like
 
-    // Atomically decrement the likeCount by 1
-    await postRef.update({
-      likeCount: FieldValue.increment(-1),
+    await db.runTransaction(async (transaction) => {
+      const likeDoc = await transaction.get(likeRef);
+
+      if (!likeDoc.exists) {
+        throw new Error('User has not liked this post yet.');
+      }
+
+      // Remove user's like and decrement likeCount atomically
+      transaction.delete(likeRef);
+      transaction.update(postRef, {
+        likeCount: FieldValue.increment(-1),
+      });
     });
 
     return res.status(200).json({ message: 'Post unliked successfully!' });
   } catch (error) {
     console.error('Error unliking post:', error);
-    return res.status(500).send(error);
+    return res.status(500).json({ message: error.message });
   }
 });
 
