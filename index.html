@@ -1,11 +1,556 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Page (welcome I guess)</title>
+    <title>MapPalette - Feed</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+
+    <style>
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+        }
+
+        .navbar-brand {
+            /*controls brand name size in navbar*/
+            font-size: 1.5rem;
+        }
+
+        .nav-link {
+            /*controls font size and margin of nav links*/
+            font-size: 1.2rem;
+            margin-left: 20px;
+        }
+
+        .profile-pic {
+            /*profile pic sizing*/
+            width: 30px;
+            height: 30px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .navbar-brand img {
+            /*brand logo sizing*/
+            width: 30px;
+            height: 30px;
+            margin-right: 8px;
+        }
+
+        .feed-header {
+            /*header background*/
+            background: url('photos/run.jpg') no-repeat center center;
+            background-size: cover;
+            position: relative;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+
+        .feed-header::before {
+            /*dark overlay on header's bg image to enhance readability*/
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: inherit;
+            z-index: 1;
+        }
+
+        .feed-header h1,
+        .feed-header p {
+            /*places text above background image*/
+            position: relative;
+            z-index: 2;
+        }
+
+        .filters-section {
+            /*filter section outermost styling*/
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .filters-section h4 {
+            /*"Filter Routes" styling*/
+            color: #343a40;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .filters-section .form-label {
+            /*Location, Popularity, Time Created styling*/
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .filters-section .form-control,
+        .filters-section .form-select {
+            /*Filter input field styling*/
+            border: 1px solid #ced4da;
+            padding: 10px;
+            transition: box-shadow 0.2s ease-in-out;
+        }
+
+        .filters-section .form-control:focus,
+        .filters-section .form-select:focus {
+            /*filter input focus styling*/
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+            border-color: #007bff;
+        }
+
+        .filters-section .btn-primary {
+            /*filter button styling*/
+            background-color: #007bff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .filters-section .btn-primary:hover {
+            /*hover on filter button*/
+            background-color: #0056b3;
+        }
+
+        .post-card {
+            /*Card styling*/
+            margin-bottom: 20px;
+            cursor: pointer;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .truncate-2-lines {
+            /*truncates the description to fit only 2 lines*/
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-height: 3em;
+            min-height: 3em;
+        }
+
+        .image-box img {
+            /*image within card styling*/
+            border-radius: 8px;
+            width: 400px;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        #modal-pic {
+            width: 100%;
+            height: 300px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #modal-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .modal-header {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .modal-title {
+            margin-bottom: 0;
+            /* Removes extra margin at the bottom of the title */
+        }
+
+        .modal-author {
+            margin: 0.25rem 0 0 0;
+            /* Adjusts margin to remove any bottom gap */
+            font-size: 0.875rem;
+            /* Optional: Adjust font size for author name */
+            color: #6c757d;
+            /* Muted text styling */
+        }
+
+
+        .fixed-bottom-right {
+            /*"Create Your Own Route!" button*/
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 30px;
+            font-size: 18px;
+            text-align: center;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            white-space: nowrap;
+        }
+    </style>
 </head>
+
 <body>
-    <h1> (insert A+ project here)</h1>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><img src="photos/mappalettelogo.png">MapPalette</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Feed</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Routes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Draw</a>
+                    </li>
+                    <!--Profile picture-->
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" id="profileDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="photos/download.jpeg" alt="Profile" class="profile-pic">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li><a class="dropdown-item" href="#">Your Profile</a></li>
+                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#">Log Out</a></li>
+                        </ul>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Feed Header -->
+    <section class="feed-header">
+        <h1>Routes</h1>
+        <p>Discover, share, and engage with creative running routes.</p>
+    </section>
+
+    <div class="container-fluid">
+
+        <!-- Filters Section -->
+        <div class="filters-section mt-3">
+            <h4>Filter Routes</h4>
+            <form class="row g-3">
+                <div class="col-md-3">
+                    <label for="location" class="form-label">
+                        <img src="https://img.icons8.com/ios-glyphs/16/000000/marker.png" alt="Location Icon"
+                            class="me-1">
+                        Location
+                    </label>
+                    <input type="text" class="form-control" id="location" placeholder="Enter location">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="popularity" class="form-label">
+                        <img src="https://img.icons8.com/ios-glyphs/16/000000/star.png" alt="Star Icon" class="me-1">
+                        Popularity
+                    </label>
+                    <select id="popularity" class="form-select">
+                        <option selected>Choose...</option>
+                        <option>Most popular</option>
+                        <option>Trending</option>
+                        <option>Least popular</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="time" class="form-label">
+                        <img src="https://img.icons8.com/ios-glyphs/16/000000/time.png" alt="Time Icon" class="me-1">
+                        Time Created
+                    </label>
+                    <select id="time" class="form-select">
+                        <option selected>Choose...</option>
+                        <option>Newest</option>
+                        <option>Oldest</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="distance" class="form-label">
+                        <img src="https://img.icons8.com/ios-glyphs/16/000000/road.png" alt="Distance Icon"
+                            class="me-1">
+                        Distance
+                    </label>
+                    <select id="distance" class="form-select">
+                        <option selected>Choose...</option>
+                        <option>Shortest to Longest</option>
+                        <option>Longest to Shortest</option>
+                    </select>
+
+                </div>
+
+                <div class="col-md-12 text-end">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="app">
+            <div class="container-fluid">
+                <!-- Dynamic Cards Rendering -->
+                <div class="row">
+                    <!-- Loop through the routes and render each in a column -->
+                    <div class="col-md-6 mb-4" v-for="route in routes" :key="route.modalId">
+                        <div class="card post-card" @click="openModal(route)">
+                            <div class="card-body d-flex flex-column flex-sm-row align-items-start">
+                                <div class="image-box me-3 mb-3 mb-sm-0">
+                                    <img :src="route.image" class="img-fluid" :alt="route.title">
+                                </div>
+                                <div>
+                                    <h5 class="card-title">{{ route.title }}</h5>
+                                    <p class="card-text truncate-2-lines">{{ truncateText(route.description, 150) }}</p>
+                                    <p class="mb-3"><strong>Distance:</strong> {{ route.distance }}</p>
+                                    <p class="mb-3"><strong>Location:</strong> {{ route.location }}</p>
+                                </div>
+                            </div>
+                            <div class="card-footer text-muted">
+                                {{ route.date }} | {{ route.likes }} Likes | {{ route.comments }} Comments
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Modals Rendering -->
+                <div v-for="route in routes" :key="route.modalId">
+                    <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                                    <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
+                                    <h6 class="modal-author text-muted">by {{ route.author }}</h6>
+                                </div>
+
+                                <div class="modal-body">
+                                    <div id="modal-pic">
+                                        <img :src="route.image" alt="Route Image" class="img-fluid">
+                                    </div>
+                                    <p class="text-muted">{{ route.date }} | {{ route.likes }} Likes</p>
+                                    <div>
+                                        <p><strong>Distance:</strong> {{ route.distance }}</p>
+                                        <p>{{ route.description }}</p>
+
+                                        <!-- Like, Comment, Share Links -->
+                                        <div class="d-flex justify-content-around border-top border-bottom py-2">
+                                            <a href="#"
+                                                class="d-flex align-items-center text-decoration-none text-dark">
+                                                <i class="fas fa-thumbs-up me-2"></i> <span>Like</span>
+                                            </a>
+                                            <a href="#"
+                                                class="d-flex align-items-center text-decoration-none text-dark">
+                                                <i class="fas fa-comment-alt me-2"></i> <span>Comment</span>
+                                            </a>
+                                            <a href="#"
+                                                class="d-flex align-items-center text-decoration-none text-dark">
+                                                <i class="fas fa-share me-2"></i> <span>Share</span>
+                                            </a>
+                                        </div>
+
+                                        <hr>
+
+                                        <!-- Comments Section: Render comments dynamically from commentsList -->
+                                        <h6>Comments</h6>
+                                        <textarea class="form-control mb-3" placeholder="Add a comment..."
+                                            rows="2"></textarea>
+                                        <button class="btn btn-primary mb-3">Post Comment</button>
+
+                                        <ul class="list-unstyled">
+                                            <li v-for="comment in route.commentsList" :key="comment.name">
+                                                <strong>{{ comment.name }}:</strong> {{ comment.text }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating "Create Your Own Route" Button -->
+        <div class="fixed-bottom-right">
+            <span class="create-route-text">+ Create Your Own Route!</span>
+        </div>
+
+
+        <!-- Footer Section -->
+        <footer class="bg-light text-center text-lg-start mt-5">
+            <div class="container p-4">
+                <!-- Grid row -->
+                <div class="row align-items-center">
+                    <!-- Column 1: Brand Name -->
+                    <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                        <h5 class="text-uppercase fw-bold">MapPalette</h5>
+                    </div>
+
+                    <!-- Column 2: Contact Information -->
+                    <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                        <h6 class="fw-bold">Contact us</h6>
+                        <p class="mb-1">mappalette@gmail.com</p>
+                        <p class="mb-1">+65-687654321</p>
+                        <p>81 Victoria St, Singapore 188065</p>
+                    </div>
+
+                    <!-- Column 3: Social Media Icons -->
+                    <div class="col-lg-4 col-md-12 text-md-end">
+                        <a href="#" class="me-3 text-dark"><img
+                                src="https://img.icons8.com/ios-filled/24/000000/facebook-new.png" alt="Facebook" /></a>
+                        <a href="#" class="me-3 text-dark"><img
+                                src="https://img.icons8.com/ios-filled/24/000000/linkedin.png" alt="LinkedIn" /></a>
+                        <a href="#" class="me-3 text-dark"><img
+                                src="https://img.icons8.com/ios-filled/24/000000/twitter.png" alt="Twitter" /></a>
+                        <a href="#" class="text-dark"><img
+                                src="https://img.icons8.com/ios-filled/24/000000/instagram-new.png"
+                                alt="Instagram" /></a>
+                    </div>
+                </div>
+                <!-- Grid row -->
+
+                <hr class="my-4">
+
+                <!-- Copyright -->
+                <div class="text-center">
+                    <p class="mb-0">&copy; 2024. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            const app = Vue.createApp({
+                data() {
+                    return {
+                        routes: [
+                            {
+                                title: "Ring of Resilience",
+                                description: "Challenge yourself on the Ring of Resilience, a circular route around Yishun Ring Road that tests your endurance and determination. It’s more than just a run—it’s a journey to discover your inner strength. Lace up, hit the ring, and let your resilience shine!",
+                                distance: "20km",
+                                location: "Yishun Ring Road",
+                                image: "photos/bob.jpg",
+                                date: "2 days ago",
+                                likes: 35,
+                                comments: 12,
+                                modalId: "ringModal",
+                                author: "Wei Shen",
+                                commentsList: [
+                                    { name: "Jane", text: "Amazing route! Really tests your stamina." },
+                                    { name: "Tom", text: "Loved the scenic views!" }
+                                ]
+                            },
+                            {
+                                title: "Dino Dash: Punggol Edition",
+                                description: "Tackle the Dino Dash: Punggol Edition, a unique route shaped like a dinosaur. Trace the curves of this prehistoric path and let its playful design fuel your run. Lace up and conquer this one-of-a-kind trail!",
+                                distance: "15km",
+                                location: "Punggol",
+                                image: "photos/bob.jpg",
+                                date: "1 day ago",
+                                likes: 25,
+                                comments: 5,
+                                modalId: "dinoModal",
+                                author: "Jane Doe",
+                                commentsList: [
+                                    { name: "Sarah", text: "So much fun! The dinosaur shape is awesome." },
+                                    { name: "Mike", text: "Great for a weekend run!" }
+                                ]
+                            },
+                            {
+                                title: "Palawan Beach Bolt",
+                                description: "Dive into the Palawan Beach Bolt, a coastal route that hugs the shoreline of Palawan Beach. With ocean breezes and sandy views guiding your run, this trail mixes relaxation with a dash of speed. Lace up, hit the sands, and let the island vibe push you forward!",
+                                distance: "8km",
+                                location: "Palawan Beach, Sentosa",
+                                image: "photos/bob.jpg",
+                                date: "3 days ago",
+                                likes: 18,
+                                comments: 7,
+                                modalId: "palawanModal",
+                                author: "John Smith",
+                                commentsList: [
+                                    { name: "Alice", text: "Love the beach vibe! So relaxing." },
+                                    { name: "John", text: "Perfect for an evening run!" }
+                                ]
+                            },
+                            {
+                                title: "Mount Faber Ascent",
+                                description: "Conquer the Mount Faber Ascent, a challenging uphill route that winds through lush greenery and offers breathtaking views of Singapore's skyline. This run is all about testing your stamina and reaching new heights. Lace up and rise above on this scenic trail!",
+                                distance: "7km",
+                                location: "Mount Faber",
+                                image: "photos/bob.jpg",
+                                date: "4 days ago",
+                                likes: 22,
+                                comments: 10,
+                                modalId: "faberModal",
+                                author: "Michael Lee",
+                                commentsList: [
+                                    { name: "Robert", text: "Tough climb but worth the view!" },
+                                    { name: "Linda", text: "My favorite uphill trail in Singapore!" }
+                                ]
+                            }
+                        ]
+                    };
+                },
+                methods: {
+                    openModal(route) {
+                        const modalElement = new bootstrap.Modal(document.getElementById(route.modalId));
+                        modalElement.show();
+                    },
+                    truncateText(text, length) {
+                        return text.length > length ? text.substring(0, length) + "..." : text;
+                    },
+                }
+            });
+
+            app.mount('#app');
+
+
+
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
