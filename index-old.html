@@ -5,190 +5,154 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MapPalette - Login</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
   <style>
-    .navbar {
-        position: sticky;
-        top: 0;
-        z-index: 3;
-    }
-
-    .navbar-brand {
-        /*controls brand name size in navbar*/
-        font-size: 1.5rem;
-    }
-
-    .nav-link {
-        /*controls font size and margin of nav links*/
-        font-size: 1.2rem;
-        margin-left: 20px;
-    }
-
-    .navbar-brand img {
-        /*brand logo sizing*/
-        width: 50px;
-        height: 50px;
-        margin-left: 15px;
-        margin-right: 8px;
-    }
-
-
+    /* Custom font styling for the app name */
     .app-name {
-      font-size: 2.5rem;
+      /*font-family: 'Lobster', cursive;*/
+      font-size: 3rem;
       color: #007bff;
     }
 
-    /* Full-width hero section */
-    .hero {
-      background: url('index/run-background.jpeg') no-repeat center center/cover;
-      height: 80vh;
-      position: relative;
-    }
-
-    .hero-content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      color: white;
-    }
-
-    .hero h1 {
-      font-size: 4rem;
-      margin-bottom: 1rem;
-    }
-
-    .btn-primary {
-      margin-right: 10px;
-    }
-
-    .key-features {
-      display: flex;
-      justify-content: space-between;
-      margin: 2rem 0;
-      text-align: center;
+    .index-image {
+        width: 100%;
+        height: auto;
     }
 
     .features-image {
-      width: 50px;
-      height: 50px;
-      margin-bottom: 1rem;
+        width: 35%;
+        margin: auto;
+        margin-bottom: 15px;
     }
 
+    /* Video section styling */
     .video-container {
-        text-align: center;
-      }
-
+      text-align: center;
+    }
+    
+    /* Styling for About Us section */
     .about-us {
       background-color: #f8f9fa;
-      padding: 3rem 0;
+      padding: 50px 0;
+    }
+    
+    .about-us h2 {
+      /*font-family: 'Pacifico';*/
     }
     .about-us-description {
         /*font-family: 'Pacifico';*/
         font-style: italic;
         font-weight: lighter;
     }
-    
-    .carousel-container {
-        position: relative;
-        max-width: 35%;
-        margin: auto;
-        overflow: hidden;
-      }
-      
-      .carousel-slide {
-        display: flex;
-        transition: transform 0.5s ease-in-out;
-      }
-      
-      .carousel-item {
-        min-width: 100%;
-        text-align: center;
-        opacity: 1;
-        visibility: visible;
-      }
-      
-      .person-image {
-          width: 100%; /* Make the image take full width */
-          height: auto; /* Maintain aspect ratio */
-          object-fit: contain; /* Ensure the entire image is visible */
-      }
-      
-      .person-name {
-        font-size: 1.5em;
-        margin: 10px 0;
-      }
-      
-      .person-description {
-        font-size: 1em;
-        color: #666;
-        font-style: italic;
-      }
-  
-      .carousel-control-prev, .carousel-control-next {
-          top: 40%; /* Move the buttons higher */
-          transform: translateY(-50%); /* Cancel any default vertical centering */
-          z-index: 2; /* Ensure buttons appear above other elements */
-        }
-        
-      
-      .prev, .next {
-        cursor: pointer;
-        position: absolute;
-        font-size: 2em;
-        color: #333;
-        background-color: transparent;
-        border: none;
-        padding: 0 10px;
-      }
-      
-      .prev {
-        left: 10px;
-      }
-      
-      .next {
-        right: 10px;
-      }        
 
-    footer {
-      background-color: #343a40;
-      color: white;
-      padding: 1rem 0;
+    .carousel-container {
+      position: relative;
+      max-width: 35%;
+      margin: auto;
+      overflow: hidden;
     }
+    
+    .carousel-slide {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+    
+    .carousel-item {
+      min-width: 100%;
+      text-align: center;
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .person-image {
+        width: 100%; /* Make the image take full width */
+        height: auto; /* Maintain aspect ratio */
+        object-fit: contain; /* Ensure the entire image is visible */
+    }
+    
+    .person-name {
+      font-size: 1.5em;
+      margin: 10px 0;
+    }
+    
+    .person-description {
+      font-size: 1em;
+      color: #666;
+      font-style: italic;
+    }
+
+    .carousel-control-prev, .carousel-control-next {
+        top: 40%; /* Move the buttons higher */
+        transform: translateY(-50%); /* Cancel any default vertical centering */
+        z-index: 2; /* Ensure buttons appear above other elements */
+      }
+      
+    
+    .prev, .next {
+      cursor: pointer;
+      position: absolute;
+      font-size: 2em;
+      color: #333;
+      background-color: transparent;
+      border: none;
+      padding: 0 10px;
+    }
+    
+    .prev {
+      left: 10px;
+    }
+    
+    .next {
+      right: 10px;
+    }        
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#"><img src="index/mappalettelogo.png"><span style="color: #007bff;">MapPalette</span></a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a href="login.html" class="nav-link btn btn-outline-primary">Login</a>
-              </li>
-              <li class="nav-item">
-                <a href="signup.html" class="nav-link btn btn-primary">Sign Up</a>
-              </li>
-            </ul>
-        </div>
+  
+  <!-- Navbar -->
+  <nav class="navbar navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand app-name" href="#">MapPalette</a>
+      <div>
+        <a href="#" class="btn btn-primary">Sign Up</a>
+        <a href="#" class="btn btn-outline-primary">Login</a>
+      </div>
     </div>
-</nav>
+  </nav>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Explore the World with MapPalette</h1>
-      <p>Creative routes for every adventure</p>
-      <a href="signup.html" class="btn btn-primary">Get Started</a>
-      <a href="login.html" class="btn btn-outline-light">Login</a>
+  <!-- Main Section -->
+  <section class="container py-5">
+    <div class="row align-items-center">
+      <!-- Login Form -->
+      <div class="col-md-6">
+        <h2 class="mb-4">Login to MapPalette</h2>
+        <form action="homepage.html">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" placeholder="Enter your email">
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Enter your password">
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+          <div class="text-center mt-3">
+            <a href="#">Forgot your password?</a> | <a href="#">Create an account</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Video Tutorial -->
+      <div class="col-md-6">
+        <img class="index-image" src="index/flash.jpeg" alt="">
+      </div>
     </div>
   </section>
 
-  <!-- Key Features -->
+  <!-- Key Features Section -->
+    
   <section class="container py-5 text-center bg-light">
     <h2>Why Choose MapPalette?</h2>
     <div class="row mt-4">
@@ -224,7 +188,7 @@
   <section class="about-us">
     <div class="container">
         <h2 class="text-center mb-2">About Us</h2>
-        <p class="text-center mt-3 mb-4 about-us-description h5">MapPalette is developed by RunGoWhere Pte Ltd, a passionate team of IS students from SMU. <br> Meet the brilliant minds behind our application!</p>
+        <p class="text-center mb-4 about-us-description h5">MapPalette is developed by RunGoWhere Pte Ltd, a passionate team of IS students from SMU. <br> Meet the brilliant minds behind our application!</p>
 
         <div class="carousel-container">
             <div class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">

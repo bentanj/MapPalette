@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MapPalette - Sign Up</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .signup-container {
+      max-width: 400px;
+      margin: auto;
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .signup-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: black;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .social-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .social-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      border-radius: 4px;
+      text-decoration: none;
+      color: white;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .social-btn-google { background-color: #de5246; }
+    .social-btn-linkedin { background-color: #0077b5; }
+
+    .separator {
+      text-align: center;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .form-label {
+      font-weight: 500;
+    }
+
+    .terms-text {
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .terms-text a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    
+    .btn-primary {
+      width: 100%;
+      padding: 10px;
+      margin-top: 1rem;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .login-link a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+    <div class="justify-content-center align-items-center">
+        <div class="d-flex justify-content-center align-items-center py-2">
+            <img src="index/mappalettelogo.png" class="img-fluid" style="max-width: 100px; margin-right: 10px;"><h1 class="app-name" style="color: #007bff;">MapPalette</h1>
+        </div>
+        <div class="signup-container">
+            <h1 class="signup-title">Join Us!</h1>
+
+            <!-- Social Signup Buttons -->
+            <div class="social-buttons">
+                <a href="#" class="social-btn social-btn-google">Sign up with Google</a>
+                <a href="#" class="social-btn social-btn-linkedin">Sign up with LinkedIn</a>
+            </div>
+
+            <!-- OR separator -->
+            <div class="separator">or</div>
+
+            <!-- Signup Form -->
+            <form action="homepage.html">
+                <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                </div>
+                <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Enter a password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Sign Up</button>
+            </form>
+
+            <!-- Terms of Service -->
+            <div class="terms-text">
+                By signing up, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+            </div>
+
+            <!-- Already have an account -->
+            <div class="login-link">
+                Already have an account? <a href="login.html">Login</a>
+            </div>
+        </div>
+    </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
