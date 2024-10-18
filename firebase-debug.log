@@ -1,0 +1,243 @@
+[debug] [2024-10-16T05:40:13.499Z] ----------------------------------------------------------------------
+[debug] [2024-10-16T05:40:13.502Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\tanzh\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2024-10-16T05:40:13.502Z] CLI Version:   13.22.0
+[debug] [2024-10-16T05:40:13.503Z] Platform:      win32
+[debug] [2024-10-16T05:40:13.503Z] Node Version:  v20.18.0
+[debug] [2024-10-16T05:40:13.503Z] Time:          Wed Oct 16 2024 13:40:13 GMT+0800 (Singapore Standard Time)
+[debug] [2024-10-16T05:40:13.503Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-10-16T05:40:13.611Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-10-16T05:40:13.612Z] > authorizing via signed-in user (wad2shared@gmail.com)
+[debug] [2024-10-16T05:40:13.612Z] [iam] checking project mappalette-9e0bd for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2024-10-16T05:40:13.613Z] Checked if tokens are valid: false, expires at: 1728991465223
+[debug] [2024-10-16T05:40:13.614Z] Checked if tokens are valid: false, expires at: 1728991465223
+[debug] [2024-10-16T05:40:13.614Z] > refreshing access token with scopes: []
+[debug] [2024-10-16T05:40:13.616Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2024-10-16T05:40:13.617Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-10-16T05:40:13.764Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2024-10-16T05:40:13.765Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-10-16T05:40:13.776Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/mappalette-9e0bd:testIamPermissions [none]
+[debug] [2024-10-16T05:40:13.777Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/mappalette-9e0bd:testIamPermissions x-goog-quota-user=projects/mappalette-9e0bd
+[debug] [2024-10-16T05:40:13.777Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mappalette-9e0bd:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-10-16T05:40:14.828Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/mappalette-9e0bd:testIamPermissions 200
+[debug] [2024-10-16T05:40:14.829Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mappalette-9e0bd:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-10-16T05:40:14.829Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:14.829Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:14.829Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/mappalette-9e0bd/serviceAccounts/mappalette-9e0bd@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2024-10-16T05:40:14.830Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/mappalette-9e0bd/serviceAccounts/mappalette-9e0bd@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-10-16T05:40:16.129Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/mappalette-9e0bd/serviceAccounts/mappalette-9e0bd@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2024-10-16T05:40:16.129Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/mappalette-9e0bd/serviceAccounts/mappalette-9e0bd@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'mappalette-9e0bd'...
+[info] 
+[info] i  deploying functions 
+[debug] [2024-10-16T05:40:16.133Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:16.133Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:16.133Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/mappalette-9e0bd [none]
+[debug] [2024-10-16T05:40:16.458Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/mappalette-9e0bd 200
+[debug] [2024-10-16T05:40:16.458Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/mappalette-9e0bd {"projectId":"mappalette-9e0bd","projectNumber":"907670644284","displayName":"MapPalette","name":"projects/mappalette-9e0bd","resources":{"hostingSite":"mappalette-9e0bd"},"state":"ACTIVE","etag":"1_0bc0d1d3-95f1-43c2-938e-8b57f4e3c55c"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[debug] [2024-10-16T05:40:16.460Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:16.460Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:16.460Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:16.460Z] Checked if tokens are valid: true, expires at: 1729060812765
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[debug] [2024-10-16T05:40:16.461Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:16.461Z] Checked if tokens are valid: true, expires at: 1729060812765
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2024-10-16T05:40:16.461Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:16.461Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:16.461Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/cloudfunctions.googleapis.com [none]
+[debug] [2024-10-16T05:40:16.461Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/mappalette-9e0bd
+[debug] [2024-10-16T05:40:16.463Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/runtimeconfig.googleapis.com [none]
+[debug] [2024-10-16T05:40:16.463Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/mappalette-9e0bd
+[debug] [2024-10-16T05:40:16.465Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/cloudbuild.googleapis.com [none]
+[debug] [2024-10-16T05:40:16.465Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/cloudbuild.googleapis.com x-goog-quota-user=projects/mappalette-9e0bd
+[debug] [2024-10-16T05:40:16.466Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/artifactregistry.googleapis.com [none]
+[debug] [2024-10-16T05:40:16.466Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/artifactregistry.googleapis.com x-goog-quota-user=projects/mappalette-9e0bd
+[debug] [2024-10-16T05:40:17.844Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/runtimeconfig.googleapis.com 200
+[debug] [2024-10-16T05:40:17.845Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2024-10-16T05:40:18.318Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/cloudbuild.googleapis.com 200
+[debug] [2024-10-16T05:40:18.318Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/cloudbuild.googleapis.com [omitted]
+[info] +  functions: required API cloudbuild.googleapis.com is enabled 
+[debug] [2024-10-16T05:40:18.326Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/cloudfunctions.googleapis.com 200
+[debug] [2024-10-16T05:40:18.326Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/cloudfunctions.googleapis.com [omitted]
+[info] +  functions: required API cloudfunctions.googleapis.com is enabled 
+[debug] [2024-10-16T05:40:18.328Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/artifactregistry.googleapis.com 200
+[debug] [2024-10-16T05:40:18.328Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/artifactregistry.googleapis.com [omitted]
+[info] +  artifactregistry: required API artifactregistry.googleapis.com is enabled 
+[debug] [2024-10-16T05:40:18.328Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:18.329Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:18.329Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/mappalette-9e0bd/adminSdkConfig [none]
+[debug] [2024-10-16T05:40:18.630Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/mappalette-9e0bd/adminSdkConfig 200
+[debug] [2024-10-16T05:40:18.630Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/mappalette-9e0bd/adminSdkConfig {"projectId":"mappalette-9e0bd","storageBucket":"mappalette-9e0bd.appspot.com"}
+[debug] [2024-10-16T05:40:18.631Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:18.631Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:18.631Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/mappalette-9e0bd/configs [none]
+[debug] [2024-10-16T05:40:18.930Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/mappalette-9e0bd/configs 200
+[debug] [2024-10-16T05:40:18.930Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/mappalette-9e0bd/configs {}
+[debug] [2024-10-16T05:40:18.932Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2024-10-16T05:40:20.041Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^5.0.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2024-10-16T05:40:20.041Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2024-10-16T05:40:20.043Z] Could not find functions.yaml. Must use http discovery
+[debug] [2024-10-16T05:40:20.058Z] Found firebase-functions binary at 'C:\Users\tanzh\OneDrive\Documents\GitHub\G2_IS216\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8921
+
+[debug] [2024-10-16T05:40:20.932Z] Got response from /__/functions.yaml {"endpoints":{"app":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"app"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled... 
+[debug] [2024-10-16T05:40:24.983Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:24.984Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:24.984Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/firebaseextensions.googleapis.com [none]
+[debug] [2024-10-16T05:40:24.984Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/firebaseextensions.googleapis.com x-goog-quota-user=projects/mappalette-9e0bd
+[debug] [2024-10-16T05:40:26.496Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/firebaseextensions.googleapis.com 200
+[debug] [2024-10-16T05:40:26.496Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/firebaseextensions.googleapis.com [omitted]
+[info] +  extensions: required API firebaseextensions.googleapis.com is enabled 
+[debug] [2024-10-16T05:40:26.496Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-10-16T05:40:26.496Z] > authorizing via signed-in user (wad2shared@gmail.com)
+[debug] [2024-10-16T05:40:26.496Z] [iam] checking project mappalette-9e0bd for permissions ["firebase.projects.get","firebaseextensions.instances.list"]
+[debug] [2024-10-16T05:40:26.497Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:26.497Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:26.497Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/mappalette-9e0bd:testIamPermissions [none]
+[debug] [2024-10-16T05:40:26.497Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/mappalette-9e0bd:testIamPermissions x-goog-quota-user=projects/mappalette-9e0bd
+[debug] [2024-10-16T05:40:26.497Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mappalette-9e0bd:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2024-10-16T05:40:27.529Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/mappalette-9e0bd:testIamPermissions 200
+[debug] [2024-10-16T05:40:27.529Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mappalette-9e0bd:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2024-10-16T05:40:27.530Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:27.530Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:27.530Z] >>> [apiv2][query] GET https://firebaseextensions.googleapis.com/v1beta/projects/mappalette-9e0bd/instances pageSize=100&pageToken=
+[debug] [2024-10-16T05:40:29.156Z] <<< [apiv2][status] GET https://firebaseextensions.googleapis.com/v1beta/projects/mappalette-9e0bd/instances 200
+[debug] [2024-10-16T05:40:29.156Z] <<< [apiv2][body] GET https://firebaseextensions.googleapis.com/v1beta/projects/mappalette-9e0bd/instances {}
+[info] i  functions: preparing functions directory for uploading... 
+[info] i  functions: packaged C:\Users\tanzh\OneDrive\Documents\GitHub\G2_IS216\functions (67.46 KB) for uploading 
+[debug] [2024-10-16T05:40:29.209Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:29.209Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:29.209Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/mappalette-9e0bd/locations/-/functions [none]
+[debug] [2024-10-16T05:40:32.657Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/mappalette-9e0bd/locations/-/functions 200
+[debug] [2024-10-16T05:40:32.657Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/mappalette-9e0bd/locations/-/functions {}
+[debug] [2024-10-16T05:40:32.658Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:32.658Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:32.658Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2024-10-16T05:40:34.170Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/-/functions 200
+[debug] [2024-10-16T05:40:34.170Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/-/functions {"functions":[{"name":"projects/mappalette-9e0bd/locations/us-central1/functions/app","buildConfig":{"build":"projects/907670644284/locations/us-central1/builds/56818034-b9c0-4f22-902c-aed622899377","runtime":"nodejs18","entryPoint":"app","source":{"storageSource":{"bucket":"gcf-v2-sources-907670644284-us-central1","object":"app/function-source.zip","generation":"1728990306194995"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/mappalette-9e0bd/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-907670644284-us-central1","object":"app/function-source.zip","generation":"1728990306194995"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/mappalette-9e0bd/serviceAccounts/907670644284-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/mappalette-9e0bd/locations/us-central1/services/app","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"mappalette-9e0bd\",\"storageBucket\":\"mappalette-9e0bd.appspot.com\"}","GCLOUD_PROJECT":"mappalette-9e0bd","EVENTARC_CLOUD_EVENT_SOURCE":"projects/mappalette-9e0bd/locations/us-central1/services/app","FUNCTION_TARGET":"app","LOG_EXECUTION_ID":"true"},"maxInstanceCount":100,"ingressSettings":"ALLOW_ALL","uri":"https://app-6kmdo5luna-uc.a.run.app","serviceAccountEmail":"907670644284-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"revision":"app-00006-zoh","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","updateTime":"2024-10-15T11:05:48.900356221Z","labels":{"firebase-functions-hash":"bf24dcc786d57a1bb9860aa5b21ea203cfa7c13e","deployment-tool":"cli-firebase"},"environment":"GEN_2","url":"https://us-central1-mappalette-9e0bd.cloudfunctions.net/app","createTime":"2024-10-14T12:52:40.683823558Z"}]}
+[info] i  functions: ensuring required API run.googleapis.com is enabled... 
+[debug] [2024-10-16T05:40:34.176Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:34.176Z] Checked if tokens are valid: true, expires at: 1729060812765
+[info] i  functions: ensuring required API eventarc.googleapis.com is enabled... 
+[debug] [2024-10-16T05:40:34.177Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:34.177Z] Checked if tokens are valid: true, expires at: 1729060812765
+[info] i  functions: ensuring required API pubsub.googleapis.com is enabled... 
+[debug] [2024-10-16T05:40:34.177Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:34.177Z] Checked if tokens are valid: true, expires at: 1729060812765
+[info] i  functions: ensuring required API storage.googleapis.com is enabled... 
+[debug] [2024-10-16T05:40:34.178Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:34.178Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:34.178Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/run.googleapis.com [none]
+[debug] [2024-10-16T05:40:34.178Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/run.googleapis.com x-goog-quota-user=projects/mappalette-9e0bd
+[debug] [2024-10-16T05:40:34.181Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/eventarc.googleapis.com [none]
+[debug] [2024-10-16T05:40:34.181Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/eventarc.googleapis.com x-goog-quota-user=projects/mappalette-9e0bd
+[debug] [2024-10-16T05:40:34.183Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/pubsub.googleapis.com [none]
+[debug] [2024-10-16T05:40:34.183Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/pubsub.googleapis.com x-goog-quota-user=projects/mappalette-9e0bd
+[debug] [2024-10-16T05:40:34.186Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/storage.googleapis.com [none]
+[debug] [2024-10-16T05:40:34.186Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/storage.googleapis.com x-goog-quota-user=projects/mappalette-9e0bd
+[debug] [2024-10-16T05:40:35.494Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/run.googleapis.com 200
+[debug] [2024-10-16T05:40:35.494Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/run.googleapis.com [omitted]
+[info] +  functions: required API run.googleapis.com is enabled 
+[debug] [2024-10-16T05:40:35.527Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/storage.googleapis.com 200
+[debug] [2024-10-16T05:40:35.528Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/storage.googleapis.com [omitted]
+[info] +  functions: required API storage.googleapis.com is enabled 
+[debug] [2024-10-16T05:40:36.700Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/pubsub.googleapis.com 200
+[debug] [2024-10-16T05:40:36.701Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/pubsub.googleapis.com [omitted]
+[info] +  functions: required API pubsub.googleapis.com is enabled 
+[debug] [2024-10-16T05:40:36.723Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/eventarc.googleapis.com 200
+[debug] [2024-10-16T05:40:36.724Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/mappalette-9e0bd/services/eventarc.googleapis.com [omitted]
+[info] +  functions: required API eventarc.googleapis.com is enabled 
+[info] i  functions: generating the service identity for pubsub.googleapis.com... 
+[debug] [2024-10-16T05:40:36.725Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:36.725Z] Checked if tokens are valid: true, expires at: 1729060812765
+[info] i  functions: generating the service identity for eventarc.googleapis.com... 
+[debug] [2024-10-16T05:40:36.726Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:36.726Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:36.726Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/907670644284/services/pubsub.googleapis.com:generateServiceIdentity [none]
+[debug] [2024-10-16T05:40:36.726Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/907670644284/services/eventarc.googleapis.com:generateServiceIdentity [none]
+[debug] [2024-10-16T05:40:37.051Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/907670644284/services/eventarc.googleapis.com:generateServiceIdentity 200
+[debug] [2024-10-16T05:40:37.051Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/907670644284/services/eventarc.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-907670644284@gcp-sa-eventarc.iam.gserviceaccount.com","uniqueId":"111948057361393167533"}}
+[debug] [2024-10-16T05:40:37.065Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/907670644284/services/pubsub.googleapis.com:generateServiceIdentity 200
+[debug] [2024-10-16T05:40:37.066Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/907670644284/services/pubsub.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-907670644284@gcp-sa-pubsub.iam.gserviceaccount.com","uniqueId":"110722060416444007320"}}
+[debug] [2024-10-16T05:40:37.068Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:37.068Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:37.068Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/mappalette-9e0bd [none]
+[debug] [2024-10-16T05:40:37.379Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/mappalette-9e0bd 200
+[debug] [2024-10-16T05:40:37.380Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/mappalette-9e0bd {"projectId":"mappalette-9e0bd","projectNumber":"907670644284","displayName":"MapPalette","name":"projects/mappalette-9e0bd","resources":{"hostingSite":"mappalette-9e0bd"},"state":"ACTIVE","etag":"1_0bc0d1d3-95f1-43c2-938e-8b57f4e3c55c"}
+[debug] [2024-10-16T05:40:37.381Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:37.381Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:37.381Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/mappalette-9e0bd/billingInfo [none]
+[debug] [2024-10-16T05:40:39.331Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/mappalette-9e0bd/billingInfo 200
+[debug] [2024-10-16T05:40:39.332Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/mappalette-9e0bd/billingInfo {"name":"projects/mappalette-9e0bd/billingInfo","projectId":"mappalette-9e0bd","billingAccountName":"billingAccounts/018EF3-07E441-EAB0AF","billingEnabled":true}
+[debug] [2024-10-16T05:40:39.335Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:39.335Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:39.335Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/functions:generateUploadUrl [none]
+[debug] [2024-10-16T05:40:40.673Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/functions:generateUploadUrl 200
+[debug] [2024-10-16T05:40:40.673Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/functions:generateUploadUrl {"uploadUrl":"https://storage.googleapis.com/gcf-v2-uploads-907670644284-us-central1/7e7068f6-ec57-48cc-8474-ffeaeb20a327.zip?GoogleAccessId=service-907670644284@gcf-admin-robot.iam.gserviceaccount.com&Expires=1729059040&Signature=izcZVY2NPwa8K%2B9Y4TRvVqKYM4nj2BD7UTkTmtcf%2B6ScZaEbKmZ%2FtQOBmOjsxs8HudVVTJi3syAKNcGWJXsMog82SD2feuo8OGaXP8zGPET0Q7zbORwWTGWhlT2RepiseXjNHwDrJTQR6BhBh2k0EwLUuBzSqOyz%2BEHCvs4Rq4ujSZTLxDFBY6wySbqAQWjyh0Syi%2Bs00j68hu4pwC1Lfy0BHGVnLKtYp8gJ1%2FsdDy1QImd50cjwEP67jU8unHerPmZjQL719IhHNUmsoOVJNeRtq4LMKlcsheKhDNuSBZBxySfdWEw8ecgC67JfWkC%2FcYOp3MT%2Bkn%2BFlH1LCsk%2FuA%3D%3D","storageSource":{"bucket":"gcf-v2-uploads-907670644284-us-central1","object":"7e7068f6-ec57-48cc-8474-ffeaeb20a327.zip"}}
+[debug] [2024-10-16T05:40:40.689Z] >>> [apiv2][query] PUT https://storage.googleapis.com/gcf-v2-uploads-907670644284-us-central1/7e7068f6-ec57-48cc-8474-ffeaeb20a327.zip GoogleAccessId=service-907670644284%40gcf-admin-robot.iam.gserviceaccount.com&Expires=1729059040&Signature=izcZVY2NPwa8K%2B9Y4TRvVqKYM4nj2BD7UTkTmtcf%2B6ScZaEbKmZ%2FtQOBmOjsxs8HudVVTJi3syAKNcGWJXsMog82SD2feuo8OGaXP8zGPET0Q7zbORwWTGWhlT2RepiseXjNHwDrJTQR6BhBh2k0EwLUuBzSqOyz%2BEHCvs4Rq4ujSZTLxDFBY6wySbqAQWjyh0Syi%2Bs00j68hu4pwC1Lfy0BHGVnLKtYp8gJ1%2FsdDy1QImd50cjwEP67jU8unHerPmZjQL719IhHNUmsoOVJNeRtq4LMKlcsheKhDNuSBZBxySfdWEw8ecgC67JfWkC%2FcYOp3MT%2Bkn%2BFlH1LCsk%2FuA%3D%3D
+[debug] [2024-10-16T05:40:40.689Z] >>> [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-907670644284-us-central1/7e7068f6-ec57-48cc-8474-ffeaeb20a327.zip [stream]
+[debug] [2024-10-16T05:40:42.445Z] <<< [apiv2][status] PUT https://storage.googleapis.com/gcf-v2-uploads-907670644284-us-central1/7e7068f6-ec57-48cc-8474-ffeaeb20a327.zip 200
+[debug] [2024-10-16T05:40:42.445Z] <<< [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-907670644284-us-central1/7e7068f6-ec57-48cc-8474-ffeaeb20a327.zip [omitted]
+[info] +  functions: functions folder uploaded successfully 
+[info] i  functions: updating Node.js 18 (2nd Gen) function app(us-central1)... 
+[debug] [2024-10-16T05:40:42.451Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:42.451Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:42.452Z] >>> [apiv2][query] PATCH https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/functions/app updateMask=name%2CbuildConfig.runtime%2CbuildConfig.entryPoint%2CbuildConfig.source.storageSource.bucket%2CbuildConfig.source.storageSource.object%2CbuildConfig.environmentVariables%2CbuildConfig.sourceToken%2CserviceConfig.environmentVariables%2CserviceConfig.ingressSettings%2CserviceConfig.timeoutSeconds%2CserviceConfig.serviceAccountEmail%2CserviceConfig.availableMemory%2CserviceConfig.minInstanceCount%2CserviceConfig.maxInstanceCount%2CserviceConfig.maxInstanceRequestConcurrency%2CserviceConfig.availableCpu%2CserviceConfig.vpcConnector%2CserviceConfig.vpcConnectorEgressSettings%2Clabels%2CbuildConfig.buildEnvironmentVariables
+[debug] [2024-10-16T05:40:42.452Z] >>> [apiv2][body] PATCH https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/functions/app {"name":"projects/mappalette-9e0bd/locations/us-central1/functions/app","buildConfig":{"runtime":"nodejs18","entryPoint":"app","source":{"storageSource":{"bucket":"gcf-v2-uploads-907670644284-us-central1","object":"7e7068f6-ec57-48cc-8474-ffeaeb20a327.zip"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""}},"serviceConfig":{"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"mappalette-9e0bd\",\"storageBucket\":\"mappalette-9e0bd.appspot.com\"}","GCLOUD_PROJECT":"mappalette-9e0bd","EVENTARC_CLOUD_EVENT_SOURCE":"projects/mappalette-9e0bd/locations/us-central1/services/app","FUNCTION_TARGET":"app","LOG_EXECUTION_ID":"true"},"ingressSettings":null,"timeoutSeconds":null,"serviceAccountEmail":null,"availableMemory":"256Mi","minInstanceCount":null,"maxInstanceCount":null,"maxInstanceRequestConcurrency":80,"availableCpu":"1","vpcConnector":null,"vpcConnectorEgressSettings":null},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e276a81766a6e1238e921935e8445ccee272cf9f"}}
+[debug] [2024-10-16T05:40:44.693Z] <<< [apiv2][status] PATCH https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/functions/app 200
+[debug] [2024-10-16T05:40:44.693Z] <<< [apiv2][body] PATCH https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/functions/app {"name":"projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2024-10-16T05:40:44.539103040Z","target":"projects/mappalette-9e0bd/locations/us-central1/functions/app","verb":"update","cancelRequested":false,"apiVersion":"v2"},"done":false}
+[debug] [2024-10-16T05:40:44.694Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:44.694Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:44.694Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 [none]
+[debug] [2024-10-16T05:40:45.934Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 200
+[debug] [2024-10-16T05:40:45.935Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 {"name":"projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2024-10-16T05:40:44.539103040Z","target":"projects/mappalette-9e0bd/locations/us-central1/functions/app","verb":"update","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/mappalette-9e0bd/locations/us-central1/functions/app","buildConfig":{"runtime":"nodejs18","entryPoint":"app","source":{"storageSource":{"bucket":"gcf-v2-sources-907670644284-us-central1","object":"app/function-source.zip","generation":"1729057244467841"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/mappalette-9e0bd/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-907670644284-us-central1","object":"app/function-source.zip","generation":"1728990306194995"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/mappalette-9e0bd/serviceAccounts/907670644284-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/mappalette-9e0bd/locations/us-central1/services/app","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"mappalette-9e0bd\",\"storageBucket\":\"mappalette-9e0bd.appspot.com\"}","GCLOUD_PROJECT":"mappalette-9e0bd","EVENTARC_CLOUD_EVENT_SOURCE":"projects/mappalette-9e0bd/locations/us-central1/services/app","FUNCTION_TARGET":"app","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","uri":"https://app-6kmdo5luna-uc.a.run.app","serviceAccountEmail":"907670644284-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"revision":"app-00006-zoh","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e276a81766a6e1238e921935e8445ccee272cf9f"},"environment":"GEN_2","url":"https://us-central1-mappalette-9e0bd.cloudfunctions.net/app"},"stages":[{"name":"BUILD","message":"Build in progress","state":"IN_PROGRESS","resource":"projects/907670644284/locations/us-central1/builds/1f2a2501-e725-4a6c-964e-67cc6cc54b0e","resourceUri":"https://console.cloud.google.com/cloud-build/builds;region=us-central1/1f2a2501-e725-4a6c-964e-67cc6cc54b0e?project=907670644284"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"UPDATE_FUNCTION","buildName":"projects/907670644284/locations/us-central1/builds/1f2a2501-e725-4a6c-964e-67cc6cc54b0e"},"done":false}
+[debug] [2024-10-16T05:40:46.444Z] [update-default-us-central1-app] Retrying task index 0
+[debug] [2024-10-16T05:40:46.445Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:46.445Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:46.445Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 [none]
+[debug] [2024-10-16T05:40:47.657Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 200
+[debug] [2024-10-16T05:40:47.657Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 {"name":"projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2024-10-16T05:40:44.539103040Z","target":"projects/mappalette-9e0bd/locations/us-central1/functions/app","verb":"update","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/mappalette-9e0bd/locations/us-central1/functions/app","buildConfig":{"runtime":"nodejs18","entryPoint":"app","source":{"storageSource":{"bucket":"gcf-v2-sources-907670644284-us-central1","object":"app/function-source.zip","generation":"1729057244467841"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/mappalette-9e0bd/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-907670644284-us-central1","object":"app/function-source.zip","generation":"1728990306194995"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/mappalette-9e0bd/serviceAccounts/907670644284-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/mappalette-9e0bd/locations/us-central1/services/app","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"mappalette-9e0bd\",\"storageBucket\":\"mappalette-9e0bd.appspot.com\"}","GCLOUD_PROJECT":"mappalette-9e0bd","EVENTARC_CLOUD_EVENT_SOURCE":"projects/mappalette-9e0bd/locations/us-central1/services/app","FUNCTION_TARGET":"app","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","uri":"https://app-6kmdo5luna-uc.a.run.app","serviceAccountEmail":"907670644284-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"revision":"app-00006-zoh","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e276a81766a6e1238e921935e8445ccee272cf9f"},"environment":"GEN_2","url":"https://us-central1-mappalette-9e0bd.cloudfunctions.net/app"},"stages":[{"name":"BUILD","message":"Build in progress","state":"IN_PROGRESS","resource":"projects/907670644284/locations/us-central1/builds/1f2a2501-e725-4a6c-964e-67cc6cc54b0e","resourceUri":"https://console.cloud.google.com/cloud-build/builds;region=us-central1/1f2a2501-e725-4a6c-964e-67cc6cc54b0e?project=907670644284"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"UPDATE_FUNCTION","buildName":"projects/907670644284/locations/us-central1/builds/1f2a2501-e725-4a6c-964e-67cc6cc54b0e"},"done":false}
+[debug] [2024-10-16T05:40:48.657Z] [update-default-us-central1-app] Retrying task index 0
+[debug] [2024-10-16T05:40:48.658Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:48.658Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:48.658Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 [none]
+[debug] [2024-10-16T05:40:49.911Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 200
+[debug] [2024-10-16T05:40:49.912Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 {"name":"projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2024-10-16T05:40:44.539103040Z","target":"projects/mappalette-9e0bd/locations/us-central1/functions/app","verb":"update","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/mappalette-9e0bd/locations/us-central1/functions/app","buildConfig":{"runtime":"nodejs18","entryPoint":"app","source":{"storageSource":{"bucket":"gcf-v2-sources-907670644284-us-central1","object":"app/function-source.zip","generation":"1729057244467841"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/mappalette-9e0bd/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-907670644284-us-central1","object":"app/function-source.zip","generation":"1728990306194995"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/mappalette-9e0bd/serviceAccounts/907670644284-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/mappalette-9e0bd/locations/us-central1/services/app","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"mappalette-9e0bd\",\"storageBucket\":\"mappalette-9e0bd.appspot.com\"}","GCLOUD_PROJECT":"mappalette-9e0bd","EVENTARC_CLOUD_EVENT_SOURCE":"projects/mappalette-9e0bd/locations/us-central1/services/app","FUNCTION_TARGET":"app","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","uri":"https://app-6kmdo5luna-uc.a.run.app","serviceAccountEmail":"907670644284-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"revision":"app-00006-zoh","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e276a81766a6e1238e921935e8445ccee272cf9f"},"environment":"GEN_2","url":"https://us-central1-mappalette-9e0bd.cloudfunctions.net/app"},"stages":[{"name":"BUILD","message":"Build in progress","state":"IN_PROGRESS","resource":"projects/907670644284/locations/us-central1/builds/1f2a2501-e725-4a6c-964e-67cc6cc54b0e","resourceUri":"https://console.cloud.google.com/cloud-build/builds;region=us-central1/1f2a2501-e725-4a6c-964e-67cc6cc54b0e?project=907670644284"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"UPDATE_FUNCTION","buildName":"projects/907670644284/locations/us-central1/builds/1f2a2501-e725-4a6c-964e-67cc6cc54b0e"},"done":false}
+[debug] [2024-10-16T05:40:51.915Z] [update-default-us-central1-app] Retrying task index 0
+[debug] [2024-10-16T05:40:51.915Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:51.916Z] Checked if tokens are valid: true, expires at: 1729060812765
+[debug] [2024-10-16T05:40:51.916Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 [none]
+[debug] [2024-10-16T05:40:53.157Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 200
+[debug] [2024-10-16T05:40:53.158Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356 {"name":"projects/mappalette-9e0bd/locations/us-central1/operations/operation-1729057243529-6249182cbff84-84f59bad-ffa1b356","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2024-10-16T05:40:44.539103040Z","target":"projects/mappalette-9e0bd/locations/us-central1/functions/app","verb":"update","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/mappalette-9e0bd/locations/us-central1/functions/app","buildConfig":{"runtime":"nodejs18","entryPoint":"app","source":{"storageSource":{"bucket":"gcf-v2-sources-907670644284-us-central1","object":"app/function-source.zip","generation":"1729057244467841"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/mappalette-9e0bd/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-907670644284-us-central1","object":"app/function-source.zip","generation":"1728990306194995"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/mappalette-9e0bd/serviceAccounts/907670644284-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/mappalette-9e0bd/locations/us-central1/services/app","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"mappalette-9e0bd\",\"storageBucket\":\"mappalette-9e0bd.appspot.com\"}","GCLOUD_PROJECT":"mappalette-9e0bd","EVENTARC_CLOUD_EVENT_SOURCE":"projects/mappalette-9e0bd/locations/us-central1/services/app","FUNCTION_TARGET":"app","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","uri":"https://app-6kmdo5luna-uc.a.run.app","serviceAccountEmail":"907670644284-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"revision":"app-00006-zoh","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e276a81766a6e1238e921935e8445ccee272cf9f"},"environment":"GEN_2","url":"https://us-central1-mappalette-9e0bd.cloudfunctions.net/app"},"stages":[{"name":"BUILD","message":"Build in progress","state":"IN_PROGRESS","resource":"projects/907670644284/locations/us-central1/builds/1f2a2501-e725-4a6c-964e-67cc6cc54b0e","resourceUri":"https://console.cloud.google.com/cloud-build/builds;region=us-central1/1f2a2501-e725-4a6c-964e-67cc6cc54b0e?project=907670644284"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"UPDATE_FUNCTION","buildName":"projects/907670644284/locations/us-central1/builds/1f2a2501-e725-4a6c-964e-67cc6cc54b0e"},"done":false}
