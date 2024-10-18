@@ -2,4 +2,5 @@ node_modules/
 .DS_Store
 d
 ui-debug.log
+firebase-debug.log
 .vscode/
