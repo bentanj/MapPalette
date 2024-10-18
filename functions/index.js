@@ -2,6 +2,7 @@
 const { onRequest } = require('firebase-functions/v2/https');
 const { initializeApp, cert } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore'); // Modular import for Firestore
+const functions = require('firebase-functions');
 
 const express = require('express');
 const cors = require('cors');
@@ -19,6 +20,12 @@ const db = getFirestore();
 const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json()); // Parse incoming JSON requests
+
+// Cloud Function to return the Google Maps API key
+exports.getGoogleMapsApiKey = functions.https.onRequest((req, res) => {
+  const apiKey = functions.config().googlemaps.apikey;
+  res.json({ apiKey });
+});
 
 // 
 // TEST APIs
