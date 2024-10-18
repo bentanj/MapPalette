@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MapPalette - Feed</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .feed-header {
+      background-color: #007bff;
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+    }
+
+    .post-card {
+      margin-bottom: 20px;
+    }
+
+    .filters-section {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .image-box {
+      height: 200px;
+      background-color: #e9ecef;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #6c757d;
+      margin-bottom: 15px;
+    }
+
+    .profile-section {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .profile-section img {
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .fixed-bottom-right {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: #007bff;
+      color: white;
+      border-radius: 50%;
+      font-size: 32px;
+      text-align: center;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .action-buttons button {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand" href="#">MapPalette</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Feed Header -->
+  <section class="feed-header">
+    <h1>Route Feed</h1>
+    <p>Discover, share, and engage with creative running routes.</p>
+  </section>
+
+  <div class="container mt-5">
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <h4>Filter Routes</h4>
+      <form class="row g-3">
+        <div class="col-md-4">
+          <label for="location" class="form-label">Location</label>
+          <input type="text" class="form-control" id="location" placeholder="Enter location">
+        </div>
+        <div class="col-md-4">
+          <label for="popularity" class="form-label">Popularity</label>
+          <select id="popularity" class="form-select">
+            <option selected>Choose...</option>
+            <option>Most popular</option>
+            <option>Least popular</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="time" class="form-label">Time Created</label>
+          <select id="time" class="form-select">
+            <option selected>Choose...</option>
+            <option>Newest</option>
+            <option>Oldest</option>
+          </select>
+        </div>
+        <div class="col-md-12 text-end">
+          <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Route Feed (Posts) -->
+    <div class="row">
+      <!-- Post Card 1 -->
+      <div class="col-md-6">
+        <div class="card post-card">
+          <div class="card-body">
+            <div class="profile-section">
+              <img src="profile-pic-example.jpg" alt="Profile Pic">
+              <h6 class="m-0">John Doe</h6>
+            </div>
+            <div class="image-box">
+              <span>Route Map Image</span> <!-- Replace this with your actual image -->
+            </div>
+            <h5 class="card-title">Scenic City Run</h5>
+            <p class="card-text">A beautiful route through the city, covering landmarks and scenic spots.</p>
+            <div class="action-buttons">
+              <button class="btn btn-outline-primary">Like</button>
+              <button class="btn btn-outline-secondary">Comment</button>
+              <button class="btn btn-outline-info">Share</button>
+            </div>
+          </div>
+          <div class="card-footer text-muted">
+            2 days ago | 35 Likes | 12 Comments
+          </div>
+        </div>
+      </div>
+
+      <!-- Post Card 2 -->
+      <div class="col-md-6">
+        <div class="card post-card">
+          <div class="card-body">
+            <div class="profile-section">
+              <img src="profile-pic-example-2.jpg" alt="Profile Pic">
+              <h6 class="m-0">Jane Smith</h6>
+            </div>
+            <div class="image-box">
+              <span>Route Map Image</span> <!-- Replace this with your actual image -->
+            </div>
+            <h5 class="card-title">Park Trail Adventure</h5>
+            <p class="card-text">A fun run through the park, perfect for nature lovers!</p>
+            <div class="action-buttons">
+              <button class="btn btn-outline-primary">Like</button>
+              <button class="btn btn-outline-secondary">Comment</button>
+              <button class="btn btn-outline-info">Share</button>
+            </div>
+          </div>
+          <div class="card-footer text-muted">
+            3 days ago | 22 Likes | 8 Comments
+          </div>
+        </div>
+      </div>
+      <!-- Post Card 2 -->
+      <div class="col-md-6">
+        <div class="card post-card">
+          <div class="card-body">
+            <div class="profile-section">
+              <img src="profile-pic-example-2.jpg" alt="Profile Pic">
+              <h6 class="m-0">Jane Smith</h6>
+            </div>
+            <div class="image-box">
+              <span>Route Map Image</span> <!-- Replace this with your actual image -->
+            </div>
+            <h5 class="card-title">Park Trail Adventure</h5>
+            <p class="card-text">A fun run through the park, perfect for nature lovers!</p>
+            <div class="action-buttons">
+              <button class="btn btn-outline-primary">Like</button>
+              <button class="btn btn-outline-secondary">Comment</button>
+              <button class="btn btn-outline-info">Share</button>
+            </div>
+          </div>
+          <div class="card-footer text-muted">
+            3 days ago | 22 Likes | 8 Comments
+          </div>
+        </div>
+      </div>
+      <!-- Post Card 2 -->
+      <div class="col-md-6">
+        <div class="card post-card">
+          <div class="card-body">
+            <div class="profile-section">
+              <img src="profile-pic-example-2.jpg" alt="Profile Pic">
+              <h6 class="m-0">Jane Smith</h6>
+            </div>
+            <div class="image-box">
+              <span>Route Map Image</span> <!-- Replace this with your actual image -->
+            </div>
+            <h5 class="card-title">Park Trail Adventure</h5>
+            <p class="card-text">A fun run through the park, perfect for nature lovers!</p>
+            <div class="action-buttons">
+              <button class="btn btn-outline-primary">Like</button>
+              <button class="btn btn-outline-secondary">Comment</button>
+              <button class="btn btn-outline-info">Share</button>
+            </div>
+          </div>
+          <div class="card-footer text-muted">
+            3 days ago | 22 Likes | 8 Comments
+          </div>
+        </div>
+      </div>
+      <!-- Post Card 2 -->
+      <div class="col-md-6">
+        <div class="card post-card">
+          <div class="card-body">
+            <div class="profile-section">
+              <img src="profile-pic-example-2.jpg" alt="Profile Pic">
+              <h6 class="m-0">Jane Smith</h6>
+            </div>
+            <div class="image-box">
+              <span>Route Map Image</span> <!-- Replace this with your actual image -->
+            </div>
+            <h5 class="card-title">Park Trail Adventure</h5>
+            <p class="card-text">A fun run through the park, perfect for nature lovers!</p>
+            <div class="action-buttons">
+              <button class="btn btn-outline-primary">Like</button>
+              <button class="btn btn-outline-secondary">Comment</button>
+              <button class="btn btn-outline-info">Share</button>
+            </div>
+          </div>
+          <div class="card-footer text-muted">
+            3 days ago | 22 Likes | 8 Comments
+          </div>
+        </div>
+      </div>
+      <!-- Post Card 2 -->
+      <div class="col-md-6">
+        <div class="card post-card">
+          <div class="card-body">
+            <div class="profile-section">
+              <img src="profile-pic-example-2.jpg" alt="Profile Pic">
+              <h6 class="m-0">Jane Smith</h6>
+            </div>
+            <div class="image-box">
+              <span>Route Map Image</span> <!-- Replace this with your actual image -->
+            </div>
+            <h5 class="card-title">Park Trail Adventure</h5>
+            <p class="card-text">A fun run through the park, perfect for nature lovers!</p>
+            <div class="action-buttons">
+              <button class="btn btn-outline-primary">Like</button>
+              <button class="btn btn-outline-secondary">Comment</button>
+              <button class="btn btn-outline-info">Share</button>
+            </div>
+          </div>
+          <div class="card-footer text-muted">
+            3 days ago | 22 Likes | 8 Comments
+          </div>
+        </div>
+      </div>
+      <!-- Post Card 2 -->
+      <div class="col-md-6">
+        <div class="card post-card">
+          <div class="card-body">
+            <div class="profile-section">
+              <img src="profile-pic-example-2.jpg" alt="Profile Pic">
+              <h6 class="m-0">Jane Smith</h6>
+            </div>
+            <div class="image-box">
+              <span>Route Map Image</span> <!-- Replace this with your actual image -->
+            </div>
+            <h5 class="card-title">Park Trail Adventure</h5>
+            <p class="card-text">A fun run through the park, perfect for nature lovers!</p>
+            <div class="action-buttons">
+              <button class="btn btn-outline-primary">Like</button>
+              <button class="btn btn-outline-secondary">Comment</button>
+              <button class="btn btn-outline-info">Share</button>
+            </div>
+          </div>
+          <div class="card-footer text-muted">
+            3 days ago | 22 Likes | 8 Comments
+          </div>
+        </div>
+      </div>
+      <!-- Post Card 2 -->
+      <div class="col-md-6">
+        <div class="card post-card">
+          <div class="card-body">
+            <div class="profile-section">
+              <img src="profile-pic-example-2.jpg" alt="Profile Pic">
+              <h6 class="m-0">Jane Smith</h6>
+            </div>
+            <div class="image-box">
+              <span>Route Map Image</span> <!-- Replace this with your actual image -->
+            </div>
+            <h5 class="card-title">Park Trail Adventure</h5>
+            <p class="card-text">A fun run through the park, perfect for nature lovers!</p>
+            <div class="action-buttons">
+              <button class="btn btn-outline-primary">Like</button>
+              <button class="btn btn-outline-secondary">Comment</button>
+              <button class="btn btn-outline-info">Share</button>
+            </div>
+          </div>
+          <div class="card-footer text-muted">
+            3 days ago | 22 Likes | 8 Comments
+          </div>
+        </div>
+      </div>
+    </div> <!-- End of Route Feed -->
+
+  </div> <!-- End of Container -->
+
+  <!-- Floating "Create Post" Button -->
+  <div class="fixed-bottom-right">
+    <span>+</span>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
