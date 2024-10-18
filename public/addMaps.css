@@ -1,0 +1,71 @@
+/* Set the height of the map to take full screen minus the navbar */
+#map {
+    height: calc(100vh - 56px);
+    width: 75%; /* Reduced width to make space for point list container */
+    float: left;
+  }
+  
+  #controls {
+    width: 25%; /* Space for point list container */
+    float: right;
+    padding: 20px;
+    background-color: #f8f9fa;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+  
+  .color-box {
+    width: 30px;
+    height: 30px;
+    margin: 5px;
+    cursor: pointer;
+    display: inline-block;
+    border: 2px solid transparent;
+  }
+  
+  /* Styling for clear/reset button */
+  .clear-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .clear-button:hover {
+    background-color: #0056b3;
+  }
+  
+  #distance {
+    font-size: 18px;
+    margin-top: 20px;
+  }
+  
+  #export-button {
+    margin-top: 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+  }
+  
+  #export-button:hover {
+    background-color: #218838;
+  }
+  
+  /* Point List Styling */
+  #point-list {
+    margin-top: 20px;
+  }
+  
+  .point-item {
+    padding: 10px;
+    background-color: #fff;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }

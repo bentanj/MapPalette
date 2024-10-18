@@ -1,0 +1,276 @@
+const app = Vue.createApp({
+    data() {
+      return {
+        map: null,
+        directionsService: null,
+        directionsRenderer: null,
+        routePolyline: null,
+        waypoints: [],
+        markers: [], // Array to store markers
+        currentColor: '#FF0000',
+        totalDistance: 0,
+        colors: ['#FF0000', '#008000', '#0000FF', '#800080'], // Available colors
+        mapsApiKey: '' // Maps API key to be dynamically loaded
+      };
+    },
+    methods: {
+        async loadGoogleMapsScript() {
+            try {
+                // Fetch the API key from the Firebase function with CORS enabled
+                const response = await fetch('https://app-6kmdo5luna-uc.a.run.app/getGoogleMapsApiKey');
+            
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            
+                const data = await response.json();
+                this.mapsApiKey = data.apiKey;
+            
+                // Dynamically load Google Maps script with the fetched API key
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${this.mapsApiKey}&callback=initMap`;
+                script.async = true;
+                script.defer = true;
+                document.body.appendChild(script);
+            } catch (error) {
+                console.error('Error fetching API key:', error);
+            }
+        },      
+        initMap() {
+            // Initialize the map and its settings
+            this.map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 18,
+                center: { lat: 1.36241, lng: 103.82606 }, // Singapore's coordinates
+                mapTypeId: "roadmap",
+                styles: [
+                    { 
+                        "featureType": "road.highway",
+                        "elementType": "geometry",
+                        "stylers": [
+                            { 
+                                "visibility": "off" 
+                            }
+                        ] 
+                    },
+                    {
+                        "featureType": "poi",
+                        "elementType": "labels.text",
+                        "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                        ]
+                    },
+                    {
+                        "featureType": "poi.business",
+                        "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                        ]
+                    }
+                ]
+            });
+    
+            this.directionsService = new google.maps.DirectionsService();
+            this.directionsRenderer = new google.maps.DirectionsRenderer({
+                suppressMarkers: true,
+            });
+    
+            this.routePolyline = new google.maps.Polyline({
+                strokeColor: this.currentColor,
+                strokeOpacity: 1.0,
+                strokeWeight: 4,
+                map: this.map
+            });
+    
+            // Listen for clicks on the map to add waypoints
+            this.map.addListener("click", (event) => {
+                this.addWaypoint(event.latLng);
+            });
+
+            // Automatically try to get the user's current location on page load
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                        };
+                        // Pan the map to the user's current location
+                        this.map.setCenter(pos);
+                    }
+                );
+            }
+        },
+
+        addWaypoint(latLng) {
+            // Add a new waypoint
+            this.waypoints.push({
+                location: latLng,
+                stopover: true,
+            });
+            
+            // Add a marker for each waypoint
+            this.addMarker(latLng);
+            this.calculateAndDisplayRoute();
+        },
+
+        addMarker(latLng) {
+            const markerIndex = this.waypoints.length;  // Adjusting to match array length
+            // Create a new marker
+            const marker = new google.maps.Marker({
+                map: this.map,
+                position: latLng,
+                label: `${markerIndex}`, // Display the marker index
+            });
+
+            // Create an InfoWindow for the marker
+            const infoWindow = new google.maps.InfoWindow({
+                content: `Marker ${markerIndex}<br>Lat: ${latLng.lat().toFixed(5)}, Lng: ${latLng.lng().toFixed(5)}`
+            });
+
+            // Add event listeners for hovering to show InfoWindow
+            marker.addListener("mouseover", () => {
+                infoWindow.open(this.map, marker);
+            });
+            marker.addListener("mouseout", () => {
+                infoWindow.close();
+            });
+        
+            // Store the marker in the markers array
+            this.markers.push(marker);
+        },
+
+        removeWaypoint(index) {
+            console.log('Removing waypoint and marker at index:', index);
+        
+            // Remove the waypoint from the array
+            this.waypoints.splice(index, 1);
+        
+            // Remove the corresponding marker from the map
+            var marker = this.markers[index];
+            if (marker) {
+                marker.setMap(null);
+                marker.setVisible(false); 
+                marker=null;
+            } else {
+                console.error('Marker not found at index:', index);
+            }
+        
+            // Also remove the marker from the markers array
+            this.markers.splice(index, 1);
+        
+            // Recalculate and display the updated route
+            this.calculateAndDisplayRoute();
+        
+            // Update all markers' labels after removing a marker
+            this.updateMarkerLabels();
+        },
+        
+        updateMarkerLabels() {
+            this.markers.forEach((marker, index) => {
+                // Update the marker label
+                marker.setLabel(`${index + 1}`);
+                
+                // Update the InfoWindow content to reflect the updated marker number
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `Marker ${index + 1}<br>Lat: ${marker.getPosition().lat().toFixed(5)}, Lng: ${marker.getPosition().lng().toFixed(5)}`
+                });
+                
+                // Update event listeners for the new InfoWindow content
+                marker.addListener("mouseover", () => {
+                    infoWindow.open(this.map, marker);
+                });
+                marker.addListener("mouseout", () => {
+                    infoWindow.close();
+                });
+            });
+        },
+        
+        changeColor(color) {
+            this.currentColor = color;
+            if (this.routePolyline) {
+                this.routePolyline.setOptions({ strokeColor: this.currentColor });
+            }
+        },
+
+        calculateAndDisplayRoute() {
+            // If there are fewer than 2 waypoints, clear the route and the polyline
+            if (this.waypoints.length < 2) {
+                this.clearRoute();
+                return;
+            }
+
+            // Request route directions from the DirectionsService
+            this.directionsService.route({
+                origin: this.waypoints[0].location,
+                destination: this.waypoints[this.waypoints.length - 1].location,
+                waypoints: this.waypoints.slice(1, -1), // Waypoints between start and end
+                travelMode: 'WALKING',
+                avoidHighways: true,
+            }, (response, status) => {
+                if (status === 'OK') {
+                    this.directionsRenderer.setDirections(response);
+                    this.updateDistance(response);
+                    this.routePolyline.setOptions({
+                        path: response.routes[0].overview_path,
+                        strokeColor: this.currentColor
+                    });
+                } else {
+                    alert('Directions request failed due to ' + status);
+                }
+            });
+        },
+
+        updateDistance(response) {
+            this.totalDistance = 0;
+            const route = response.routes[0];
+            for (let i = 0; i < route.legs.length; i++) {
+                this.totalDistance += route.legs[i].distance.value; // Add distance in meters
+            }
+            this.totalDistance = (this.totalDistance / 1000).toFixed(2); // Convert to km
+        },
+
+        clearRoute() {
+            this.totalDistance = 0;
+            this.routePolyline.setPath([]);  // Clear the polyline
+            this.directionsRenderer.set('directions', null); // Clear the DirectionsRenderer
+        },
+
+        clearMap() {
+            // Clear all markers
+            for(marker of this.markers){
+                marker.setVisible(false);
+                marker.setMap(null);
+                marker.setPosition(null);
+                marker = null;
+            }
+            this.markers = [];
+
+            // Clear waypoints and the route
+            this.waypoints = [];
+            this.clearRoute();
+        },
+
+        exportToGoogleMaps() {
+            if (this.waypoints.length < 2) {
+                alert("Please plot at least two points to export the route.");
+                return;
+            }
+
+            let googleMapsLink = 'https://www.google.com/maps/dir/';
+            this.waypoints.forEach((waypoint) => {
+                googleMapsLink += `${waypoint.location.lat()},${waypoint.location.lng()}/`;
+            });
+            window.open(googleMapsLink, '_blank');
+        }
+    },
+    mounted() {
+        // Assign initMap as a global function
+        window.initMap = this.initMap;
+
+        // Fetch the Google Maps API key from Firebase Functions and load the script
+        this.loadGoogleMapsScript();
+    }
+}).mount('#app');
