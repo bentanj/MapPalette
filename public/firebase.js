@@ -25,18 +25,45 @@ const provider = new GoogleAuthProvider();
 
 // Email signup functions
 // Create account using email and password
-createUserWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    // Signed up 
-    const user = userCredential.user;
-    // ...
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    // ..
-  });
+export const handleEmailSignUp = (formId, redirectUrl) => {
+  const form = document.getElementById(formId);
 
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const email = form.querySelector('#email').value;
+    const password = form.querySelector('#password').value;
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        console.log('User signed up:', userCredential.user);
+        window.location.href = redirectUrl;  // Redirect to the feed page on success
+      })
+      .catch((error) => {
+        console.error('Error during sign-up:', error.message);
+        alert(error.message);  // Display the error to the user
+      });
+  });
+};
+
+// Google sign-up
+export const handleGoogleSignUp = (buttonId, redirectUrl) => {
+  const googleButton = document.getElementById(buttonId);
+
+  googleButton.addEventListener('click', (event) => {
+    event.preventDefault();
+
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        console.log('Google sign-in successful:', result.user);
+        window.location.href = redirectUrl;  // Redirect to feed page on success
+      })
+      .catch((error) => {
+        console.error('Error during Google sign-in:', error.message);
+        alert(error.message);  // Display the error to the user
+      });
+  });
+};
 // Sign in with existing email and password
 signInWithEmailAndPassword(auth, email, password)
   .then((userCredential) => {
@@ -64,23 +91,4 @@ onAuthStateChanged(auth, (user) => {
 
 // Google sign up functions
 // Google sign in with pop up
-signInWithPopup(auth, provider)
-  .then((result) => {
-    // This gives you a Google Access Token. You can use it to access the Google API.
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    const token = credential.accessToken;
-    // The signed-in user info.
-    const user = result.user;
-    // IdP data available using getAdditionalUserInfo(result)
-    // ...
-  }).catch((error) => {
-    // Handle Errors here.
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    // The email of the user's account used.
-    const email = error.customData.email;
-    // The AuthCredential type that was used.
-    const credential = GoogleAuthProvider.credentialFromError(error);
-    // ...
-  });
 
