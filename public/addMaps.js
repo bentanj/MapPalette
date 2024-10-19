@@ -5,10 +5,12 @@ const app = Vue.createApp({
         directionsService: null,
         directionsRenderer: null,
         routePolyline: null,
+        // search:'',
         waypoints: [],
         markers: [], // Array to store markers
         currentColor: '#FF0000',
         totalDistance: 0,
+        geocoder: null, // Add a geocoder for reverse geocoding
         colors: ['#FF0000', '#008000', '#0000FF', '#800080'], // Available colors
         mapsApiKey: '' // Maps API key to be dynamically loaded
       };
@@ -42,6 +44,7 @@ const app = Vue.createApp({
                 zoom: 18,
                 center: { lat: 1.36241, lng: 103.82606 }, // Singapore's coordinates
                 mapTypeId: "roadmap",
+                streetViewControl: false,
                 styles: [
                     { 
                         "featureType": "road.highway",
@@ -68,6 +71,14 @@ const app = Vue.createApp({
                             "visibility": "off"
                         }
                         ]
+                    },
+                    {
+                        "featureType": "transit.station.bus",
+                        "stylers":  [
+                        { 
+                            "visibility": "off" 
+                        }
+                        ]
                     }
                 ]
             });
@@ -83,12 +94,61 @@ const app = Vue.createApp({
                 strokeWeight: 4,
                 map: this.map
             });
-    
+            
+            this.geocoder = new google.maps.Geocoder(); // Ensure geocoder is initialized here
+
+            // Fix this part to make sure that search bar is able to auto reload like example in "https://developers.google.com/maps/documentation/javascript/examples/places-searchbox" 
+            // // Add the search box and link it to the input element
+            // const input = document.getElementById("pac-input");
+            // const searchBox = new google.maps.places.SearchBox(input);
+            
+            // // Bias the SearchBox results towards current map's viewport
+            // this.map.addListener("bounds_changed", () => {
+            //     searchBox.setBounds(this.map.getBounds());
+            // });
+
+            // // Listen for the event fired when the user selects a prediction and retrieve
+            // // more details for that place
+            // searchBox.addListener("places_changed", () => {
+            //     const places = searchBox.getPlaces();
+
+            //     if (places.length === 0) {
+            //         return;
+            //     }
+
+            //     // Clear out the old markers.
+            //     this.markers.forEach((marker) => {
+            //         marker.setMap(null);
+            //     });
+            //     this.markers = [];
+
+            //     // For each place, get the name and location.
+            //     const bounds = new google.maps.LatLngBounds();
+
+            //     places.forEach((place) => {
+            //         if (!place.geometry || !place.geometry.location) {
+            //             console.log("Returned place contains no geometry");
+            //             return;
+            //         }
+
+            //         // Create a marker for each place
+            //         this.addMarker(place.geometry.location);
+
+            //         if (place.geometry.viewport) {
+            //             bounds.union(place.geometry.viewport);
+            //         } else {
+            //             bounds.extend(place.geometry.location);
+            //         }
+            //     });
+
+            //     this.map.fitBounds(bounds);
+            // });
+
             // Listen for clicks on the map to add waypoints
             this.map.addListener("click", (event) => {
                 this.addWaypoint(event.latLng);
             });
-
+            
             // Automatically try to get the user's current location on page load
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -106,14 +166,20 @@ const app = Vue.createApp({
 
         addWaypoint(latLng) {
             // Add a new waypoint
-            this.waypoints.push({
-                location: latLng,
-                stopover: true,
-            });
+            this.geocoder.geocode({ location: latLng }, (results, status) => {
+                if (status === 'OK') {
+                    const address = results[0] ? results[0].formatted_address : 'Address not found';
+                    this.waypoints.push({
+                        location: latLng,
+                        stopover: true,
+                        address: address // Store the address (street name)
+                    });
             
-            // Add a marker for each waypoint
-            this.addMarker(latLng);
-            this.calculateAndDisplayRoute();
+                    // Add a marker for each waypoint
+                    this.addMarker(latLng);
+                    this.calculateAndDisplayRoute()
+                }
+            });
         },
 
         addMarker(latLng) {
@@ -196,17 +262,23 @@ const app = Vue.createApp({
         },
 
         calculateAndDisplayRoute() {
+            // Prepare waypoints for the directionsService (only send location and stopover)
+            const processedWaypoints = this.waypoints.map(point => ({
+                location: point.location,
+                stopover: point.stopover
+            }));
+        
             // If there are fewer than 2 waypoints, clear the route and the polyline
             if (this.waypoints.length < 2) {
                 this.clearRoute();
                 return;
             }
-
+        
             // Request route directions from the DirectionsService
             this.directionsService.route({
                 origin: this.waypoints[0].location,
                 destination: this.waypoints[this.waypoints.length - 1].location,
-                waypoints: this.waypoints.slice(1, -1), // Waypoints between start and end
+                waypoints: processedWaypoints.slice(1, -1), // Only pass valid waypoint data
                 travelMode: 'WALKING',
                 avoidHighways: true,
             }, (response, status) => {

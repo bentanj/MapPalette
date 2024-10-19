@@ -57,6 +57,12 @@
     <!-- Map Drawing Area -->
     <div id="map"></div>
 
+    <!-- Search Box container -->
+    <!-- Fix this part-->
+    <!-- <div id="search-container" class="position-absolute top-0 start-50 translate-middle-x mt-3" style="width: 50%;">
+      <input id="pac-input" class="form-control" type="text" placeholder="Search by location" v-model="search">
+    </div> -->
+
     <!-- Controls for route and colors -->
     <div id="controls">
       <h4>Choose Route Color</h4>
@@ -77,13 +83,17 @@
 
       <!-- Point List Container -->
       <h4>Plotted Points</h4>
-      <ul id="point-list" class="list-group">
-        <li v-for="(point, index) in waypoints" class="list-group-item point-item">
-          Lat: {{ typeof point.location.lat === 'function' ? point.location.lat().toFixed(5) : point.location.lat }}, 
-          Lng: {{ typeof point.location.lng === 'function' ? point.location.lng().toFixed(5) : point.location.lng }}
-          <button class="btn btn-danger btn-sm" @click="removeWaypoint(index)">Delete</button>
-        </li>        
-      </ul>
+      <ol id="point-list" class="list-group">
+        <a v-for="(point, index) in waypoints" class="list-group-item list-group-item-action point-item">
+          <div class="ms-2 me-auto">
+            <h5>Marker {{index+1}}</h4>
+            <h6 class="fw-bold">{{point.address}}</h5>
+            Lat: {{ point.location.lat().toFixed(5) }}, 
+            Lng: {{ point.location.lng().toFixed(5) }} <br>
+            <button class="btn btn-danger btn-sm" @click="removeWaypoint(index)">Delete</button>
+          </div>
+        </a>
+      </ul>      
     </div>
   </div>
 
