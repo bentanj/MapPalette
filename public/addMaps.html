@@ -4,281 +4,91 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MapPalette - Route Drawing</title>
+  <!-- BOOTSTRAP CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    /* Set the height of the map to take full screen minus the navbar */
-    #map {
-      height: calc(100vh - 56px);
-      width: 75%; /* Reduced width to make space for point list container */
-      float: left;
-    }
 
-    #controls {
-      width: 25%; /* Space for point list container */
-      float: right;
-      padding: 20px;
-      background-color: #f8f9fa;
-      height: calc(100vh - 56px);
-      overflow-y: auto;
-    }
+  <!-- VUE CDN -->
+  <script src='https://unpkg.com/vue@3/dist/vue.global.js'></script>
 
-    .color-box {
-      width: 30px;
-      height: 30px;
-      margin: 5px;
-      cursor: pointer;
-      display: inline-block;
-      border: 2px solid transparent;
-    }
-
-    /* Styling for clear/reset button */
-    .clear-button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .clear-button:hover {
-      background-color: #0056b3;
-    }
-
-    #distance {
-      font-size: 18px;
-      margin-top: 20px;
-    }
-
-    #export-button {
-      margin-top: 20px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-    }
-
-    #export-button:hover {
-      background-color: #218838;
-    }
-
-    /* Point List Styling */
-    #point-list {
-      margin-top: 20px;
-    }
-
-    .point-item {
-      padding: 10px;
-      background-color: #fff;
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-  </style>
+  <!-- CSS -->
+  <link rel='stylesheet' href='addMaps.css'>
 </head>
 <body>
-
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-      <a class="navbar-brand" href="#">MapPalette</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="#">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Profile</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Logout</a>
-          </li>
-        </ul>
+  <div id="app">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+          <a class="navbar-brand" href="#"><img src="route_photos/mappalettelogo.png">MapPalette</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav ms-auto">
+                  <li class="nav-item">
+                      <a class="nav-link" href="#">Feed</a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link" href="#">Routes</a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link" href="#">Draw</a>
+                  </li>
+                  <!--Profile picture-->
+                  <div class="dropdown">
+                      <a class="nav-link dropdown-toggle" href="#" role="button" id="profileDropdown"
+                          data-bs-toggle="dropdown" aria-expanded="false">
+                          <img src="route_photos/download.jpeg" alt="Profile" class="profile-pic">
+                      </a>
+                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                          <li><a class="dropdown-item" href="#">Your Profile</a></li>
+                          <li><a class="dropdown-item" href="#">Settings</a></li>
+                          <li>
+                              <hr class="dropdown-divider">
+                          </li>
+                          <li><a class="dropdown-item" href="#">Log Out</a></li>
+                      </ul>
+                  </div>
+              </ul>
+          </div>
       </div>
+    </nav>
+
+    <!-- Map Drawing Area -->
+    <div id="map"></div>
+
+    <!-- Controls for route and colors -->
+    <div id="controls">
+      <h4>Choose Route Color</h4>
+      <div id="colorPalette">
+        <div 
+          v-for="color in colors" 
+          class="color-box" 
+          :style="{ backgroundColor: color }" 
+          @click="changeColor(color)">
+        </div>
+      </div>
+
+      <button class="clear-button" @click="clearMap">Clear Route</button>
+
+      <div id="distance">Total Distance: {{ totalDistance }} km</div>
+
+      <button id="export-button" @click="exportToGoogleMaps">Export to Google Maps</button>
+
+      <!-- Point List Container -->
+      <h4>Plotted Points</h4>
+      <ul id="point-list" class="list-group">
+        <li v-for="(point, index) in waypoints" class="list-group-item point-item">
+          Lat: {{ typeof point.location.lat === 'function' ? point.location.lat().toFixed(5) : point.location.lat }}, 
+          Lng: {{ typeof point.location.lng === 'function' ? point.location.lng().toFixed(5) : point.location.lng }}
+          <button class="btn btn-danger btn-sm" @click="removeWaypoint(index)">Delete</button>
+        </li>        
+      </ul>
     </div>
-  </nav>
-
-  <!-- Map Drawing Area -->
-  <div id="map"></div>
-
-  <!-- Controls for route and colors -->
-  <div id="controls">
-    <h4>Choose Route Color</h4>
-    <div id="colorPalette">
-      <div class="color-box" style="background-color: red;" onclick="changeColor('#FF0000')"></div>
-      <div class="color-box" style="background-color: green;" onclick="changeColor('#008000')"></div>
-      <div class="color-box" style="background-color: blue;" onclick="changeColor('#0000FF')"></div>
-      <div class="color-box" style="background-color: purple;" onclick="changeColor('#800080')"></div>
-    </div>
-
-    <button class="clear-button" onclick="clearMap()">Clear Route</button>
-
-    <div id="distance">Total Distance: 0 km</div>
-
-    <button id="export-button" onclick="exportToGoogleMaps()">Export to Google Maps</button>
-
-    <!-- Point List Container -->
-    <h4>Plotted Points</h4>
-    <ul id="point-list" class="list-group">
-      <!-- Points will be dynamically added here -->
-    </ul>
   </div>
 
-  <!-- Google Maps API Script -->
-  <script>
-    let map;
-    let directionsService;
-    let directionsRenderer;
-    let routePolyline;
-    let waypoints = [];
-    let currentColor = '#FF0000';  // Default route color
-    let totalDistance = 0;
-
-    // Initialize and add the map
-    function initMap() {
-      // Create a map centered at some default coordinates
-      map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 14,
-        center: { lat: 1.3521, lng: 103.8198 }, // Default center (Singapore)
-        mapTypeId: "roadmap",
-        styles: [ // Custom Map Style to hide motorways
-          {
-            "featureType": "road.highway",
-            "elementType": "geometry",
-            "stylers": [{ "visibility": "off" }]
-          }
-        ]
-      });
-
-      // Directions service and renderer for snapping to roads and showing routes
-      directionsService = new google.maps.DirectionsService();
-      directionsRenderer = new google.maps.DirectionsRenderer({
-        suppressMarkers: true,
-      });
-
-      routePolyline = new google.maps.Polyline({
-        strokeColor: currentColor,
-        strokeOpacity: 1.0,
-        strokeWeight: 4,
-        map: map
-      });
-
-      // Add a listener to capture clicks on the map
-      map.addListener("click", function(event) {
-        addWaypoint(event.latLng);
-      });
-    }
-
-    // Add a waypoint to the route
-    function addWaypoint(latLng) {
-      waypoints.push({
-        location: latLng,
-        stopover: true,
-      });
-
-      // Add the clicked point to the point list in the container
-      const pointList = document.getElementById("point-list");
-      const listItem = document.createElement("li");
-      listItem.className = "list-group-item point-item";
-      listItem.innerHTML = `
-        Lat: ${latLng.lat().toFixed(5)}, Lng: ${latLng.lng().toFixed(5)}
-        <button class="btn btn-danger btn-sm" onclick="removeWaypoint(${waypoints.length - 1})">Delete</button>
-      `;
-      pointList.appendChild(listItem);
-
-      // Recalculate the route with snapping to roads
-      calculateAndDisplayRoute();
-    }
-
-    // Remove a waypoint from the list
-    function removeWaypoint(index) {
-      waypoints.splice(index, 1); // Remove the point from waypoints array
-      const pointList = document.getElementById("point-list");
-      pointList.innerHTML = ''; // Clear the current list
-      // Re-render the points list
-      waypoints.forEach((waypoint, i) => {
-        const listItem = document.createElement("li");
-        listItem.className = "list-group-item point-item";
-        listItem.innerHTML = `
-          Lat: ${waypoint.location.lat().toFixed(5)}, Lng: ${waypoint.location.lng().toFixed(5)}
-          <button class="btn btn-danger btn-sm" onclick="removeWaypoint(${i})">Delete</button>
-        `;
-        pointList.appendChild(listItem);
-      });
-      calculateAndDisplayRoute();
-    }
-
-    // Change the color of the polyline route
-    function changeColor(color) {
-      currentColor = color;
-      if (routePolyline) {
-        routePolyline.setOptions({ strokeColor: currentColor });
-      }
-    }
-
-    // Calculate and display the route based on waypoints, avoiding motorways
-    function calculateAndDisplayRoute() {
-      if (waypoints.length < 2) return;
-
-      directionsService.route({
-        origin: waypoints[0].location,
-        destination: waypoints[waypoints.length - 1].location,
-        waypoints: waypoints.slice(1, -1),  // Middle points as waypoints
-        travelMode: 'WALKING',
-        avoidHighways: true, // Avoid highways/motorways
-      }, function(response, status) {
-        if (status === 'OK') {
-          directionsRenderer.setDirections(response);
-
-          // Calculate the total distance of the route
-          totalDistance = 0;
-          const route = response.routes[0];
-          for (let i = 0; i < route.legs.length; i++) {
-            totalDistance += route.legs[i].distance.value;  // distance in meters
-          }
-          document.getElementById("distance").innerText = `Total Distance: ${(totalDistance / 1000).toFixed(2)} km`;
-          
-          // Update the polyline color to the selected one
-          routePolyline.setOptions({
-            path: response.routes[0].overview_path,
-            strokeColor: currentColor
-          });
-        } else {
-          window.alert('Directions request failed due to ' + status);
-        }
-      });
-    }
-
-    // Clear the map and waypoints
-    function clearMap() {
-      waypoints = [];
-      document.getElementById("distance").innerText = 'Total Distance: 0 km';
-      routePolyline.setPath([]);  // Clear the polyline
-      document.getElementById("point-list").innerHTML = ''; // Clear the point list
-    }
-
-    // Export to Google Maps for navigation
-    function exportToGoogleMaps() {
-      if (waypoints.length < 2) {
-        alert("Please plot at least two points to export the route.");
-        return;
-      }
-      let googleMapsLink = 'https://www.google.com/maps/dir/';
-      waypoints.forEach((waypoint) => {
-        googleMapsLink += `${waypoint.location.lat()},${waypoint.location.lng()}/`;
-      });
-      window.open(googleMapsLink, '_blank');
-    }
-
-  </script>
-
-  <script src="https://maps.googleapis.com/maps/api/js?key=[INSERT YOUR API KEY HERE]&callback=initMap" async defer></script>
-
+  <!-- <script src='https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap' async defer></script> -->
+  <script src='addMaps.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
