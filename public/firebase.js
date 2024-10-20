@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
 // Your web app's Firebase configuration (replace with your actual config)
 
@@ -45,6 +45,7 @@ document.getElementById('signupForm')?.addEventListener('submit', (event) => {
 
     createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
+          
             // Account created
             window.location.href = 'homepage.html';
         })
@@ -54,4 +55,13 @@ document.getElementById('signupForm')?.addEventListener('submit', (event) => {
         });
 });
 
-
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // User is signed in, and their session persists across page reloads.
+    const uid = user.uid;
+    console.log("User is logged in with UID:", uid);
+  } else {
+    // No user is signed in.
+    console.log("User is logged out.");
+  }
+});
