@@ -5,13 +5,16 @@ const app = Vue.createApp({
         directionsService: null,
         directionsRenderer: null,
         routePolyline: null,
+        // search:'',
         waypoints: [],
         markers: [], // Array to store markers
         currentColor: '#FF0000',
         totalDistance: 0,
-        colors: ['#FF0000', '#008000', '#0000FF', '#800080'], // Available colors
+        geocoder: null, // Add a geocoder for reverse geocoding
+        colors: ['#e81416','#ffa500','#faeb36','#79c314','#487de7','#4b369d','#70369d'], // Available colors
         mapsApiKey: '' // Maps API key to be dynamically loaded
       };
+
     },
     methods: {
         async loadGoogleMapsScript() {
@@ -42,6 +45,7 @@ const app = Vue.createApp({
                 zoom: 18,
                 center: { lat: 1.36241, lng: 103.82606 }, // Singapore's coordinates
                 mapTypeId: "roadmap",
+                streetViewControl: false,
                 styles: [
                     { 
                         "featureType": "road.highway",
@@ -68,6 +72,14 @@ const app = Vue.createApp({
                             "visibility": "off"
                         }
                         ]
+                    },
+                    {
+                        "featureType": "transit.station.bus",
+                        "stylers":  [
+                        { 
+                            "visibility": "off" 
+                        }
+                        ]
                     }
                 ]
             });
@@ -83,12 +95,61 @@ const app = Vue.createApp({
                 strokeWeight: 4,
                 map: this.map
             });
-    
+            
+            this.geocoder = new google.maps.Geocoder(); // Ensure geocoder is initialized here
+
+            // Fix this part to make sure that search bar is able to auto reload like example in "https://developers.google.com/maps/documentation/javascript/examples/places-searchbox" 
+            // // Add the search box and link it to the input element
+            // const input = document.getElementById("pac-input");
+            // const searchBox = new google.maps.places.SearchBox(input);
+            
+            // // Bias the SearchBox results towards current map's viewport
+            // this.map.addListener("bounds_changed", () => {
+            //     searchBox.setBounds(this.map.getBounds());
+            // });
+
+            // // Listen for the event fired when the user selects a prediction and retrieve
+            // // more details for that place
+            // searchBox.addListener("places_changed", () => {
+            //     const places = searchBox.getPlaces();
+
+            //     if (places.length === 0) {
+            //         return;
+            //     }
+
+            //     // Clear out the old markers.
+            //     this.markers.forEach((marker) => {
+            //         marker.setMap(null);
+            //     });
+            //     this.markers = [];
+
+            //     // For each place, get the name and location.
+            //     const bounds = new google.maps.LatLngBounds();
+
+            //     places.forEach((place) => {
+            //         if (!place.geometry || !place.geometry.location) {
+            //             console.log("Returned place contains no geometry");
+            //             return;
+            //         }
+
+            //         // Create a marker for each place
+            //         this.addMarker(place.geometry.location);
+
+            //         if (place.geometry.viewport) {
+            //             bounds.union(place.geometry.viewport);
+            //         } else {
+            //             bounds.extend(place.geometry.location);
+            //         }
+            //     });
+
+            //     this.map.fitBounds(bounds);
+            // });
+
             // Listen for clicks on the map to add waypoints
             this.map.addListener("click", (event) => {
                 this.addWaypoint(event.latLng);
             });
-
+            
             // Automatically try to get the user's current location on page load
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -106,30 +167,73 @@ const app = Vue.createApp({
 
         addWaypoint(latLng) {
             // Add a new waypoint
-            this.waypoints.push({
-                location: latLng,
-                stopover: true,
-            });
+            this.geocoder.geocode({ location: latLng }, (results, status) => {
+                if (status === 'OK') {
+                    const address = results[0] ? results[0].formatted_address : 'Address not found';
+                    this.waypoints.push({
+                        location: latLng,
+                        stopover: true,
+                        address: address // Store the address (street name)
+                    });
             
-            // Add a marker for each waypoint
-            this.addMarker(latLng);
-            this.calculateAndDisplayRoute();
+                    // Add a marker for each waypoint
+                    this.addMarker(latLng);
+                    this.calculateAndDisplayRoute()
+                }
+            });
+        },
+
+        // Make marker "bounce" when hovering over the anchor tag
+        startMarkerBounce(index) {
+            const marker = this.markers[index];
+            if (marker && !marker.bounceInterval) { // Ensure bounce starts only once
+                this.bounceMarker(marker); // Start the custom bouncing animation
+            }
+        },
+        
+        // Stop the marker "bouncing" when mouse leaves
+        stopMarkerBounce(index) {
+            const marker = this.markers[index];
+            if (marker && marker.bounceInterval) {
+                clearInterval(marker.bounceInterval); // Stop the bounce
+                marker.bounceInterval = null;
+                marker.setPosition(marker.originalPosition); // Reset to original position
+            }
+        },
+
+        // Custom bouncing function
+        bounceMarker(marker) {
+            const bounceHeight = 0.00015; // How high the marker will "bounce"
+            const bounceSpeed = 300; // Speed of the bounce in milliseconds (adjust this to slow down)
+            let direction = 1; // Direction of bounce (1 = up, -1 = down)
+
+            marker.originalPosition = marker.getPosition(); // Store original position
+
+            // Set an interval for the bouncing effect
+            marker.bounceInterval = setInterval(() => {
+                const position = marker.getPosition();
+                const newLat = position.lat() + (bounceHeight * direction); // Adjust latitude for bounce
+                direction *= -1; // Reverse direction after each bounce (up/down)
+
+                marker.setPosition(new google.maps.LatLng(newLat, position.lng())); // Update marker position
+            }, bounceSpeed);
         },
 
         addMarker(latLng) {
             const markerIndex = this.waypoints.length;  // Adjusting to match array length
-            // Create a new marker
+        
+            // Create a new marker without a label initially
             const marker = new google.maps.Marker({
                 map: this.map,
                 position: latLng,
-                label: `${markerIndex}`, // Display the marker index
+                animation: google.maps.Animation.DROP, // Initial drop animation for when marker is added
             });
-
+        
             // Create an InfoWindow for the marker
             const infoWindow = new google.maps.InfoWindow({
                 content: `Marker ${markerIndex}<br>Lat: ${latLng.lat().toFixed(5)}, Lng: ${latLng.lng().toFixed(5)}`
             });
-
+        
             // Add event listeners for hovering to show InfoWindow
             marker.addListener("mouseover", () => {
                 infoWindow.open(this.map, marker);
@@ -138,35 +242,57 @@ const app = Vue.createApp({
                 infoWindow.close();
             });
         
+            // Wait for 700ms (duration of the drop animation) before adding the label
+            setTimeout(() => {
+                // Add the label after the drop animation
+                marker.setLabel({
+                    text: `${markerIndex}`, // Display the marker index
+                    color: "black", // Label color
+                    fontSize: "14px", // Label font size
+                    fontWeight: "bold" // Label font weight
+                });
+            }, 300); // 700ms matches the default Google Maps drop animation duration
+        
             // Store the marker in the markers array
             this.markers.push(marker);
-        },
+        },        
 
         removeWaypoint(index) {
-            console.log('Removing waypoint and marker at index:', index);
+            if (this.isDeleting) return;  // If a deletion is in progress, don't proceed
         
-            // Remove the waypoint from the array
-            this.waypoints.splice(index, 1);
+            this.isDeleting = true;  // Set flag to prevent further clicks
         
-            // Remove the corresponding marker from the map
-            var marker = this.markers[index];
-            if (marker) {
+            // Add the is-filling class to trigger the animation
+            this.waypoints[index].isFilling = true; 
+        
+            // Wait for the animation to complete (1 second), then remove the item
+            setTimeout(() => {
+              this.waypoints.splice(index, 1);  // Remove the waypoint from the array
+        
+              // Remove the corresponding marker from the map
+              var marker = this.markers[index];
+              if (marker) {
                 marker.setMap(null);
-                marker.setVisible(false); 
-                marker=null;
-            } else {
+                marker.setVisible(false);
+                marker = null;
+              } else {
                 console.error('Marker not found at index:', index);
-            }
+              }
         
-            // Also remove the marker from the markers array
-            this.markers.splice(index, 1);
+              // Also remove the marker from the markers array
+              this.markers.splice(index, 1);
         
-            // Recalculate and display the updated route
-            this.calculateAndDisplayRoute();
+              // Recalculate and display the updated route
+              this.calculateAndDisplayRoute();
         
-            // Update all markers' labels after removing a marker
-            this.updateMarkerLabels();
-        },
+              // Update all markers' labels after removing a marker
+              this.updateMarkerLabels();
+        
+              // Allow further deletions after the animation completes
+              this.isDeleting = false;
+        
+            }, 1000);  // Wait for the animation to complete (1 second)
+        },        
         
         updateMarkerLabels() {
             this.markers.forEach((marker, index) => {
@@ -196,17 +322,23 @@ const app = Vue.createApp({
         },
 
         calculateAndDisplayRoute() {
+            // Prepare waypoints for the directionsService (only send location and stopover)
+            const processedWaypoints = this.waypoints.map(point => ({
+                location: point.location,
+                stopover: point.stopover
+            }));
+        
             // If there are fewer than 2 waypoints, clear the route and the polyline
             if (this.waypoints.length < 2) {
                 this.clearRoute();
                 return;
             }
-
+        
             // Request route directions from the DirectionsService
             this.directionsService.route({
                 origin: this.waypoints[0].location,
                 destination: this.waypoints[this.waypoints.length - 1].location,
-                waypoints: this.waypoints.slice(1, -1), // Waypoints between start and end
+                waypoints: processedWaypoints.slice(1, -1), // Only pass valid waypoint data
                 travelMode: 'WALKING',
                 avoidHighways: true,
             }, (response, status) => {
