@@ -182,13 +182,55 @@ const app = Vue.createApp({
             });
         },
 
+        // Make marker "bounce" when hovering over the anchor tag
+        startMarkerBounce(index) {
+            const marker = this.markers[index];
+            if (marker && !marker.bounceInterval) { // Ensure bounce starts only once
+                this.bounceMarker(marker); // Start the custom bouncing animation
+            }
+        },
+        
+        // Stop the marker "bouncing" when mouse leaves
+        stopMarkerBounce(index) {
+            const marker = this.markers[index];
+            if (marker && marker.bounceInterval) {
+                clearInterval(marker.bounceInterval); // Stop the bounce
+                marker.bounceInterval = null;
+                marker.setPosition(marker.originalPosition); // Reset to original position
+            }
+        },
+
+        // Custom bouncing function
+        bounceMarker(marker) {
+            const bounceHeight = 0.00005; // How high the marker will "bounce"
+            const bounceSpeed = 250; // Speed of the bounce in milliseconds (adjust this to slow down)
+            let direction = 1; // Direction of bounce (1 = up, -1 = down)
+
+            marker.originalPosition = marker.getPosition(); // Store original position
+
+            // Set an interval for the bouncing effect
+            marker.bounceInterval = setInterval(() => {
+                const position = marker.getPosition();
+                const newLat = position.lat() + (bounceHeight * direction); // Adjust latitude for bounce
+                direction *= -1; // Reverse direction after each bounce (up/down)
+
+                marker.setPosition(new google.maps.LatLng(newLat, position.lng())); // Update marker position
+            }, bounceSpeed);
+        },
+
         addMarker(latLng) {
             const markerIndex = this.waypoints.length;  // Adjusting to match array length
             // Create a new marker
             const marker = new google.maps.Marker({
                 map: this.map,
                 position: latLng,
-                label: `${markerIndex}`, // Display the marker index
+                label: {
+                    text: `${markerIndex}`, // Display the marker index
+                    color: "black", // Label color
+                    fontSize: "14px", // Label font size
+                    fontWeight: "bold" // Label font weight
+                },
+                animation: google.maps.Animation.DROP // Initial drop animation for when marker is added
             });
 
             // Create an InfoWindow for the marker
@@ -203,36 +245,47 @@ const app = Vue.createApp({
             marker.addListener("mouseout", () => {
                 infoWindow.close();
             });
-        
+
             // Store the marker in the markers array
             this.markers.push(marker);
         },
 
         removeWaypoint(index) {
-            console.log('Removing waypoint and marker at index:', index);
+            if (this.isDeleting) return;  // If a deletion is in progress, don't proceed
         
-            // Remove the waypoint from the array
-            this.waypoints.splice(index, 1);
+            this.isDeleting = true;  // Set flag to prevent further clicks
         
-            // Remove the corresponding marker from the map
-            var marker = this.markers[index];
-            if (marker) {
+            // Add the is-filling class to trigger the animation
+            this.waypoints[index].isFilling = true; 
+        
+            // Wait for the animation to complete (1 second), then remove the item
+            setTimeout(() => {
+              this.waypoints.splice(index, 1);  // Remove the waypoint from the array
+        
+              // Remove the corresponding marker from the map
+              var marker = this.markers[index];
+              if (marker) {
                 marker.setMap(null);
-                marker.setVisible(false); 
-                marker=null;
-            } else {
+                marker.setVisible(false);
+                marker = null;
+              } else {
                 console.error('Marker not found at index:', index);
-            }
+              }
         
-            // Also remove the marker from the markers array
-            this.markers.splice(index, 1);
+              // Also remove the marker from the markers array
+              this.markers.splice(index, 1);
         
-            // Recalculate and display the updated route
-            this.calculateAndDisplayRoute();
+              // Recalculate and display the updated route
+              this.calculateAndDisplayRoute();
         
-            // Update all markers' labels after removing a marker
-            this.updateMarkerLabels();
-        },
+              // Update all markers' labels after removing a marker
+              this.updateMarkerLabels();
+        
+              // Allow further deletions after the animation completes
+              this.isDeleting = false;
+        
+            }, 1000);  // Wait for the animation to complete (1 second)
+        },        
         
         updateMarkerLabels() {
             this.markers.forEach((marker, index) => {
