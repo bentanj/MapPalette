@@ -1,11 +1,9 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// Your web app's Firebase configuration (replace with your actual config)
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAk51zep9W7jmO3zC6-lQJy6jeE6zMreis",
   authDomain: "mappalette-9e0bd.firebaseapp.com",
@@ -15,72 +13,55 @@ const firebaseConfig = {
   appId: "1:907670644284:web:e1dc720f9ae0644cd2c539"
 };
 
-// Initialisation
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-// Initialize Firebase Authentication and get a reference to the service
 const auth = getAuth(app);
-// Create instance of google provider object
-const provider = new GoogleAuthProvider();
 
-// Email signup functions
-// Create account using email and password
-createUserWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    // Signed up 
-    const user = userCredential.user;
-    // ...
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    // ..
-  });
+// Handle login
+document.getElementById('login-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
 
-// Sign in with existing email and password
-signInWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    // Signed in 
-    const user = userCredential.user;
-    // ...
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-  });
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-// What to do when user logs in / out
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    // User is signed in, see docs for a list of available properties
-    // https://firebase.google.com/docs/reference/js/auth.user
-    const uid = user.uid;
-    // ...
-  } else {
-    // User is signed out
-    // ...
-  }
+    signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            // Signed in
+            window.location.href = 'homepage.html';
+        })
+        .catch((error) => {
+            const errorMessage = error.message;
+            document.getElementById('error-message').textContent = errorMessage;
+        });
 });
 
-// Google sign up functions
-// Google sign in with pop up
-signInWithPopup(auth, provider)
-  .then((result) => {
-    // This gives you a Google Access Token. You can use it to access the Google API.
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    const token = credential.accessToken;
-    // The signed-in user info.
-    const user = result.user;
-    // IdP data available using getAdditionalUserInfo(result)
-    // ...
-  }).catch((error) => {
-    // Handle Errors here.
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    // The email of the user's account used.
-    const email = error.customData.email;
-    // The AuthCredential type that was used.
-    const credential = GoogleAuthProvider.credentialFromError(error);
-    // ...
-  });
+// Handle signup
+document.getElementById('signupForm')?.addEventListener('submit', (event) => {
+    event.preventDefault();
 
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+
+    createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          
+            // Account created
+            window.location.href = 'homepage.html';
+        })
+        .catch((error) => {
+            const errorMessage = error.message;
+            document.getElementById('signup-error-message').textContent = errorMessage;
+        });
+});
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // User is signed in, and their session persists across page reloads.
+    const uid = user.uid;
+    console.log("User is logged in with UID:", uid);
+  } else {
+    // No user is signed in.
+    console.log("User is logged out.");
+  }
+});
