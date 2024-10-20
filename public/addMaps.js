@@ -11,9 +11,10 @@ const app = Vue.createApp({
         currentColor: '#FF0000',
         totalDistance: 0,
         geocoder: null, // Add a geocoder for reverse geocoding
-        colors: ['#FF0000', '#008000', '#0000FF', '#800080'], // Available colors
+        colors: ['#e81416','#ffa500','#faeb36','#79c314','#487de7','#4b369d','#70369d'], // Available colors
         mapsApiKey: '' // Maps API key to be dynamically loaded
       };
+
     },
     methods: {
         async loadGoogleMapsScript() {
@@ -202,7 +203,7 @@ const app = Vue.createApp({
 
         // Custom bouncing function
         bounceMarker(marker) {
-            const bounceHeight = 0.00005; // How high the marker will "bounce"
+            const bounceHeight = 0.00010; // How high the marker will "bounce"
             const bounceSpeed = 250; // Speed of the bounce in milliseconds (adjust this to slow down)
             let direction = 1; // Direction of bounce (1 = up, -1 = down)
 
@@ -220,24 +221,19 @@ const app = Vue.createApp({
 
         addMarker(latLng) {
             const markerIndex = this.waypoints.length;  // Adjusting to match array length
-            // Create a new marker
+        
+            // Create a new marker without a label initially
             const marker = new google.maps.Marker({
                 map: this.map,
                 position: latLng,
-                label: {
-                    text: `${markerIndex}`, // Display the marker index
-                    color: "black", // Label color
-                    fontSize: "14px", // Label font size
-                    fontWeight: "bold" // Label font weight
-                },
-                animation: google.maps.Animation.DROP // Initial drop animation for when marker is added
+                animation: google.maps.Animation.DROP, // Initial drop animation for when marker is added
             });
-
+        
             // Create an InfoWindow for the marker
             const infoWindow = new google.maps.InfoWindow({
                 content: `Marker ${markerIndex}<br>Lat: ${latLng.lat().toFixed(5)}, Lng: ${latLng.lng().toFixed(5)}`
             });
-
+        
             // Add event listeners for hovering to show InfoWindow
             marker.addListener("mouseover", () => {
                 infoWindow.open(this.map, marker);
@@ -245,10 +241,21 @@ const app = Vue.createApp({
             marker.addListener("mouseout", () => {
                 infoWindow.close();
             });
-
+        
+            // Wait for 700ms (duration of the drop animation) before adding the label
+            setTimeout(() => {
+                // Add the label after the drop animation
+                marker.setLabel({
+                    text: `${markerIndex}`, // Display the marker index
+                    color: "black", // Label color
+                    fontSize: "14px", // Label font size
+                    fontWeight: "bold" // Label font weight
+                });
+            }, 300); // 700ms matches the default Google Maps drop animation duration
+        
             // Store the marker in the markers array
             this.markers.push(marker);
-        },
+        },        
 
         removeWaypoint(index) {
             if (this.isDeleting) return;  // If a deletion is in progress, don't proceed
