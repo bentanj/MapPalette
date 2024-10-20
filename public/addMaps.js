@@ -203,8 +203,8 @@ const app = Vue.createApp({
 
         // Custom bouncing function
         bounceMarker(marker) {
-            const bounceHeight = 0.00010; // How high the marker will "bounce"
-            const bounceSpeed = 250; // Speed of the bounce in milliseconds (adjust this to slow down)
+            const bounceHeight = 0.00015; // How high the marker will "bounce"
+            const bounceSpeed = 300; // Speed of the bounce in milliseconds (adjust this to slow down)
             let direction = 1; // Direction of bounce (1 = up, -1 = down)
 
             marker.originalPosition = marker.getPosition(); // Store original position

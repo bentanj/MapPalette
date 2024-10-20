@@ -70,8 +70,8 @@
         <!-- Scrollable Section (Plotted Points) -->
         <div id="scrollable-points" class="flex-grow-1">
           <h4>Plotted Points</h4>
-          <ol id="point-list" class="list-group">
-            <a v-for="(point, index) in waypoints" :class="['list-group-item', 'list-group-item-action', 'point-item', { 'is-filling': point.isFilling }]" @mouseover="startMarkerBounce(index)" @mouseleave="stopMarkerBounce(index)">
+          <div id="point-list" class="list-group mx-2">
+            <a v-for="(point, index) in waypoints" :class="['list-group-item', 'list-group-item-action', 'point-item', 'rounded', { 'is-filling': point.isFilling }]" @mouseover="startMarkerBounce(index)" @mouseleave="stopMarkerBounce(index)">
               <div class="details ms-2 me-auto">
                 <h5>Marker {{ index + 1 }}</h5>
                 <h6 class="fw-bold mb-1">{{ point.address }}</h6>
@@ -86,7 +86,7 @@
                 </button>
               </span>
             </a>
-          </ol>
+          </div>
         </div>
       </div>
     </div>

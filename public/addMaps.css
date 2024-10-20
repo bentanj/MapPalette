@@ -87,7 +87,7 @@
 }
 
 .point-item:hover {
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 /* Animation to fill the background from right to left */
