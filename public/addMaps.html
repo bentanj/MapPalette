@@ -43,6 +43,22 @@
       </div>
     </nav>
 
+    <!-- Alert Bar -->
+    <div id='alertMsg' class="position-fixed w-100" style="top: 0; left: 0; z-index: 5;">
+      <div class="alert alert-dismissible fade" :class="{'alert-warning': alertType === 'error', 'alert-success': alertType === 'success', 'show': showAlert}" role="alert">
+        <svg v-if="alertType === 'error'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+          <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+        </svg>
+        <svg v-if="alertType === 'success'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+        </svg>
+        {{ alertMessage }}
+        <button type="button" class="btn-close" @click="dismissAlert()"></button>
+      </div>
+    </div>
+
+
+    <!-- Main Content -->
     <div class='row'>
       <div class='col-md-9 my-2'>
         <h1>Draw your map!</h1>
@@ -95,7 +111,7 @@
     <div class="row mt-3">
       <div class="col">
         <label for="title" class="form-label">Title</label>
-        <input type="text" class="form-control" id="title" placeholder="Enter title here">
+        <input type="text" class="form-control" id="title" placeholder="Enter title here" v-model="postTitle">
       </div>
     </div>
 
@@ -103,7 +119,7 @@
     <div class="row mt-3">
       <div class="col">
         <label for="description" class="form-label">Description</label>
-        <textarea class="form-control" id="description" rows="4" placeholder="Enter description here"></textarea>
+        <textarea class="form-control" id="description" rows="4" placeholder="Enter description here" v-model="postDescription"></textarea>
       </div>
     </div>
 
@@ -111,7 +127,7 @@
     <div class="row mt-3">
       <div class="col">
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="postAnonymously">
+          <input class="form-check-input" type="checkbox" id="postAnonymously" v-model="postAnonymously">
           <label class="form-check-label" for="postAnonymously">Post Anonymously?</label>
           <small class="text-muted d-block">Hide username</small>
         </div>
@@ -124,7 +140,7 @@
         <button class="btn btn-secondary w-100">Cancel</button>
       </div>
       <div class="col-6">
-        <button class="btn btn-primary w-100">Create</button>
+        <button class="btn btn-primary w-100" @click="createPost()">Create</button>
       </div>
     </div>
   </div>
@@ -172,5 +188,6 @@
   <!-- <script src='https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap' async defer></script> -->
   <script src='addMaps.js'></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="firebase.js"></script>
 </body>
 </html>
