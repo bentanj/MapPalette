@@ -1,3 +1,6 @@
+// Import Firebase functions (ensure this is at the top of your addMaps.js file)
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
 const app = Vue.createApp({
     data() {
       return {
@@ -15,6 +18,7 @@ const app = Vue.createApp({
         mapsApiKey: '', // Maps API key to be dynamically loaded
         // Alert
         showAlert: false,
+        hidden:true,
         alertType: '',
         alertMessage: '', 
         // Post related
@@ -23,6 +27,7 @@ const app = Vue.createApp({
         postAnonymously:false,
         userID:'',
         username:'',
+        submitting:false,
       };
 
     },
@@ -195,6 +200,10 @@ const app = Vue.createApp({
 
         // Make marker "bounce" when hovering over the anchor tag
         startMarkerBounce(index) {
+            if(this.submitting){
+                return;
+            }
+
             const marker = this.markers[index];
             if (marker && !marker.bounceInterval) { // Ensure bounce starts only once
                 this.bounceMarker(marker); // Start the custom bouncing animation
@@ -382,7 +391,7 @@ const app = Vue.createApp({
 
         clearMap() {
             // Clear all markers
-            for(marker of this.markers){
+            for(let marker of this.markers){
                 marker.setVisible(false);
                 marker.setMap(null);
                 marker.setPosition(null);
@@ -393,6 +402,8 @@ const app = Vue.createApp({
             // Clear waypoints and the route
             this.waypoints = [];
             this.clearRoute();
+
+            this.setAlert('success', 'Route cleared successfully.');
         },
 
         exportToGoogleMaps() {
@@ -408,42 +419,98 @@ const app = Vue.createApp({
             window.open(googleMapsLink, '_blank');
         },
 
-        dismissAlert(){
+        dismissAlert() {
+            // First, set showAlert to false to trigger the fade-out animation
             this.showAlert = false;
-            this.alertMessage = '';
+        
+            // Then, after a delay (matching the fade-out duration), set hidden to true
+            setTimeout(() => {
+                this.hidden = true;  // Hide the alert completely after the fade-out animation
+                this.alertMessage = '';  // Clear the message if needed
+            }, 300); // Adjust this timing to match your CSS transition duration (300ms here)
+        },
+        
+        setAlert(type, message) {
+            // First, unhide the alert box
+            this.hidden = false;
+        
+            // Set the alert type and message
+            this.alertType = type;
+            this.alertMessage = message;
+        
+            // Add a short delay to trigger the fade-in effect after the alert becomes unhidden
+            setTimeout(() => {
+                this.showAlert = true;  // Make the alert visible after un-hiding it
+            }, 10);  // A small delay (e.g., 10ms) to ensure the DOM reflects the 'hidden' state before showing
         },
 
-        setAlert(type, message) {
-            this.alertType = type;
-            this.alertMessage = message; 
-            this.showAlert = true;
-          },
-
-        createPost(){
-            if(this.postTitle.trim() == ''){
+        createPost() {
+            // First, ensure the post has a title
+            if (this.postTitle.trim() === '') {
                 this.alertMsg = 'Post must include a title.';
-                this.setAlert('error',this.alertMsg);
+                this.setAlert('error', this.alertMsg);
                 this.alertMsg = '';
                 return;
             }
-            if(this.postTitle.trim()==''){
-                this.postTitle = "No description.";
-            }
-            if(this.postAnonymously){
-                this.user = 'Anonymous';
-            }
 
-            console.log(this.postTitle);
-            console.log(this.postDescription);
-            console.log(this.postAnonymously);
-            console.log(this.userID);
-            console.log(this.username);
+            if (this.waypoints.length < 2) {
+                this.setAlert('error','You need at least two points to submit the route!')
+                return;
+            }
+        
+            // Ensure post description isn't empty, default if it is
+            if (this.postDescription.trim() === '') {
+                this.postDescription = "No description.";
+            }
+            this.submitting = true;
+            // Check Firebase Auth to get user details
+            const auth = getAuth(); // This line should now work
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // User is authenticated
+                    const userId = user.uid; // Get Firebase UID
+                    const username = user.email; // Assuming email as username, change if necessary
+                    // Make the API call to create a post using axios
+                    axios.post('https://app-6kmdo5luna-uc.a.run.app/api/create/', {
+                        title: this.postTitle,
+                        description: this.postDescription,
+                        waypoints: this.waypoints,
+                        userID: userId,
+                        // Currently, API does not support username, so we'll exclude it for now
+                    })
+                    .then(response => {
+                        const data = response.data;
+                        if (data.id) {
+                            // Post was successfully created
+                            this.setAlert('success', 'Your post has been successfully created.');
+                            // Clear post fields
+                            this.postTitle = '';
+                            this.postDescription = '';
+                            this.postAnonymously = false;
+                            this.clearMap();
+                        } else {
+                            // Something went wrong with the creation
+                            this.setAlert('error', 'Failed to create the post. Please try again.');
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error creating post:', error);
+                        this.setAlert('error', 'An error occurred while creating the post.');
+                    });
+                } else {
+                    // User is not authenticated
+                    this.setAlert('error', 'You must be logged in to create a post.');
+                }
+                this.submitting = false;
+            });
+        },
 
-            this.setAlert('success', 'Your post has been successfully created.');
-            // Reinitialise everything to empty
+        clearPost(){
             this.postTitle = '';
             this.postDescription = '';
-            this.postAnonymously = '';
+            this.postAnonymously = false;
+            this.clearMap();
+            this.setAlert('success', 'Post cleared successfully.');
         }
     },
     mounted() {
