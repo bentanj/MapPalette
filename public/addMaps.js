@@ -12,7 +12,17 @@ const app = Vue.createApp({
         totalDistance: 0,
         geocoder: null, // Add a geocoder for reverse geocoding
         colors: ['#e81416','#ffa500','#faeb36','#79c314','#487de7','#4b369d','#70369d'], // Available colors
-        mapsApiKey: '' // Maps API key to be dynamically loaded
+        mapsApiKey: '', // Maps API key to be dynamically loaded
+        // Alert
+        showAlert: false,
+        alertType: '',
+        alertMessage: '', 
+        // Post related
+        postTitle:'',
+        postDescription:'',
+        postAnonymously:false,
+        userID:'',
+        username:'',
       };
 
     },
@@ -350,7 +360,7 @@ const app = Vue.createApp({
                         strokeColor: this.currentColor
                     });
                 } else {
-                    alert('Directions request failed due to ' + status);
+                    this.setAlert('error','Directions request failed due to ' + status);
                 }
             });
         },
@@ -387,7 +397,7 @@ const app = Vue.createApp({
 
         exportToGoogleMaps() {
             if (this.waypoints.length < 2) {
-                alert("Please plot at least two points to export the route.");
+                this.setAlert('error','You need at least two points to export the route!')
                 return;
             }
 
@@ -396,6 +406,44 @@ const app = Vue.createApp({
                 googleMapsLink += `${waypoint.location.lat()},${waypoint.location.lng()}/`;
             });
             window.open(googleMapsLink, '_blank');
+        },
+
+        dismissAlert(){
+            this.showAlert = false;
+            this.alertMessage = '';
+        },
+
+        setAlert(type, message) {
+            this.alertType = type;
+            this.alertMessage = message; 
+            this.showAlert = true;
+          },
+
+        createPost(){
+            if(this.postTitle.trim() == ''){
+                this.alertMsg = 'Post must include a title.';
+                this.setAlert('error',this.alertMsg);
+                this.alertMsg = '';
+                return;
+            }
+            if(this.postTitle.trim()==''){
+                this.postTitle = "No description.";
+            }
+            if(this.postAnonymously){
+                this.user = 'Anonymous';
+            }
+
+            console.log(this.postTitle);
+            console.log(this.postDescription);
+            console.log(this.postAnonymously);
+            console.log(this.userID);
+            console.log(this.username);
+
+            this.setAlert('success', 'Your post has been successfully created.');
+            // Reinitialise everything to empty
+            this.postTitle = '';
+            this.postDescription = '';
+            this.postAnonymously = '';
         }
     },
     mounted() {
