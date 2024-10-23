@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapPalette Homepage</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Your existing CSS -->
+    <link rel="stylesheet" href="homepage_style.css">
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+    
+<body>
+    <div id="app">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <img src="resources/mappalettelogo.png" alt="MapPalette Logo">MapPalette
+                </a>
+                <button class="navbar-toggler" 
+                        type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" 
+                        aria-expanded="false" 
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="homepage.html">Feed</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="routes.html">Routes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="addMaps.html">Draw</a>
+                        </li>
+                        <!--Profile picture with dropdown-->
+                        <li class="nav-item dropdown d-flex align-items-center ms-3">
+                            <a class="nav-link dropdown-toggle p-0" 
+                            href="#" 
+                            id="profileDropdown" 
+                            role="button" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false">
+                                <img :src="userProfile.avatar" 
+                                    alt="Profile" 
+                                    class="rounded-circle" 
+                                    width="32" 
+                                    height="32">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" 
+                                aria-labelledby="profileDropdown">
+                                <li><a class="dropdown-item" href="#">Your Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Log Out</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-background"></div>
+            <div class="hero-overlay"></div>
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Running Community Feed</h1>
+                    <p>Stay inspired by fellow runners' achievements, discover popular routes, and share your running journey.</p>
+                    <div class="hero-stats">
+                        <div v-for="stat in heroStats" :key="stat.id" class="stat-item">
+                            <i :class="stat.icon"></i>
+                            <span>{{ stat.text }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- main content -->
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Left sidebar -->
+                <div class="col-lg-3 col-md-4">
+                    <div class="side-column bg-white p-4 rounded shadow-sm">
+                        <!-- Profile Summary -->
+                        <div class="mb-4 pb-3 border-bottom">
+                            <div class="d-flex align-items-center mb-3">
+                                <img :src="userProfile.avatar" alt="Profile" class="rounded-circle me-3" 
+                                     style="width: 50px; height: 50px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ userProfile.name }}</h6>
+                                    <small class="text-muted">{{ userProfile.username }}</small>
+                                </div>
+                            </div>
+                            <div class="row text-center g-2">
+                                <div class="col-4" v-for="(value, key) in userProfile.stats" :key="key">
+                                    <div class="p-2 border rounded">
+                                        <div class="fw-bold">{{ value }}</div>
+                                        <small class="text-muted">{{ key }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <!-- Quick Actions -->
+                        <div class="mb-4 pb-3 border-bottom">
+                            <h6 class="mb-3 text-uppercase fw-bold text-muted small">Quick Actions</h6>
+                            <a href="addMaps.html" class="btn btn-primary w-100 mb-2">
+                                <i class="bi bi-map me-2"></i>
+                                Draw Your Map!
+                            </a>
+                            <a href="routes.html" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-search me-2"></i>
+                                Browse Routes
+                            </a>
+                        </div>
+                
+                        <!-- Navigation Menu -->
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-uppercase fw-bold text-muted small">Menu</h6>
+                            <div class="list-group list-group-flush">
+                                <a v-for="item in menuItems" 
+                                   :key="item.id" 
+                                   href="#" 
+                                   class="list-group-item list-group-item-action d-flex align-items-center"
+                                   @click="navigateTo(item.route)">
+                                    <i :class="item.icon + ' me-3'"></i>
+                                    {{ item.text }}
+                                </a>
+                            </div>
+                        </div>
+                
+                        <!-- Trending Routes -->
+                        <div>
+                            <h6 class="mb-3 text-uppercase fw-bold text-muted small">Trending Routes</h6>
+                            <div v-for="route in trendingRoutes" 
+                                 :key="route.id" 
+                                 class="card mb-2 hover-overlay"
+                                 @click="viewRoute(route)">
+                                <img :src="route.image" class="card-img-top" alt="Route preview" 
+                                     style="height: 100px; object-fit: cover;">
+                                <div class="card-body p-2">
+                                    <h6 class="card-title mb-1">{{ route.title }}</h6>
+                                    <p class="card-text small text-muted mb-0">{{ route.distance }} • {{ route.saves }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main content area using vue components -->
+                <div class="col-lg-8 col-md-7 content">
+                    <div id="activity-feed">
+                        <activity-card
+                            v-for="activity in activities"
+                            :key="activity.id"
+                            :activity="activity"
+                            @like="likeActivity"
+                            @open-modal="openActivityModal"
+                        ></activity-card>
+                    </div>
+                </div>
+
+                <!-- Updated modal component -->
+                <comment-modal
+                    v-if="selectedActivity"
+                    :activity="selectedActivity"
+                    @close="selectedActivity = null"
+                    @like="likeActivity"
+                ></comment-modal>
+            </div>
+            
+            <!-- Footer Section -->
+            <footer class="bg-light text-center text-lg-start mt-5">
+                <div class="container p-4">
+                    <!-- Grid row -->
+                    <div class="row align-items-center">
+                        <!-- Column 1: Brand Name -->
+                        <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                            <h5 class="text-uppercase fw-bold">{{ brandInfo.name }}</h5>
+                        </div>
+
+                        <!-- Column 2: Contact Information -->
+                        <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                            <h6 class="fw-bold">Contact us</h6>
+                            <p v-for="(contact, index) in contactInfo" 
+                            :key="index" 
+                            class="mb-1">
+                                {{ contact }}
+                            </p>
+                        </div>
+
+                        <!-- Column 3: Social Media Icons -->
+                        <div class="col-lg-4 col-md-12 text-md-end">
+                            <a v-for="social in socialLinks" 
+                            :key="social.name"
+                            :href="social.url" 
+                            class="me-3 text-dark">
+                                <img :src="social.icon" :alt="social.name">
+                            </a>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Copyright -->
+                    <div class="text-center">
+                        <p class="mb-0">{{ copyrightInfo }}</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+        <!-- Initial Vue app setup -->
+    <script>
+        const { createApp } = Vue
+
+        // ActivityCard Component
+        const ActivityCard = {
+            props: {
+                activity: {
+                    type: Object,
+                    required: true
+                }
+            },
+            template: `
+                <article class="post" @click="$emit('open-modal', activity)">
+                    <header>
+                        <div class="title">
+                            <h2>{{ activity.title }}</h2>
+                            <p>{{ activity.location }}</p>
+                        </div>
+                        <div class="meta">
+                            <time class="published">{{ activity.date }}</time>
+                            <div class="d-flex align-items-center justify-content-end mt-2">
+                                <span class="me-2">{{ activity.user }}</span>
+                                <img :src="activity.userImg" alt="Profile" class="rounded-circle" 
+                                    style="width: 40px; height: 40px; object-fit: cover;">
+                            </div>
+                        </div>
+                    </header>
+                    
+                    <a href="#" class="image featured" @click.prevent>
+                        <img :src="activity.mapImg" alt="Activity Map">
+                    </a>
+                    
+                    <div class="content">
+                        <div class="d-flex justify-content-between text-center mb-3">
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ activity.distance }}</h6>
+                                <small class="text-muted">Distance</small>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ activity.time }}</h6>
+                                <small class="text-muted">Time</small>
+                            </div>
+                        </div>
+                        <p v-if="activity.description">{{ activity.description }}</p>
+                    </div>
+                    
+                    <footer>
+                        <div class="actions">
+                            <button class="btn btn-outline-primary btn-sm me-2" 
+                                    @click.stop="$emit('like', activity)">
+                                <i class="bi bi-hand-thumbs-up"></i> Like
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" 
+                                    @click.stop="$emit('open-modal', activity)">
+                                <i class="bi bi-chat"></i> Comment
+                            </button>
+                        </div>
+                        <ul class="stats">
+                            <li><i class="bi bi-geo-alt"></i> {{ activity.location }}</li>
+                            <li><i class="bi bi-heart"></i> {{ activity.likes || 0 }}</li>
+                            <li><i class="bi bi-chat"></i> {{ activity.comments ? activity.comments.length : 0 }}</li>
+                        </ul>
+                    </footer>
+                </article>`
+            }
+
+
+        // CommentModal Component
+        const CommentModal = {
+            props: {
+                activity: {
+                    type: Object,
+                    required: true
+                }
+            },
+
+            data() {
+                return {
+                    newComment: '',
+                    modal: null
+                }
+            },
+
+            mounted() {
+                this.modal = new bootstrap.Modal(this.$el)
+                this.modal.show()
+                this.$el.addEventListener('hidden.bs.modal', () => {
+                    this.$emit('close')
+                })
+            },
+
+            unmounted() {
+                if (this.modal) {
+                    this.modal.dispose()
+                }
+            },
+
+            methods: {
+                focusCommentInput() {
+                    this.$refs.commentInput?.focus()
+                },
+                addComment() {
+                    if (this.newComment.trim()) {
+                        if (!this.activity.comments) {
+                            this.activity.comments = []
+                        }
+                        this.activity.comments.push(this.newComment)
+                        this.newComment = ''
+                    }
+                }
+            },
+
+            template: `
+                <div class="modal fade" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header flex-column align-items-start">
+                                <div class="w-100 d-flex justify-content-between align-items-center mb-1">
+                                    <h5 class="modal-title mb-0">{{ activity.title }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <p class="mb-0 text-muted" style="font-size: 0.9rem;">by {{ activity.user }}</p>
+                            </div>
+                            
+                            <div class="modal-body">
+                                <div class="mb-3" style="height: 300px;">
+                                    <img :src="activity.mapImg" alt="Activity Map" 
+                                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                                </div>
+                                
+                                <p class="text-muted">{{ activity.date }} | {{ activity.likes || 0 }} Likes</p>
+                                
+                                <p><strong>Distance:</strong> {{ activity.distance }}</p>
+                                <p><strong>Description:</strong> {{ activity.description }}</p>
+                                
+                                <div class="d-flex justify-content-around border-top border-bottom py-2">
+                                    <a href="#" class="d-flex align-items-center text-decoration-none text-dark" 
+                                    @click.prevent="$emit('like', activity)">
+                                        <i class="bi bi-hand-thumbs-up me-2"></i>
+                                        <span>Like</span>
+                                    </a>
+                                    <a href="#" class="d-flex align-items-center text-decoration-none text-dark" 
+                                    @click.prevent="focusCommentInput">
+                                        <i class="bi bi-chat me-2"></i>
+                                        <span>Comment</span>
+                                    </a>
+                                    <a href="#" class="d-flex align-items-center text-decoration-none text-dark" >
+                                        <i class="bi bi-share me-2"></i>
+                                        <span>Share</span>
+                                    </a>
+                                </div>
+                                
+                                <hr class="my-3">
+                                
+                                <h6>Comments</h6>
+                                <textarea class="form-control mb-3" 
+                                        rows="2" 
+                                        placeholder="Add a comment..."
+                                        v-model="newComment"
+                                        ref="commentInput"></textarea>
+                                <button class="btn btn-primary mb-3" @click="addComment">Post Comment</button>
+                                
+                                <ul class="list-unstyled">
+                                    <li v-for="(comment, index) in activity.comments" :key="index">
+                                        <strong>User:</strong> {{ comment }}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+            }
+
+        const app = createApp({
+            components:{
+                ActivityCard,
+                CommentModal
+            },
+
+            data() {
+                return {
+                    userProfile: {
+                        name: 'John Doe',
+                        username: '@johndoe',
+                        avatar: 'resources/download.jpeg',
+                        stats: {
+                            routes: 24,
+                            following: 156,
+                            followers: 198
+                        }
+                    },
+
+                    heroStats: [
+                        { 
+                            id: 1, 
+                            icon: 'bi bi-people-fill', 
+                            text: '2.5k Active Runners' 
+                        },
+                        { 
+                            id: 2, 
+                            icon: 'bi bi-map-fill', 
+                            text: '500+ Shared Routes' 
+                        },
+                        { 
+                            id: 3, 
+                            icon: 'bi bi-trophy-fill', 
+                            text: 'Daily Achievements' 
+                        }
+                    ],
+
+                    menuItems: [
+                        { 
+                            id: 1, 
+                            icon: 'bi bi-activity', 
+                            text: 'My Activities', 
+                            route: 'activities' 
+                        },
+                        { 
+                            id: 2, 
+                            icon: 'bi bi-map', 
+                            text: 'Saved Routes', 
+                            route: 'saved-routes' 
+                        },
+                        { 
+                            id: 3, 
+                            icon: 'bi bi-trophy', 
+                            text: 'Challenges', 
+                            route: 'challenges' 
+                        }
+                    ],
+
+                    trendingRoutes: [
+                        {
+                            id: 1,
+                            title: 'Marina Bay Loop',
+                            distance: '5.2km',
+                            saves: '42 saves this week',
+                            image: 'resources/map1.png'
+                        },
+                        {
+                            id: 2,
+                            title: 'East Coast Park Trail',
+                            distance: '8.1km',
+                            saves: '38 saves this week',
+                            image: 'resources/map2.png'
+                        }
+                    ],
+
+                    selectedActivity: null,
+
+                    activities: [
+                        {
+                            id: 1,
+                            user: "Wei Shen",
+                            userImg: 'resources/download.jpeg',
+                            date: "30 September 2024 at 21:33",
+                            location: "Central",
+                            title: "Night Run",
+                            distance: "6.05 km",
+                            description: "I challenge zhongyan to run this route!!",
+                            time: "30m 3s",
+                            mapImg: "resources/map1.png",
+                            likes: 0,
+                            comments: []
+                        },
+                        {
+                            id: 2,
+                            user: "Potato",
+                            userImg: 'resources/download.jpeg',
+                            date: "29 September 2024 at 21:33",
+                            location: "Central",
+                            title: "Evening Run",
+                            description: "blablablabla",
+                            distance: "2.40 km",
+                            time: "10m 15s",
+                            mapImg: "resources/map2.png",
+                            likes: 0,
+                            comments: []
+                        }
+                    ],
+
+                    brandInfo: {
+                        name: 'MapPalette'
+                    },
+
+                    contactInfo: [
+                        'mappalette@gmail.com',
+                        '+65-687654321',
+                        '81 Victoria St, Singapore 188065'
+                    ],
+
+                    socialLinks: [
+                        {
+                            name: 'Facebook',
+                            url: '#',
+                            icon: 'https://img.icons8.com/ios-filled/24/000000/facebook-new.png'
+                        },
+                        {
+                            name: 'LinkedIn',
+                            url: '#',
+                            icon: 'https://img.icons8.com/ios-filled/24/000000/linkedin.png'
+                        },
+                        {
+                            name: 'Twitter',
+                            url: '#',
+                            icon: 'https://img.icons8.com/ios-filled/24/000000/twitter.png'
+                        },
+                        {
+                            name: 'Instagram',
+                            url: '#',
+                            icon: 'https://img.icons8.com/ios-filled/24/000000/instagram-new.png'
+                        }
+                    ],
+
+                    copyrightInfo: '© 2024. All rights reserved.',
+
+                }
+                
+            },
+
+            methods: {
+                openActivityModal(activity) {
+                    this.selectedActivity = activity
+                },
+            
+                likeActivity(activity) {
+                    if (!activity.likes) activity.likes = 0
+                    activity.likes++
+                },
+                
+                openCommentModal(activity) {
+                    this.selectedActivity = activity
+                    const modal = new bootstrap.Modal(document.getElementById(`commentModal${activity.id}`))
+                    modal.show()
+                    this.$nextTick(() => {
+                        this.focusCommentInput()
+                    })
+                },
+                
+                focusCommentInput() {
+                    this.$nextTick(() => {
+                        this.$refs.commentInput?.focus()
+                    })
+                },
+                
+                addComment() {
+                    if (this.newComment.trim() && this.selectedActivity) {
+                        if (!this.selectedActivity.comments) {
+                            this.selectedActivity.comments = []
+                        }
+                        this.selectedActivity.comments.push(this.newComment)
+                        this.newComment = ''
+                    }
+                },
+            }    
+        })
+        app.mount('#app')
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
