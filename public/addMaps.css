@@ -1,71 +1,179 @@
+/* Map and Controls Layout */
 /* Set the height of the map to take full screen minus the navbar */
+#app{
+  padding:0px;
+}
+
+.row{
+  margin-left:20px;
+  margin-right:20px;
+}
+
 #map {
-    height: calc(100vh - 56px);
-    width: 75%; /* Reduced width to make space for point list container */
-    float: left;
+  height: 70vh; /* Takes 60% of the viewport height */
+  width: 65%; /* Map takes up 3/4 width */
+  float: left;
+}
+
+#controls {
+  width: 35%; /* Controls take up 1/4 width */
+  float: right;
+  padding: 20px;
+  background-color: #f8f9fa;
+  height: 70vh; /* Set height for controls */
+  display: flex;
+  flex-direction: column;
+}
+
+#export-button:hover {
+  background-color: #218838;
+}
+
+/* Point List Styling */
+#point-list {
+  margin-top: 20px;
+}
+
+/* Flexbox layout for two-column design */
+.point-item {
+  padding: 10px;
+  background-color: #fff;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  z-index: 1; /* Keep content on top */
+  flex-wrap: nowrap; /* Ensure the content doesn't wrap */
+}
+
+/* First column (marker details) */
+.point-item .details {
+  flex: 1; /* Allow the details column to take up available space */
+  min-width: 0; /* Prevent overflow and enable text to wrap */
+  word-wrap: break-word; /* Ensure long words wrap to the next line */
+}
+
+/* Second column (delete button) */
+.point-item .trash-container {
+  flex-shrink: 0; /* Keep the delete button size fixed */
+  width: 40px; /* Set a fixed width for the delete button container */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.trash-btn {
+  background: transparent;
+  border: none;
+  font-size: 24px; /* Increase size of the icon */
+  color: #dc3545; /* Bootstrap's danger color */
+  transition: all 0.3s ease;
+}
+
+/* Add smooth transitions */
+.trash-btn svg {
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+/* Slightly enlarge trash icon when hovering over it */
+.trash-btn:hover svg {
+  transform: scale(1.2);
+}
+
+.point-item:hover {
+  transform: scale(1.02);
+}
+
+/* Animation to fill the background from right to left */
+.point-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 100%; /* Start from the right side */
+  width: 100%;
+  height: 100%;
+  background-color: #dc3545; /* Red background */
+  z-index: -1; /* Place behind content */
+  transition: left 1s ease; /* Smooth transition for background */
+}
+
+/* Ensure new elements start with the background at the right */
+.point-item:not(.is-filling)::before {
+  left: 100%;
+}
+
+/* When the item is being deleted, move the background to the left */
+.point-item.is-filling::before {
+  left: 0; /* Move background to fill the entire element */
+}
+
+.point-item.is-filling {
+  color: white; /* Change text color when background is filling */
+  transition: color 1s ease; /* Smooth color change */
+}
+
+/* Fade out after animation */
+.point-item.delete {
+  display: none; /* Hide the element completely after the animation */
+}
+
+/* Ensure the item is not affected before the animation */
+.point-item:not(.is-filling)::before {
+  background-color: transparent;
+}
+
+/* Color Box Styling */
+.color-box {
+  width: 30px;
+  height: 30px;
+  margin: 5px;
+  cursor: pointer;
+  display: inline-block;
+  border: 2px solid transparent;
+}
+
+/* Distance Display Styling */
+#distance {
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+/* New form and layout styling */
+
+/* Title and description input fields */
+textarea {
+  resize: vertical;
+}
+
+/* Fixed part of the controls */
+#fixed-controls {
+  flex-shrink: 0;
+}
+
+/* Scrollable plotted points */
+#scrollable-points {
+  flex-grow: 1; /* Take the remaining height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Responsive changes for mobile (XS screens) */
+@media (max-width: 576px) {
+  #map {
+    width: 100%;
+    height: 50vh;
+    float: none;
   }
-  
+
   #controls {
-    width: 25%; /* Space for point list container */
-    float: right;
-    padding: 20px;
-    background-color: #f8f9fa;
-    height: calc(100vh - 56px);
-    overflow-y: auto;
+    width: 100%;
+    height: 50vh;
+    float: none;
   }
-  
-  .color-box {
-    width: 30px;
-    height: 30px;
-    margin: 5px;
-    cursor: pointer;
-    display: inline-block;
-    border: 2px solid transparent;
-  }
-  
-  /* Styling for clear/reset button */
-  .clear-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .clear-button:hover {
-    background-color: #0056b3;
-  }
-  
-  #distance {
-    font-size: 18px;
-    margin-top: 20px;
-  }
-  
-  #export-button {
-    margin-top: 20px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-  }
-  
-  #export-button:hover {
-    background-color: #218838;
-  }
-  
-  /* Point List Styling */
-  #point-list {
-    margin-top: 20px;
-  }
-  
-  .point-item {
-    padding: 10px;
-    background-color: #fff;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+}
