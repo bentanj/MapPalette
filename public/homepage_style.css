@@ -382,14 +382,21 @@ body {
 
 /* Post content and footer */
 .post .content {
-    padding: 2em;
-    margin-top: 0;
+    padding: 2em 2em 1em 2em;  /* Reduced bottom padding */
+    margin: 0;
+}
+
+.post .content p {
+    margin: 1rem 0 0 0;
+    word-wrap: break-word;
+    overflow: hidden;
 }
 
 .post footer {
     display: flex;
     align-items: center;
-    padding: 2em;
+    padding: 1em 2em;  /* Reduced padding */
+    margin-top: auto;  /* This will push it against the content */
     border-top: solid 1px var(--border-color);
 }
 
@@ -553,18 +560,4 @@ footer .social-icons a:hover {
 
 .nav-link.p-0::after {
     display: none !important;
-}
-
-/* Ensure consistent hover effects for trending route cards */
-.trending-route-card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
-    cursor: pointer;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 1rem;
-}
-
-.trending-route-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
