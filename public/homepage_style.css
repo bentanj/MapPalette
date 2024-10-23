@@ -1,0 +1,570 @@
+/* Custom color palette */
+:root {
+    --primary-color: #FF6B6B;       /* Energetic coral red - represents vitality and movement */
+    --secondary-color: #4ECDC4;     /* Fresh mint - represents freshness and outdoors */
+    --accent-color: #45B7D1;        /* Sky blue - represents open spaces and freedom */
+    --background-light: #F7F7F7;    /* Light gray - clean, modern feel */
+    --text-dark: #2D3436;           /* Deep charcoal - easy on eyes */
+    --border-color: rgba(160, 160, 160, 0.2);
+}
+
+/* General styles */
+body {
+    padding-top: 76px;
+    color: var(--text-dark);
+    background-color: var(--background-light);
+}
+
+/* Navbar styles */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: white !important;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color) !important;
+}
+
+.navbar-brand img {
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+}
+
+.nav-link {
+    position: relative;
+    font-size: 1.2rem;
+    margin-left: 20px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.navbar .rounded-circle {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+    transition: transform 0.2s ease;
+}
+
+.navbar .rounded-circle:hover {
+    transform: scale(1.05);
+}
+
+/* Hero section base styles */
+.hero-section {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    margin-top: -76px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    padding-top: 76px;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('resources/run.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0.8);
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        rgba(0, 0, 0, 0.3),
+        rgba(0, 0, 0, 0.5)
+    );
+}
+
+.hero-content {
+    position: relative;
+    height: calc(100% - 76px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.hero-content h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hero-content p {
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin-bottom: 2rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.hero-stats {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 1rem;
+}
+
+.hero-stats .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+    white-space: nowrap;
+}
+
+.hero-stats .stat-item i {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+}
+
+/* Large screens (lg and up) */
+@media (min-width: 992px) {
+    .hero-section {
+        height: 400px;
+    }
+}
+
+/* Medium screens (md) */
+@media (max-width: 991.98px) {
+    .hero-section {
+        height: 350px;
+    }
+
+    .hero-content h1 {
+        font-size: 2.4rem;
+    }
+
+    .hero-content p {
+        font-size: 1.05rem;
+        padding: 0 1rem;
+        max-width: 500px;
+    }
+
+    .hero-stats {
+        gap: 1.5rem;
+    }
+
+    .hero-stats .stat-item {
+        font-size: 1rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+/* Small screens (sm) */
+@media (max-width: 767.98px) {
+    .hero-section {
+        height: 450px;
+    }
+
+    .hero-content {
+        padding: 1rem;
+    }
+
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+
+    .hero-content p {
+        font-size: 1rem;
+        padding: 0 0.5rem;
+    }
+
+    .hero-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .hero-stats .stat-item {
+        font-size: 0.9rem;
+    }
+}
+
+/* Extra small screens (xs) */
+@media (max-width: 575.98px) {
+    .hero-section {
+        height: 450px;
+    }
+
+    .hero-content h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero-content p {
+        font-size: 0.95rem;
+    }
+
+    .hero-stats .stat-item {
+        padding: 0.3rem 0.7rem;
+    }
+}
+
+
+/* Animation */
+.hero-section {
+    animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Side column styles */
+.side-column {
+    position: sticky;
+    top: 96px;
+    height: calc(100vh - 96px);
+    overflow-y: auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    padding: 1.5rem !important;
+}
+
+.side-column::-webkit-scrollbar {
+    width: 6px;
+}
+
+.side-column::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.side-column::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+/* Quick actions section */
+.quick-actions .btn {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+
+.quick-actions .btn-primary {
+    background: var(--primary-color);
+    border: none;
+}
+
+.quick-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* List group styling */
+.list-group-item {
+    border: none;
+    padding: 0.75rem 0;
+    transition: background-color 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: var(--background-light);
+    border-radius: 8px;
+}
+
+.list-group-item i {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+/* Post card styles */
+.post {
+    background: white;
+    border-radius: 15px;
+    margin: 0 0 2em 0;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.post:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.post > header {
+    display: flex;
+    border-bottom: solid 1px var(--border-color);
+    margin: 0;
+    padding: 2em;
+    background: white;
+}
+
+.post > header .title {
+    flex-grow: 1;
+    padding-right: 2em;
+}
+
+.post > header .title h2 {
+    font-weight: 800;
+    font-size: 1.5em;
+    margin: 0;
+    color: var(--text-dark);
+}
+
+.post > header .meta {
+    min-width: 17em;
+    text-align: right;
+    padding-left: 2em;
+    border-left: solid 1px var(--border-color);
+}
+
+/* Image styling */
+.post .image.featured {
+    overflow: hidden;
+    margin: 0;
+    width: 100%;
+}
+
+.post .image.featured img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.post .image.featured:hover img {
+    transform: scale(1.05);
+}
+
+/* Post content and footer */
+.post .content {
+    padding: 2em;
+    margin-top: 0;
+}
+
+.post footer {
+    display: flex;
+    align-items: center;
+    padding: 2em;
+    border-top: solid 1px var(--border-color);
+}
+
+.post footer .actions {
+    flex-grow: 1;
+}
+
+.post footer .stats {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.post footer .stats li {
+    display: inline-block;
+    margin-left: 2em;
+    padding-left: 2em;
+    border-left: solid 1px var(--border-color);
+}
+
+.post footer .stats li:first-child {
+    border-left: 0;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+/* Modal styling */
+.modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.comment-input {
+    border-radius: 10px;
+    padding: 1rem;
+    resize: none;
+    border: 1px solid var(--border-color);
+}
+
+/* Stats display */
+.stats-display {
+    background: var(--background-light);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.stat-item h6 {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+/* Footer styling */
+footer {
+    background: white !important;
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+    margin-top: 3rem;
+}
+
+footer .social-icons a {
+    transition: transform 0.2s ease;
+    display: inline-block;
+    margin: 0 0.5rem;
+}
+
+footer .social-icons a:hover {
+    transform: translateY(-3px);
+}
+
+/* Hover effects */
+.hover-overlay {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+}
+
+.hover-overlay:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+/* Activity stats cards */
+.activity-stats {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.activity-stats h6 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Content spacing */
+.content {
+    margin-top: 20px;
+    padding-left: calc(100% / 9);
+}
+
+/* Responsive styles */
+@media (max-width: 991px) {
+    .profile-pic {
+        margin-left: auto;
+    }
+    
+    .side-column {
+        position: static;
+        height: auto;
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .content {
+        padding-left: 1rem;
+    }
+    
+    .post > header {
+        flex-direction: column;
+        padding: 1.5rem;
+    }
+    
+    .post > header .title {
+        padding-right: 0;
+        padding-bottom: 1.5rem;
+    }
+    
+    .post > header .meta {
+        padding-left: 0;
+        border-left: 0;
+        text-align: left;
+        min-width: 0;
+    }
+    
+    .post footer .stats li {
+        margin-left: 1em;
+        padding-left: 1em;
+    }
+}
+
+/* Fix for profile photo hover effect */
+.nav-link.dropdown-toggle::after {
+    display: none !important;
+}
+
+.nav-link.p-0::after {
+    display: none !important;
+}
+
+/* Ensure consistent hover effects for trending route cards */
+.trending-route-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+    cursor: pointer;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.trending-route-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}

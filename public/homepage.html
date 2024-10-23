@@ -1,0 +1,548 @@
+<!-- TODO:
+1. fix the grid system for small screens
+3. follower count remove?
+4. update card design (pending)
+5. Color theme?
+7. for small screens, remove the left sidebar. (maybe keep the hero section only.)
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapPalette Homepage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="homepage_style.css">
+</head>
+    
+<body>
+    <!-- Keep your existing navbar code -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#"><img src="resources/mappalettelogo.png" alt="MapPalette Logo">MapPalette</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="homepage.html">Feed</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="routes.html">Routes</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="addMaps.html">Draw</a>
+              </li>
+              <!--Profile picture with dropdown-->
+              <li class="nav-item dropdown d-flex align-items-center ms-3">
+                <a class="nav-link dropdown-toggle p-0" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <img src="resources/download.jpeg" alt="Profile" class="rounded-circle" width="32" height="32">
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                  <li><a class="dropdown-item" href="#">Your Profile</a></li>
+                  <li><a class="dropdown-item" href="#">Settings</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="#">Log Out</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+    </nav>
+
+    <section class="hero-section">
+        <div class="hero-background"></div>
+        <div class="hero-overlay"></div>
+        <div class="container">
+            <div class="hero-content">
+                <h1>Running Community Feed</h1>
+                <p>Stay inspired by fellow runners' achievements, discover popular routes, and share your running journey.</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <i class="bi bi-people-fill"></i>
+                        <span>2.5k Active Runners</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="bi bi-map-fill"></i>
+                        <span>500+ Shared Routes</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="bi bi-trophy-fill"></i>
+                        <span>Daily Achievements</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left sidebar -->
+            <div class="col-lg-3 col-md-4">
+                <div class="side-column bg-white p-4 rounded shadow-sm">
+                    <!-- Profile Summary -->
+                    <div class="mb-4 pb-3 border-bottom">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="resources/download.jpeg" alt="Profile" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                            <div>
+                                <h6 class="mb-0 fw-bold">John Doe</h6>
+                                <small class="text-muted">@johndoe</small>
+                            </div>
+                        </div>
+                        <div class="row text-center g-2">
+                            <div class="col-4">
+                                <div class="p-2 border rounded">
+                                    <div class="fw-bold">24</div>
+                                    <small class="text-muted">Routes</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded">
+                                    <div class="fw-bold">156</div>
+                                    <small class="text-muted">Following</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded">
+                                    <div class="fw-bold">198</div>
+                                    <small class="text-muted">Followers</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Quick Actions -->
+                    <div class="mb-4 pb-3 border-bottom">
+                        <h6 class="mb-3 text-uppercase fw-bold text-muted small">Quick Actions</h6>
+                        <a href="addMaps.html" class="btn btn-primary w-100 mb-2">
+                          <i class="bi bi-map me-2"></i>
+                          Draw Your Map!
+                        </a>
+                        <a href="routes.html" class="btn btn-outline-secondary w-100">
+                          <i class="bi bi-search me-2"></i>
+                          Browse Routes
+                        </a>
+                    </div>
+            
+                    <!-- Navigation Menu -->
+                    <div class="mb-4">
+                        <h6 class="mb-3 text-uppercase fw-bold text-muted small">Menu</h6>
+                        <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+                                <i class="bi bi-activity me-3"></i>
+                                My Activities
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+                                <i class="bi bi-map me-3"></i>
+                                Saved Routes
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+                                <i class="bi bi-trophy me-3"></i>
+                                Challenges
+                            </a>
+                        </div>
+                    </div>
+            
+                    <!-- Trending Routes -->
+                    <div>
+                        <h6 class="mb-3 text-uppercase fw-bold text-muted small">Trending Routes</h6>
+                        <div class="card mb-2 hover-overlay">
+                            <img src="resources/map1.png" class="card-img-top" alt="Route preview" style="height: 100px; object-fit: cover;">
+                            <div class="card-body p-2">
+                                <h6 class="card-title mb-1">Marina Bay Loop</h6>
+                                <p class="card-text small text-muted mb-0">5.2km • 42 saves this week</p>
+                            </div>
+                        </div>
+                        <div class="card mb-2 hover-overlay">
+                            <img src="resources/map2.png" class="card-img-top" alt="Route preview" style="height: 100px; object-fit: cover;">
+                            <div class="card-body p-2">
+                                <h6 class="card-title mb-1">East Coast Park Trail</h6>
+                                <p class="card-text small text-muted mb-0">8.1km • 38 saves this week</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Updated main content area -->
+            <div class="col-lg-8 col-md-7 content">
+                <div id="activity-feed"></div>
+            </div>
+            
+            <!-- <div class="col-md-1 spacing">
+            </div> -->
+            
+            <!-- Keep your existing right sidebar -->
+        </div>
+    </div>
+
+    <script>
+        // The JavaScript for creating activity cards remains the same as in the previous version
+        const activities = [
+            {
+                user: "Wei Shen",
+                userImg: 'resources/download.jpeg',
+                date: "30 September 2024 at 21:33",
+                location: "Central",
+                title: "Night Run",
+                distance: "6.05 km",
+                description: "-placeholder-",
+                time: "30m 3s",
+                mapImg: "resources/map1.png"
+            },
+            {
+                user: "Potato",
+                userImg: 'resources/download.jpeg',
+                date: "29 September 2024 at 21:33",
+                location: "Central",
+                title: "Evening Run",
+                description: "-placeholder-",
+                distance: "2.40 km",
+                time: "10m 15s",
+                mapImg: "resources/map2.png"
+            }
+        ];
+
+        // Updated createActivityCard function with Future Imperfect styling
+        function createActivityCard(activity) {
+            // Create main article element with Future Imperfect styling
+            const article = document.createElement('article');
+            article.className = 'post';
+            article.style.cursor = 'pointer';
+
+            // Make the entire card clickable
+            article.addEventListener('click', function() {
+                const modal = new bootstrap.Modal(document.getElementById(`commentModal${activity.id}`));
+                modal.show();
+            });
+
+            // Header section
+            const header = document.createElement('header');
+            
+            // Title div with activity name and location
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'title';
+            const h2 = document.createElement('h2');
+            h2.textContent = activity.title;
+            const location = document.createElement('p');
+            location.textContent = activity.location;
+            titleDiv.appendChild(h2);
+            titleDiv.appendChild(location);
+
+            // Meta div with date and user info
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'meta';
+            const date = document.createElement('time');
+            date.className = 'published';
+            date.textContent = activity.date;
+            const author = document.createElement('div');
+            author.className = 'd-flex align-items-center justify-content-end mt-2';
+            author.innerHTML = `
+                <span class="me-2">${activity.user}</span>
+                <img src="${activity.userImg}" alt="Profile" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+            `;
+            metaDiv.appendChild(date);
+            metaDiv.appendChild(author);
+
+            // Append title and meta to header
+            header.appendChild(titleDiv);
+            header.appendChild(metaDiv);
+            article.appendChild(header);
+
+            // Image section
+            if (activity.mapImg) {
+                const imageLink = document.createElement('a');
+                imageLink.className = 'image featured';
+                imageLink.href = '#';
+                const img = document.createElement('img');
+                img.src = activity.mapImg;
+                img.alt = 'Activity Map';
+                img.style.height = '300px';
+                img.style.objectFit = 'cover';
+                img.style.width = '100%';
+                imageLink.appendChild(img);
+                article.appendChild(imageLink);
+            }
+
+            // Content section
+            const content = document.createElement('div');
+            content.className = 'content';
+            
+            // Stats display
+            const stats = document.createElement('div');
+            stats.className = 'd-flex justify-content-between text-center mb-3';
+            stats.innerHTML = `
+                <div>
+                    <h6 class="mb-0 fw-bold">${activity.distance}</h6>
+                    <small class="text-muted">Distance</small>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-bold">${activity.time}</h6>
+                    <small class="text-muted">Time</small>
+                </div>
+            `;
+            content.appendChild(stats);
+
+            // Description
+            if (activity.description) {
+                const description = document.createElement('p');
+                description.textContent = activity.description;
+                content.appendChild(description);
+            }
+
+            article.appendChild(content);
+
+            // Footer section with actions
+            const footer = document.createElement('footer');
+            
+            // Action buttons (Like and Comment)
+            const actions = document.createElement('div');
+            actions.className = 'actions';
+
+            // Like button
+            const likeButton = document.createElement('button');
+            likeButton.className = 'btn btn-outline-primary btn-sm me-2';
+            likeButton.innerHTML = '<i class="bi bi-hand-thumbs-up"></i> Like';
+            likeButton.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent card click event
+                console.log('Liked:', activity.title);
+            });
+
+            // Comment button
+            const commentButton = document.createElement('button');
+            commentButton.className = 'btn btn-outline-secondary btn-sm';
+            commentButton.setAttribute('data-bs-toggle', 'modal');
+            commentButton.setAttribute('data-bs-target', `#commentModal${activity.id}`);
+            commentButton.innerHTML = '<i class="bi bi-chat"></i> Comment';
+            commentButton.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent card click event
+            });
+
+            actions.appendChild(likeButton);
+            actions.appendChild(commentButton);
+            footer.appendChild(actions);
+
+            // Stats list
+            const statsList = document.createElement('ul');
+            statsList.className = 'stats';
+            statsList.innerHTML = `
+                <li><i class="bi bi-geo-alt"></i> ${activity.location}</li>
+                <li><i class="bi bi-heart"></i> 0</li>
+                <li><i class="bi bi-chat"></i> 0</li>
+            `;
+            footer.appendChild(statsList);
+
+            article.appendChild(footer);
+
+            return article;
+        }   
+
+        // Keep your existing modal creation and comment functionality
+        function createCommentModal(activity) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.id = `commentModal${activity.id}`;
+            modal.tabIndex = '-1';
+            modal.setAttribute('aria-labelledby', `commentModalLabel${activity.id}`);
+            modal.setAttribute('aria-hidden', 'true');
+
+            const modalDialog = document.createElement('div');
+            modalDialog.className = 'modal-dialog modal-lg';
+            modal.appendChild(modalDialog);
+
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal-content';
+            modalDialog.appendChild(modalContent);
+
+            // Modal Header
+            const modalHeader = document.createElement('div');
+            modalHeader.className = 'modal-header flex-column align-items-start';
+            modalContent.appendChild(modalHeader);
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'w-100 d-flex justify-content-between align-items-center mb-1';
+            modalHeader.appendChild(titleDiv);
+
+            const modalTitle = document.createElement('h5');
+            modalTitle.className = 'modal-title mb-0';
+            modalTitle.id = `commentModalLabel${activity.id}`;
+            modalTitle.textContent = activity.title;
+            titleDiv.appendChild(modalTitle);
+
+            const closeButton = document.createElement('button');
+            closeButton.type = 'button';
+            closeButton.className = 'btn-close';
+            closeButton.setAttribute('data-bs-dismiss', 'modal');
+            closeButton.setAttribute('aria-label', 'Close');
+            titleDiv.appendChild(closeButton);
+
+            const userNameHeader = document.createElement('p');
+            userNameHeader.className = 'mb-0 text-muted';
+            userNameHeader.style.fontSize = '0.9rem';
+            userNameHeader.textContent = `by ${activity.user}`;
+            modalHeader.appendChild(userNameHeader);
+
+            // Modal Body
+            const modalBody = document.createElement('div');
+            modalBody.className = 'modal-body';
+            modalContent.appendChild(modalBody);
+
+            // Image Section
+            const imageContainer = document.createElement('div');
+            imageContainer.style.width = '100%';
+            imageContainer.style.height = '300px';
+            imageContainer.style.backgroundColor = '#e9ecef';
+            imageContainer.style.borderRadius = '8px';
+            imageContainer.style.marginBottom = '15px';
+            imageContainer.style.display = 'flex';
+            imageContainer.style.justifyContent = 'center';
+            imageContainer.style.alignItems = 'center';
+            modalBody.appendChild(imageContainer);
+
+            if (activity.mapImg) {
+                const mapImage = document.createElement('img');
+                mapImage.src = activity.mapImg;
+                mapImage.alt = 'Activity Map';
+                mapImage.style.width = '100%';
+                mapImage.style.height = '100%';
+                mapImage.style.objectFit = 'cover';
+                mapImage.style.borderRadius = '8px';
+                imageContainer.appendChild(mapImage);
+            }
+
+            // Activity details
+            const details = document.createElement('p');
+            details.className = 'text-muted';
+            details.textContent = `${activity.date} | 0 Likes`; // Assuming no likes initially
+            modalBody.appendChild(details);
+
+            const distance = document.createElement('p');
+            distance.innerHTML = `<strong>Distance:</strong> ${activity.distance}`;
+            modalBody.appendChild(distance);
+
+            const description = document.createElement('p');
+            description.innerHTML = `<strong>Description:</strong> ${activity.description}`;
+            modalBody.appendChild(description);
+
+            // Like, Comment, Share Links
+            const actionLinks = document.createElement('div');
+            actionLinks.className = 'd-flex justify-content-around border-top border-bottom py-2';
+            modalBody.appendChild(actionLinks);
+
+            const createActionLink = (icon, text) => {
+                const link = document.createElement('a');
+                link.href = '#';
+                link.className = 'd-flex align-items-center text-decoration-none text-dark';
+                link.innerHTML = `<i class="bi bi-${icon} me-2"></i> <span>${text}</span>`;
+                return link;
+            };
+
+            actionLinks.appendChild(createActionLink('hand-thumbs-up', 'Like'));
+            actionLinks.appendChild(createActionLink('chat', 'Comment'));
+            actionLinks.appendChild(createActionLink('share', 'Share'));
+
+            // Add a horizontal rule
+            const horizontalRule = document.createElement('hr');
+            horizontalRule.className = 'my-3'; // Add some margin to the top and bottom
+            modalBody.appendChild(horizontalRule);
+
+            // Comments section
+            const commentsHeader = document.createElement('h6');
+            commentsHeader.textContent = 'Comments';
+            modalBody.appendChild(commentsHeader);
+
+            const commentInput = document.createElement('textarea');
+            commentInput.className = 'form-control mb-3';
+            commentInput.rows = '2';
+            commentInput.placeholder = 'Add a comment...';
+            modalBody.appendChild(commentInput);
+
+            const submitButton = document.createElement('button');
+            submitButton.className = 'btn btn-primary mb-3';
+            submitButton.textContent = 'Post Comment';
+            modalBody.appendChild(submitButton);
+
+            const commentList = document.createElement('ul');
+            commentList.className = 'list-unstyled';
+            modalBody.appendChild(commentList);
+
+            submitButton.addEventListener('click', function() {
+                addComment(activity.id, commentInput.value);
+                commentInput.value = '';
+            });
+
+            return modal;
+        }
+
+        function addComment(activityId, commentText) {
+            const commentList = document.querySelector(`#commentModal${activityId} .list-unstyled`);
+            
+            const commentElement = document.createElement('li');
+            
+            const userStrong = document.createElement('strong');
+            userStrong.textContent = 'User:';
+            
+            const commentContent = document.createTextNode(` ${commentText}`);
+            
+            commentElement.appendChild(userStrong);
+            commentElement.appendChild(commentContent);
+            
+            commentList.appendChild(commentElement);
+        }
+
+        // Initialize the feed
+        const activityFeed = document.getElementById('activity-feed');
+        activities.forEach(activity => {
+            activityFeed.appendChild(createActivityCard(activity));
+            document.body.appendChild(createCommentModal(activity));
+        });
+    </script>
+
+    <!-- Keep your existing footer code -->
+        <!-- Footer Section -->
+    <footer class="bg-light text-center text-lg-start mt-5">
+        <div class="container p-4">
+            <!-- Grid row -->
+            <div class="row align-items-center">
+                <!-- Column 1: Brand Name -->
+                <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                    <h5 class="text-uppercase fw-bold">MapPalette</h5>
+                </div>
+
+                <!-- Column 2: Contact Information -->
+                <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                    <h6 class="fw-bold">Contact us</h6>
+                    <p class="mb-1">mappalette@gmail.com</p>
+                    <p class="mb-1">+65-687654321</p>
+                    <p>81 Victoria St, Singapore 188065</p>
+                </div>
+
+                <!-- Column 3: Social Media Icons -->
+                <div class="col-lg-4 col-md-12 text-md-end">
+                    <a href="#" class="me-3 text-dark"><img
+                            src="https://img.icons8.com/ios-filled/24/000000/facebook-new.png" alt="Facebook" /></a>
+                    <a href="#" class="me-3 text-dark"><img
+                            src="https://img.icons8.com/ios-filled/24/000000/linkedin.png" alt="LinkedIn" /></a>
+                    <a href="#" class="me-3 text-dark"><img
+                            src="https://img.icons8.com/ios-filled/24/000000/twitter.png" alt="Twitter" /></a>
+                    <a href="#" class="text-dark"><img
+                            src="https://img.icons8.com/ios-filled/24/000000/instagram-new.png" alt="Instagram" /></a>
+                </div>
+            </div>
+            <!-- Grid row -->
+
+            <hr class="my-4">
+
+            <!-- Copyright -->
+            <div class="text-center">
+                <p class="mb-0">&copy; 2024. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

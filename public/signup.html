@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MapPalette - Sign Up</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .signup-container {
+      max-width: 500px;
+      margin: auto;
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .signup-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: black;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      font-weight: 500;
+    }
+
+    input[type="date"] {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    
+    input[type="date"]:focus {
+        color: #495057;
+        background-color: #fff;
+        border-color: #007bff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+
+    .terms-text {
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .terms-text a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    
+    .btn-primary {
+      width: 100%;
+      padding: 10px;
+      margin-top: 1rem;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .login-link a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    .file-upload {
+      display: block;
+      width: 100%;
+      height: 200px;
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      color: #888;
+    }
+
+    .file-upload:hover {
+      background-color: #f1f1f1;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker/dist/css/bootstrap-datepicker3.min.css">
+</head>
+<body>
+    <div class="justify-content-center align-items-center">
+        <a href="index.html" class="text-decoration-none">
+          <div class="d-flex justify-content-center align-items-center py-2">
+            <img src="../resources/index/mappalettelogo.png" class="img-fluid" style="max-width: 100px; margin-right: 10px;">
+            <h1 class="app-name" style="color: #007bff;">MapPalette</h1>
+          </div>
+        </a>
+        <div class="signup-container">
+            <h1 class="signup-title">Join Us!</h1>
+
+            <!-- Signup Form -->
+            <form id="signupForm">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" placeholder="Enter your username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="Enter a password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm-password" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirm-password" placeholder="Confirm your password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="birthday" class="form-label">Birthday</label>
+                    <input type="date" class="form-control" id="birthday" name="birthday" required>
+                </div>
+                <div class="mb-3">
+                    <label for="gender" class="form-label">Gender</label>
+                    <select class="form-select" id="gender" required>
+                        <option value="" disabled selected>Select your gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="prefer-not-to-say">Rather not say</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="profile-picture" class="form-label">Profile Picture</label>
+                    <div class="file-upload" id="fileUpload">
+                        Drag & Drop your picture here or click to upload
+                        <input type="file" id="profile-picture" accept="image/png, image/jpeg" style="display: none;" required>
+                    </div>
+                    
+                    <!-- Profile picture preview below the upload box, centralized -->
+                    <div id="file-preview-wrapper" style="display: flex; justify-content: center; margin-top: 20px;">
+                        <div id="file-preview" class="profile-picture-preview" style="border-radius: 50%; width: 150px; height: 150px; border: 2px solid #ccc; overflow: hidden; position: relative;">
+                            <img src="../resources/index/placeholder_pfp.png" alt="" id="profile-pic-img" style="width: 100%; height: 100%; object-fit: cover; position: absolute; cursor: grab; transition: transform 0.2s ease;">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Sign Up</button>
+            </form>
+
+            <!-- Terms of Service -->
+            <div class="terms-text">
+                By signing up, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+            </div>
+
+            <!-- Already have an account -->
+            <div class="login-link">
+                Already have an account? <a href="login.html">Login</a>
+            </div>
+        </div>
+    </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+  <script>
+    const fileUpload = document.getElementById('fileUpload');
+    const fileInput = document.getElementById('profile-picture');
+    const profilePicImg = document.getElementById('profile-pic-img');
+
+    // Open file input dialog on click
+    fileUpload.addEventListener('click', () => fileInput.click());
+
+    // Drag-and-drop event handlers
+    fileUpload.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUpload.style.backgroundColor = '#e9ecef';
+    });
+
+    fileUpload.addEventListener('dragleave', () => {
+        fileUpload.style.backgroundColor = '';
+    });
+
+    fileUpload.addEventListener('drop', (e) => {
+        e.preventDefault();
+        handleFileUpload(e.dataTransfer.files[0]);
+        fileUpload.style.backgroundColor = '';
+    });
+
+    // Handle file selection from input
+    fileInput.addEventListener('change', () => {
+        handleFileUpload(fileInput.files[0]);
+    });
+
+    // Function to handle file upload and preview
+    function handleFileUpload(file) {
+        if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                // Display uploaded image inside the circular preview and fill the circle
+                profilePicImg.src = e.target.result;
+                profilePicImg.style.display = 'block';  // Ensure the image is visible
+            };
+            
+            reader.readAsDataURL(file);
+        } else {
+            return
+        }
+    }
+</script>
+<script type = "module" src = "firebase.js"></script>
+</body>
+</html>
