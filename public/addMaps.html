@@ -4,281 +4,196 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MapPalette - Route Drawing</title>
+  <!-- BOOTSTRAP CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    /* Set the height of the map to take full screen minus the navbar */
-    #map {
-      height: calc(100vh - 56px);
-      width: 75%; /* Reduced width to make space for point list container */
-      float: left;
-    }
 
-    #controls {
-      width: 25%; /* Space for point list container */
-      float: right;
-      padding: 20px;
-      background-color: #f8f9fa;
-      height: calc(100vh - 56px);
-      overflow-y: auto;
-    }
+  <!-- VUE CDN -->
+  <script src='https://unpkg.com/vue@3/dist/vue.global.js'></script>
 
-    .color-box {
-      width: 30px;
-      height: 30px;
-      margin: 5px;
-      cursor: pointer;
-      display: inline-block;
-      border: 2px solid transparent;
-    }
+  <!-- CSS -->
+  <link rel='stylesheet' href='addMaps.css'>
 
-    /* Styling for clear/reset button */
-    .clear-button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .clear-button:hover {
-      background-color: #0056b3;
-    }
-
-    #distance {
-      font-size: 18px;
-      margin-top: 20px;
-    }
-
-    #export-button {
-      margin-top: 20px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-    }
-
-    #export-button:hover {
-      background-color: #218838;
-    }
-
-    /* Point List Styling */
-    #point-list {
-      margin-top: 20px;
-    }
-
-    .point-item {
-      padding: 10px;
-      background-color: #fff;
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-  </style>
+  <!-- Axios -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
 <body>
+  <div id="app" class="container-fluid">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="./homepage_v2.html"><img src="./resources/mappalettelogo.png" width="30" height="30">MapPalette</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="./homepage_v2.html">Feed</a></li>
+            <li class="nav-item"><a class="nav-link" href="./routes.html">Routes</a></li>
+            <li class="nav-item"><a class="nav-link active">Draw</a></li>
+            <div class="dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="./resources/download.jpeg" alt="Profile" class="profile-pic" width="30" height="24">
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                <li><a class="dropdown-item" href="#">Your Profile</a></li>
+                <li><a class="dropdown-item" href="#">Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#">Log Out</a></li>
+              </ul>
+            </div>
+          </ul>
+        </div>
+      </div>
+    </nav>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-      <a class="navbar-brand" href="#">MapPalette</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="#">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Profile</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Logout</a>
-          </li>
-        </ul>
+    <!-- Alert Bar -->
+    <div class="alert alert-dismissible fade w-100 top-0 left-0 position-sticky" style="z-index:5;"
+        :class="{'alert-warning': alertType === 'error', 'alert-success': alertType === 'success', 'show': showAlert}"
+        :hidden="hidden" 
+        role="alert" >
+      <!-- Icons for Error or Success -->
+      <svg v-if="alertType === 'error'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+      </svg>
+      <svg v-if="alertType === 'success'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+      </svg>
+      <!-- Alert Message -->
+      {{ alertMessage }}
+      <!-- Close Button -->
+      <button type="button" class="btn-close" @click="dismissAlert()"></button>
+    </div>
+
+    <!-- Main Content -->
+    <div class='row'>
+      <div class='col-md-9 my-2'>
+        <h1>Draw your map!</h1>
       </div>
     </div>
-  </nav>
 
-  <!-- Map Drawing Area -->
-  <div id="map"></div>
+    <!-- Row 1: Map and Controls -->
+    <div class="row">
+      <!-- Map -->
+      <div id="map" class="col-md-9"></div>
 
-  <!-- Controls for route and colors -->
-  <div id="controls">
-    <h4>Choose Route Color</h4>
-    <div id="colorPalette">
-      <div class="color-box" style="background-color: red;" onclick="changeColor('#FF0000')"></div>
-      <div class="color-box" style="background-color: green;" onclick="changeColor('#008000')"></div>
-      <div class="color-box" style="background-color: blue;" onclick="changeColor('#0000FF')"></div>
-      <div class="color-box" style="background-color: purple;" onclick="changeColor('#800080')"></div>
+      <!-- Controls -->
+      <div id="controls" class="col-md-3 d-flex flex-column">
+        <!-- Fixed Section (Route Color, Distance, Buttons) -->
+        <div id="fixed-controls" class="mb-3">
+          <h4>Choose Route Color</h4>
+          <div id="colorPalette">
+            <div v-for="color in colors" class="color-box" :style="{ backgroundColor: color }" @click="changeColor(color)"></div>
+          </div>
+          <button class="btn btn-primary" @click="clearMap" style="margin-right:5px;">Clear Route</button>
+          <button id="export-button" class="btn btn-success" @click="exportToGoogleMaps">Export to Google Maps</button>
+          <div id="distance">Total Distance: {{ totalDistance }} km</div>
+        </div>
+
+        <!-- Scrollable Section (Plotted Points) -->
+        <div id="scrollable-points" class="flex-grow-1">
+          <h4>Plotted Points</h4>
+          <div id="point-list" class="list-group mx-2">
+            <a v-for="(point, index) in waypoints" :class="['list-group-item', 'list-group-item-action', 'point-item', 'rounded', { 'is-filling': point.isFilling }]" @mouseover="startMarkerBounce(index)" @mouseleave="stopMarkerBounce(index)">
+              <div class="details ms-2 me-auto">
+                <h5>Marker {{ index + 1 }}</h5>
+                <h6 class="fw-bold mb-1">{{ point.address }}</h6>
+                Lat: {{ point.location.lat().toFixed(5) }}, Lng: {{ point.location.lng().toFixed(5) }} <br>
+              </div>
+              <span class="trash-container">
+                <button class="trash-btn" @click="removeWaypoint(index)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                  </svg>
+                </button>
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <button class="clear-button" onclick="clearMap()">Clear Route</button>
+    <!-- Row 2: Title Input -->
+    <div class="row mt-3">
+      <div class="col">
+        <label for="title" class="form-label">Title</label>
+        <input type="text" class="form-control" id="title" placeholder="Enter title here" v-model="postTitle">
+      </div>
+    </div>
 
-    <div id="distance">Total Distance: 0 km</div>
+    <!-- Row 3: Description Input -->
+    <div class="row mt-3">
+      <div class="col">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" rows="4" placeholder="Enter description here" v-model="postDescription"></textarea>
+      </div>
+    </div>
 
-    <button id="export-button" onclick="exportToGoogleMaps()">Export to Google Maps</button>
+    <!-- Row 4: Post Anonymously Checkbox -->
+    <div class="row mt-3">
+      <div class="col">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="postAnonymously" v-model="postAnonymously">
+          <label class="form-check-label" for="postAnonymously">Post Anonymously?</label>
+          <small class="text-muted d-block">Hide username</small>
+        </div>
+      </div>
+    </div>
 
-    <!-- Point List Container -->
-    <h4>Plotted Points</h4>
-    <ul id="point-list" class="list-group">
-      <!-- Points will be dynamically added here -->
-    </ul>
+    <!-- Row 5: Buttons -->
+    <div class="row mt-3">
+      <div class="col-6">
+        <button class="btn btn-secondary w-100" @click="clearPost()">Clear</button>
+      </div>
+      <div class="col-6">
+        <button class="btn btn-primary w-100" @click="createPost()">Create</button>
+      </div>
+    </div>
   </div>
+  <!-- Footer Section -->
+  <footer class="bg-light text-center text-lg-start mt-5">
+    <div class="container p-4">
+        <!-- Grid row -->
+        <div class="row align-items-center">
+            <!-- Column 1: Brand Name -->
+            <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                <h5 class="text-uppercase fw-bold">MapPalette</h5>
+            </div>
 
-  <!-- Google Maps API Script -->
-  <script>
-    let map;
-    let directionsService;
-    let directionsRenderer;
-    let routePolyline;
-    let waypoints = [];
-    let currentColor = '#FF0000';  // Default route color
-    let totalDistance = 0;
+            <!-- Column 2: Contact Information -->
+            <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                <h6 class="fw-bold">Contact us</h6>
+                <p class="mb-1">mappalette@gmail.com</p>
+                <p class="mb-1">+65-687654321</p>
+                <p>81 Victoria St, Singapore 188065</p>
+            </div>
 
-    // Initialize and add the map
-    function initMap() {
-      // Create a map centered at some default coordinates
-      map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 14,
-        center: { lat: 1.3521, lng: 103.8198 }, // Default center (Singapore)
-        mapTypeId: "roadmap",
-        styles: [ // Custom Map Style to hide motorways
-          {
-            "featureType": "road.highway",
-            "elementType": "geometry",
-            "stylers": [{ "visibility": "off" }]
-          }
-        ]
-      });
+            <!-- Column 3: Social Media Icons -->
+            <div class="col-lg-4 col-md-12 text-md-end">
+                <a href="#" class="me-3 text-dark"><img
+                        src="https://img.icons8.com/ios-filled/24/000000/facebook-new.png" alt="Facebook" /></a>
+                <a href="#" class="me-3 text-dark"><img
+                        src="https://img.icons8.com/ios-filled/24/000000/linkedin.png" alt="LinkedIn" /></a>
+                <a href="#" class="me-3 text-dark"><img
+                        src="https://img.icons8.com/ios-filled/24/000000/twitter.png" alt="Twitter" /></a>
+                <a href="#" class="text-dark"><img
+                        src="https://img.icons8.com/ios-filled/24/000000/instagram-new.png"
+                        alt="Instagram" /></a>
+            </div>
+        </div>
+        <!-- Grid row -->
 
-      // Directions service and renderer for snapping to roads and showing routes
-      directionsService = new google.maps.DirectionsService();
-      directionsRenderer = new google.maps.DirectionsRenderer({
-        suppressMarkers: true,
-      });
+        <hr class="my-4">
 
-      routePolyline = new google.maps.Polyline({
-        strokeColor: currentColor,
-        strokeOpacity: 1.0,
-        strokeWeight: 4,
-        map: map
-      });
-
-      // Add a listener to capture clicks on the map
-      map.addListener("click", function(event) {
-        addWaypoint(event.latLng);
-      });
-    }
-
-    // Add a waypoint to the route
-    function addWaypoint(latLng) {
-      waypoints.push({
-        location: latLng,
-        stopover: true,
-      });
-
-      // Add the clicked point to the point list in the container
-      const pointList = document.getElementById("point-list");
-      const listItem = document.createElement("li");
-      listItem.className = "list-group-item point-item";
-      listItem.innerHTML = `
-        Lat: ${latLng.lat().toFixed(5)}, Lng: ${latLng.lng().toFixed(5)}
-        <button class="btn btn-danger btn-sm" onclick="removeWaypoint(${waypoints.length - 1})">Delete</button>
-      `;
-      pointList.appendChild(listItem);
-
-      // Recalculate the route with snapping to roads
-      calculateAndDisplayRoute();
-    }
-
-    // Remove a waypoint from the list
-    function removeWaypoint(index) {
-      waypoints.splice(index, 1); // Remove the point from waypoints array
-      const pointList = document.getElementById("point-list");
-      pointList.innerHTML = ''; // Clear the current list
-      // Re-render the points list
-      waypoints.forEach((waypoint, i) => {
-        const listItem = document.createElement("li");
-        listItem.className = "list-group-item point-item";
-        listItem.innerHTML = `
-          Lat: ${waypoint.location.lat().toFixed(5)}, Lng: ${waypoint.location.lng().toFixed(5)}
-          <button class="btn btn-danger btn-sm" onclick="removeWaypoint(${i})">Delete</button>
-        `;
-        pointList.appendChild(listItem);
-      });
-      calculateAndDisplayRoute();
-    }
-
-    // Change the color of the polyline route
-    function changeColor(color) {
-      currentColor = color;
-      if (routePolyline) {
-        routePolyline.setOptions({ strokeColor: currentColor });
-      }
-    }
-
-    // Calculate and display the route based on waypoints, avoiding motorways
-    function calculateAndDisplayRoute() {
-      if (waypoints.length < 2) return;
-
-      directionsService.route({
-        origin: waypoints[0].location,
-        destination: waypoints[waypoints.length - 1].location,
-        waypoints: waypoints.slice(1, -1),  // Middle points as waypoints
-        travelMode: 'WALKING',
-        avoidHighways: true, // Avoid highways/motorways
-      }, function(response, status) {
-        if (status === 'OK') {
-          directionsRenderer.setDirections(response);
-
-          // Calculate the total distance of the route
-          totalDistance = 0;
-          const route = response.routes[0];
-          for (let i = 0; i < route.legs.length; i++) {
-            totalDistance += route.legs[i].distance.value;  // distance in meters
-          }
-          document.getElementById("distance").innerText = `Total Distance: ${(totalDistance / 1000).toFixed(2)} km`;
-          
-          // Update the polyline color to the selected one
-          routePolyline.setOptions({
-            path: response.routes[0].overview_path,
-            strokeColor: currentColor
-          });
-        } else {
-          window.alert('Directions request failed due to ' + status);
-        }
-      });
-    }
-
-    // Clear the map and waypoints
-    function clearMap() {
-      waypoints = [];
-      document.getElementById("distance").innerText = 'Total Distance: 0 km';
-      routePolyline.setPath([]);  // Clear the polyline
-      document.getElementById("point-list").innerHTML = ''; // Clear the point list
-    }
-
-    // Export to Google Maps for navigation
-    function exportToGoogleMaps() {
-      if (waypoints.length < 2) {
-        alert("Please plot at least two points to export the route.");
-        return;
-      }
-      let googleMapsLink = 'https://www.google.com/maps/dir/';
-      waypoints.forEach((waypoint) => {
-        googleMapsLink += `${waypoint.location.lat()},${waypoint.location.lng()}/`;
-      });
-      window.open(googleMapsLink, '_blank');
-    }
-
-  </script>
-
-  <script src="https://maps.googleapis.com/maps/api/js?key=[INSERT YOUR API KEY HERE]&callback=initMap" async defer></script>
-
+        <!-- Copyright -->
+        <div class="text-center">
+            <p class="mb-0">&copy; 2024. All rights reserved.</p>
+        </div>
+    </div>
+</footer> 
+  <!-- <script src='https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap' async defer></script> -->
+  <script type="module" src='addMaps.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="firebase.js"></script>
 </body>
 </html>
