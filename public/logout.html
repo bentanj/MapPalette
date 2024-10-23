@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MapPalette - Logout</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    html, body {
+        height: 100%; /* Ensure the body takes the full height of the viewport */
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        background-color: #f8f9fa;
+      }
+
+      .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+      }
+
+    .navbar-brand {
+        /*controls brand name size in navbar*/
+        font-size: 1.5rem;
+    }
+
+    .nav-link {
+        /*controls font size and margin of nav links*/
+        font-size: 1.2rem;
+        margin-left: 20px;
+    }
+
+    .navbar-brand img {
+        /*brand logo sizing*/
+        width: 50px;
+        height: 50px;
+        margin-right: 8px;
+    }
+
+    .logout-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Vertically center the content */
+        align-items: center;     /* Horizontally center the content */
+        flex-grow: 1;
+        width: 100%;
+        text-align: center;
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 3rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+  
+      .logout-container h2 {
+        color: #007bff;
+        margin-bottom: 1rem;
+      }
+  
+      .logout-container p {
+        color: #333;
+        margin-bottom: 1.5rem;
+      }
+
+      footer {
+        background-color: #f8f9fa;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        text-align: center;
+      }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light px-3">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="index.html"><img src="../resources/index/mappalettelogo.png"><span style="color: #007bff;">MapPalette</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a href="login.html" class="nav-link btn btn-outline-primary">Login</a>
+              </li>
+              <li class="nav-item">
+                <a href="signup.html" class="nav-link btn btn-primary">Sign Up</a>
+              </li>
+            </ul>
+        </div>
+    </div>
+  </nav>
+
+  <div class="logout-container">
+    <h2>You've been logged out</h2>
+    <p>Thank you for using MapPalette. We hope to see you again soon!</p>
+    <a href="index.html" class="btn btn-outline-secondary"><b>Return to Home</b></a>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-light text-center text-lg-start">
+    <div class="container p-4">
+        <!-- Grid row -->
+        <div class="row align-items-center">
+            <!-- Column 1: Brand Name -->
+            <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                <h5 class="text-uppercase fw-bold">MapPalette</h5>
+            </div>
+
+            <!-- Column 2: Contact Information -->
+            <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                <h6 class="fw-bold">Contact us</h6>
+                <p class="mb-1">mappalette@gmail.com</p>
+                <p class="mb-1">+65-687654321</p>
+                <p>81 Victoria St, Singapore 188065</p>
+            </div>
+
+            <!-- Column 3: Social Media Icons -->
+            <div class="col-lg-4 col-md-12 text-md-end">
+                <a href="#" class="me-3 text-dark"><img
+                        src="https://img.icons8.com/ios-filled/24/000000/facebook-new.png" alt="Facebook" /></a>
+                <a href="#" class="me-3 text-dark"><img
+                        src="https://img.icons8.com/ios-filled/24/000000/linkedin.png" alt="LinkedIn" /></a>
+                <a href="#" class="me-3 text-dark"><img
+                        src="https://img.icons8.com/ios-filled/24/000000/twitter.png" alt="Twitter" /></a>
+                <a href="#" class="text-dark"><img
+                        src="https://img.icons8.com/ios-filled/24/000000/instagram-new.png"
+                        alt="Instagram" /></a>
+            </div>
+        </div>
+        <!-- Grid row -->
+
+        <hr class="my-4">
+
+        <!-- Copyright -->
+        <div class="text-center">
+            <p class="mb-0">&copy; 2024. All rights reserved.</p>
+        </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
