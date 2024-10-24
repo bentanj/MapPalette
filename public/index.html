@@ -408,43 +408,31 @@
   </section>
 
   <!-- Key Features -->
-  <section class="container py-5 text-center">
-    <div class="mb-5">
-        <h2>Why Choose MapPalette?</h2>
-    </div>
-    <div class="row mt-4">
-      <div class="col-sm-4">
-        <img class="features-image" src="./resources/index/features/maps.png" alt="">
-        <h4>Creative Route Drawing</h4>
-        <p>Design and follow fun, custom running routes on the map.</p>
-      </div>
-      <div class="col-sm-4">
-        <img class="features-image" src="./resources/index/features/share.png" alt="">
-        <h4>Share Your Routes</h4>
-        <p>Easily share your routes with friends or on social media.</p>
-      </div>
-      <div class="col-sm-4">
-        <img class="features-image" src="./resources/index/features/integration.png" alt="">
-        <h4>Seamless Integration</h4>
-        <p>Connect with fitness apps like Strava to track your runs.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Video Section -->
-    <div class="bg-light">
-        <div class="container py-5 video-container">
-            <h3 class="mb-4">Watch How MapPalette Works</h3>
-            <div class="row justify-content-center">
-                <div class="col-sm-8">
-                    <video class="w-100" height="auto" autoplay muted loop>
-                        <source src="./resources/index/placeholder_vid.mp4" type="video/mp4">
-                    </video>
-                </div>
+  <section class="key-features-section">
+    <div class="key-features-content">
+        <div class="mb-5 fade-in" style="text-align:center">
+            <h2>Why Choose MapPalette?</h2>
+        </div>
+        <div class="row mt-4">
+            <div class="col-sm-4">
+                <img class="features-image" src="./resources/index/features/maps.png" alt="">
+                <h4>Creative Route Drawing</h4>
+                <p>Design and follow fun, custom running routes on the map.</p>
+            </div>
+            <div class="col-sm-4">
+                <img class="features-image" src="./resources/index/features/share.png" alt="">
+                <h4>Share Your Routes</h4>
+                <p>Easily share your routes with friends or on social media.</p>
+            </div>
+            <div class="col-sm-4">
+                <img class="features-image" src="./resources/index/features/integration.png" alt="">
+                <h4>Seamless Integration</h4>
+                <p>Connect with fitness apps like Strava to track your runs.</p>
             </div>
         </div>
     </div>
 </section>
+
 
   <!-- Reviews Section -->
   <section class="reviews fade-in">
@@ -455,6 +443,7 @@
             <h2 class="h5 mt-2 mb-3 fw-light fst-italic">Click on the images to find out more!</h2>
         </div>
     
+        
         <div id="galleryContainer" class="d-flex overflow-auto h-100 align-items-center scrollbar-hide px-1 gallery-container mt-5">
             <div class="flex-shrink-0" style="width: 2vw"></div>
             <!-- Images will be inserted here by JavaScript -->
@@ -466,23 +455,24 @@
                 <!-- Indicators will be inserted here by JavaScript -->
             </div>
         </div>
+        
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const images = [
-                '../resources/index/reviews/ananya.png',
-                '../resources/index/reviews/bingbing.png',
-                '../resources/index/reviews/brandon.png',
-                '../resources/index/reviews/chein.png',
-                '../resources/index/reviews/supreme.png',
-                '../resources/index/reviews/darryl.png',
-                '../resources/index/reviews/emily.png',
-                '../resources/index/reviews/justin.png',
-                '../resources/index/reviews/nick.png',
-                '../resources/index/reviews/ryan.png',
-                '../resources/index/reviews/suzy.png',
-                '../resources/index/reviews/zac.png',
+                '../public/resources/index/reviews/ananya.png',
+                '../public/resources/index/reviews/bingbing.png',
+                '../public/resources/index/reviews/brandon.png',
+                '../public/resources/index/reviews/chein.png',
+                '../public/resources/index/reviews/supreme.png',
+                '../public/resources/index/reviews/darryl.png',
+                '../public/resources/index/reviews/emily.png',
+                '../public/resources/index/reviews/justin.png',
+                '../public/resources/index/reviews/nick.png',
+                '../public/resources/index/reviews/ryan.png',
+                '../public/resources/index/reviews/suzy.png',
+                '../public/resources/index/reviews/zac.png',
             ];
             let activeIndex = null;
             let isDragging = false;
@@ -624,16 +614,17 @@
   <!-- Video Section -->
   <div class="bg-light">
     <div class="container py-5 video-container">
-        <h2 class="mb-5 fade-in">Watch How MapPalette Works</h2>
-        <div class="row justify-content-center">
-            <div class="col-sm-8 fade-in">
+        <h3 class="mb-4 fade-in">Watch How MapPalette Works</h3>
+        <div class="row justify-content-center fade-in">
+            <div class="col-sm-8">
                 <video class="w-100" height="auto" autoplay muted loop>
-                    <source src="../resources/index/placeholder_vid.mp4" type="video/mp4">
+                    <source src="./resources/index/placeholder_vid.mp4" type="video/mp4">
                 </video>
             </div>
         </div>
     </div>
-  </div>
+</div>
+
 
   <!-- About Us Section -->
   <section class="about-us">
@@ -737,7 +728,7 @@
 
       elements.forEach(el => {
         const position = el.getBoundingClientRect().top;
-        if (position < windowHeight-150) {
+        if (position < windowHeight-220) {
           el.classList.add('show');
         }
       });
@@ -752,7 +743,7 @@
         const position = feature.getBoundingClientRect().top;
         
         // Trigger the fade-in only when the element is in the viewport, and add a delay for each feature
-        if (position < windowHeight - 100) { // Adjust this value as needed
+        if (position < windowHeight - 240) { // Adjust this value as needed
             setTimeout(() => {
             feature.style.opacity = 1;
             feature.style.transform = 'translateY(0)';
