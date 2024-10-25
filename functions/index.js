@@ -49,19 +49,24 @@ app.get('/hello-world', (req, res) => {
 // Create a post with auto-generated ID and add it to the user's MapsCreated subcollection
 app.post('/api/create', async (req, res) => {
   try {
-    const postData = {
-      title: req.body.title,
-      description: req.body.description,
-      waypoints: req.body.waypoints,
-      userID: req.body.userID,
-      likeCount: 0,
-      shareCount: 0,
-      commentCount: 0,
-      createdAt: FieldValue.serverTimestamp(),
+    // Define the new route object with all required fields
+    const routeData = {
+      title: req.body.route.title,           // Route title
+      description: req.body.route.description, // Route description
+      distance: req.body.route.distance,     // Initialize distance as 0km
+      location: req.body.route.location,     // Location, using the first waypoint's name
+      image: req.body.route.image || 'Map.jpeg', // Use 'Map.jpeg' as the placeholder image
+      date: FieldValue.serverTimestamp(),    // Automatically store the current timestamp
+      likes: req.body.route.likes || 0,      // Initialize likes to 0
+      comments: req.body.route.comments || 0, // Initialize comments to 0
+      modalId: req.body.route.modalId,       // Modal ID, generated based on userId
+      author: req.body.route.author,         // User's email (or username)
+      commentsList: req.body.route.commentsList || [], // Start with an empty comments list
+      waypoints: req.body.route.waypoints,   // The waypoints data passed from the frontend
     };
 
     // Create a new post in the 'routes' collection
-    const docRef = await db.collection('routes').add(postData);
+    const docRef = await db.collection('routes').add(routeData);
 
     // Add the post ID to the MapsCreated subcollection of the user
     const userRef = db.collection('users').doc(req.body.userID);
@@ -70,12 +75,14 @@ app.post('/api/create', async (req, res) => {
       createdAt: FieldValue.serverTimestamp(),
     });
 
+    // Respond with success and the document ID
     return res.status(201).json({ id: docRef.id, message: 'Post created and added to user profile successfully!' });
   } catch (error) {
     console.error('Error creating post and updating user profile:', error);
     return res.status(500).send(error);
   }
 });
+
 
 // Get a specific post by ID
 app.get('/api/posts', async (req, res) => {

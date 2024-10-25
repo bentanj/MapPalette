@@ -59,38 +59,55 @@ const app = Vue.createApp({
         },
 
         createPost() {
-            // First, ensure the post has a title
+            // Ensure the post has a title
             if (this.postTitle.trim() === '') {
                 this.alertMsg = 'Post must include a title.';
                 this.setAlert('error', this.alertMsg);
                 this.alertMsg = '';
                 return;
             }
-
+        
+            // Ensure there are at least two waypoints
             if (this.waypoints.length < 2) {
-                this.setAlert('error','You need at least two points to submit the route!')
+                this.setAlert('error', 'You need at least two points to submit the route!');
                 return;
             }
-
-            // Ensure post description isn't empty, default if it is
+        
+            // Ensure post description isn't empty, default to 'No description' if it is
             if (this.postDescription.trim() === '') {
                 this.postDescription = "No description.";
             }
+        
             this.submitting = true;
+        
             // Check Firebase Auth to get user details
-            const auth = getAuth(); // This line should now work
+            const auth = getAuth();
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     // User is authenticated
-                    const userId = user.uid; // Get Firebase UID
-                    const username = user.email; // Assuming email as username, change if necessary
-                    // Make the API call to create a post using axios
-                    axios.post(`${endPointURL}/api/create/`, {
+                    const userId = user.uid; // Firebase UID
+                    const username = user.username || "Anonymous"; // Use email as username, fallback to "Anonymous" if not present
+        
+                    // Create the new route object following the new structure
+                    const newRoute = {
                         title: this.postTitle,
                         description: this.postDescription,
-                        waypoints: this.waypoints,
-                        userID: userId,
-                        // Currently, API does not support username, so we'll exclude it for now
+                        distance: "0km", // Initialize with 0 km as we don't have actual distance data yet
+                        location: this.waypoints[0].name || "Unknown Location", // Set location to the first waypoint's name
+                        image: "", // Placeholder image
+                        date: new Date().toISOString(), // Current timestamp
+                        likes: 0, // Initialize likes to 0
+                        comments: 0, // Initialize comments to 0
+                        modalId: userId + "-modal", // Unique modal ID using userId
+                        author: username, // Use the user's email as author
+                        commentsList: [], // Initialize with an empty array
+                        waypoints: this.waypoints // Pass the waypoints data
+                    };
+        
+                    // Make the API call to create a post using axios
+                    axios.post(`${endPointURL}/api/create/`, {
+                        route: newRoute, // Send the new route structure to the backend
+                        userID: userId
                     })
                     .then(response => {
                         const data = response.data;
@@ -119,7 +136,6 @@ const app = Vue.createApp({
                 this.submitting = false;
             });
         },
-
         clearPost(){
             this.postTitle = '';
             this.postDescription = '';
