@@ -46,25 +46,33 @@ app.get('/hello-world', (req, res) => {
 // CRUD operations for route posts
 // 
 
-// Create a post with auto-generated ID
+// Create a post with auto-generated ID and add it to the user's MapsCreated subcollection
 app.post('/api/create', async (req, res) => {
   try {
     const postData = {
       title: req.body.title,
       description: req.body.description,
-      waypoints: req.body.waypoints, // Array of waypoints
-      userID: req.body.userID, // ID of the creator
+      waypoints: req.body.waypoints,
+      userID: req.body.userID,
       likeCount: 0,
       shareCount: 0,
       commentCount: 0,
-      createdAt: FieldValue.serverTimestamp(), // Correct usage of serverTimestamp()
+      createdAt: FieldValue.serverTimestamp(),
     };
 
-    // Create a new document with an auto-generated ID
+    // Create a new post in the 'routes' collection
     const docRef = await db.collection('routes').add(postData);
-    return res.status(201).json({ id: docRef.id, message: 'Post created successfully!' });
+
+    // Add the post ID to the MapsCreated subcollection of the user
+    const userRef = db.collection('users').doc(req.body.userID);
+    await userRef.collection('MapsCreated').doc(docRef.id).set({
+      mapID: docRef.id,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
+    return res.status(201).json({ id: docRef.id, message: 'Post created and added to user profile successfully!' });
   } catch (error) {
-    console.error('Error creating post:', error);
+    console.error('Error creating post and updating user profile:', error);
     return res.status(500).send(error);
   }
 });
