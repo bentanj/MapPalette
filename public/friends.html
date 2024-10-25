@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Meta and Title -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapPalette - Friends</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Updated CSS Styles -->
+    <link rel="stylesheet" href="search.css">
+
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Axios for HTTP Requests -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg stroke">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#"><img src="route_photos/mappalettelogo.png">MapPalette</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon text-white"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Feed</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                                id="searchDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Search
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="searchDropdown">
+                                <li><a class="dropdown-item" href="routes.html">Routes</a></li>
+                                <li><a class="dropdown-item" href="friends.html">Friends</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Draw</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                                id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="route_photos/download.jpeg" alt="Profile" class="profile-pic">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                <li><a class="dropdown-item" href="#">Your Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="#">Log Out</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Feed Header -->
+        <div class="sample-header">
+            <div class="sample-header-section">
+                <h1>Friends</h1>
+                <h2>Connect and engage with your running community.</h2>
+            </div>
+        </div>
+
+        <!-- Friends and Other Users Section -->
+        <div class="container-fluid sample-section">
+            <div class="row">
+                <h1>Your Friends ({{friends.length}})</h1>
+                <p>Search:</p>
+                <input type="text" v-model="searchQuery" placeholder="Search for friends or users"
+                    class="form-control mb-3">
+
+                <!-- Friends Section with Load More -->
+                <div v-if="filteredFriends.length > 0" class="col-md-4 mb-4"
+                    v-for="friend in filteredFriends.slice(0, displayedFriends)" :key="friend.id">
+                    <friend-card :friend="friend" @confirm-unfollow="confirmUnfollow" :disabled="disableButtons"
+                        @open-profile="openProfile"></friend-card>
+                </div>
+                <p v-else>No friends match your search.</p>
+                <div class="text-center" v-if="displayedFriends < filteredFriends.length">
+                    <button class="btn btn-outline-primary" @click="loadMoreFriends">Load More</button>
+                </div>
+
+                <!-- Other Users Section with Load More -->
+                <h1>Other Users</h1>
+                <div v-if="filteredOtherUsers.length > 0" class="col-md-4 mb-4"
+                    v-for="user in filteredOtherUsers.slice(0, displayedOtherUsers)" :key="user.id">
+                    <other-user-card :user="user" @follow="followUser" :disabled="disableButtons"></other-user-card>
+                </div>
+                <p v-else>No other users match your search.</p>
+                <div class="text-center" v-if="displayedOtherUsers < filteredOtherUsers.length">
+                    <button class="btn btn-outline-primary" @click="loadMoreOtherUsers">Load More</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unfollow Confirmation Modal -->
+        <div class="modal fade" id="unfollowModal" tabindex="-1" aria-labelledby="unfollowModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="unfollowModalLabel">Confirm Unfollow</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to unfollow <strong>{{ friendToUnfollow?.name }}</strong>?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" @click="unfollowConfirmed">Unfollow</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center">
+            <div class="container p-5">
+                <div class="row align-items-center">
+                    <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                        <h5 class="text-uppercase fw-bold">MapPalette</h5>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                        <h6 class="fw-bold">Contact us</h6>
+                        <p class="mb-1">mappalette@gmail.com</p>
+                        <p class="mb-1">+65-687654321</p>
+                        <p>81 Victoria St, Singapore 188065</p>
+                    </div>
+
+                    <div class="col-lg-4 col-md-12 text-md-end">
+                        <a href="#" class="me-3 text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="me-3 text-white"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="me-3 text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <hr class="my-4">
+                <div class="text-center">
+                    <p class="mb-0">&copy; 2024. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                friends: [],
+                otherUsers: [],
+                searchQuery: '',
+                displayedFriends: 6,
+                displayedOtherUsers: 6,
+                friendToUnfollow: null,
+                disableButtons: false
+            };
+        },
+        computed: {
+            filteredFriends() {
+                return this.friends.filter(friend =>
+                    friend.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                );
+            },
+            filteredOtherUsers() {
+                return this.otherUsers.filter(user =>
+                    user.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                );
+            }
+        },
+        methods: {
+            confirmUnfollow(friend) {
+                this.friendToUnfollow = friend;
+                const unfollowModal = new bootstrap.Modal(document.getElementById('unfollowModal'));
+                unfollowModal.show();
+            },
+            unfollowConfirmed() {
+                this.friends = this.friends.filter(f => f.id !== this.friendToUnfollow.id);
+                this.otherUsers.push(this.friendToUnfollow);
+                this.friendToUnfollow = null;
+
+                const unfollowModal = bootstrap.Modal.getInstance(document.getElementById('unfollowModal'));
+                unfollowModal.hide();
+            },
+            followUser(user) {
+                this.otherUsers = this.otherUsers.filter(u => u.id !== user.id);
+
+                // Mark as a new friend and add to the friends list
+                user.newFriend = true;
+                this.friends.unshift(user);
+
+                // Remove "New!" after 1.5s
+                setTimeout(() => {
+                    user.newFriend = false;
+                }, 1500);
+
+                // Follow API call can be added here
+            },
+            loadMoreFriends() {
+                this.displayedFriends += 6;
+            },
+            loadMoreOtherUsers() {
+                this.displayedOtherUsers += 6;
+            }
+        },
+        mounted() {
+            axios.get('data.json')
+                .then(response => {
+                    this.friends = response.data.friends;
+                    this.otherUsers = response.data.otherUsers;
+                })
+                .catch(error => {
+                    console.error("Error loading data:", error);
+                });
+        }
+    });
+
+    app.component("friend-card", {
+        props: ['friend', 'disabled'],
+        template: `
+            <div class="card friend-card h-100">
+                <div class="card-body d-flex align-items-center">
+                    <img :src="friend.profileImage" alt="Friend Profile" class="profile-pic me-3">
+                    <div class="flex-grow-1">
+                        <h5 class="card-title mb-1">{{ friend.name }}
+                        <span v-if="friend.newFriend" class="text-danger ms-2" style="font-weight: bold;">New!</span>
+                        </h5>
+                        <p class="card-text text-muted mb-0">Runs {{ friend.routes.length }} route(s)</p>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <button class="btn mb-2" :class="{'btn-outline-danger': hovering, 'btn-success': !hovering}"
+                            @click="requestUnfollow" @mouseover="hovering = true" @mouseleave="hovering = false" :disabled="disabled">
+                            <i :class="hovering ? 'fas fa-user-minus me-1' : 'fas fa-check me-1'"></i>
+                            {{ hovering ? 'Unfollow' : (unfollowing ? 'Unfollow' : 'Following') }}
+                        </button>
+                        <button class="btn btn-outline-primary follow-btn" :disabled="disabled" @click='openProfile'>
+                            <i class="fas fa-user me-1"></i> View Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `,
+        data() {
+            return {
+                unfollowing: false,
+                hovering: false
+            };
+        },
+        methods: {
+            requestUnfollow() {
+                this.$emit('confirmUnfollow', this.friend);
+            },
+            openProfile() {
+                this.$emit('openProfile', this.friend)
+            }
+        }
+    });
+
+    app.component('other-user-card', {
+        props: ['user', 'disabled'],
+        template: `
+            <div class="card friend-card h-100">
+                <div class="card-body d-flex align-items-center">
+                    <img :src="user.profileImage" alt="User Profile" class="profile-pic me-3">
+                    <div class="flex-grow-1">
+                        <h5 class="card-title mb-1">{{ user.name }}</h5>
+                        <p class="card-text text-muted mb-0">Runs {{ user.routes.length }} route(s)</p>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <button class="btn follow-btn mb-2"
+                            :class="{
+                                'btn-outline-primary': !isFollowing && !followSuccess,
+                                'btn-success': followSuccess && !transitionComplete,
+                                'btn-outline-danger': transitionComplete
+                            }"
+                            @click="follow" :disabled="disabled || isFollowing">
+                            <i v-if="!followSuccess" :class="isFollowing ? 'fas fa-spinner fa-spin' : 'fas fa-user-plus me-1'"></i>
+                            <i v-else-if="followSuccess && !transitionComplete" class="fas fa-check me-1"></i>
+                            <i v-else class="fas fa-user-minus me-1"></i>
+                            <span v-if="!followSuccess">{{ isFollowing ? 'Following...' : 'Follow' }}</span>
+                            <span v-else-if="followSuccess && !transitionComplete">Followed</span>
+                            <span v-else>Unfollow</span>
+                        </button>
+                        <button class="btn btn-outline-primary follow-btn" :disabled="disabled">
+                            <i class="fas fa-user me-1"></i> View Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `,
+        data() {
+            return {
+                isFollowing: false,
+                followSuccess: false,
+                transitionComplete: false
+            };
+        },
+        methods: {
+            follow() {
+                this.isFollowing = true;
+                this.$root.disableButtons = true;
+                setTimeout(() => {
+                    this.followSuccess = true;
+                    this.$emit('follow', { ...this.user, newFriend: true });
+                    setTimeout(() => {
+                        this.transitionComplete = true;
+                        this.$root.disableButtons = false;
+                    }, 1000);
+                }, 1000);
+            }
+        }
+    });
+
+    app.mount('#app');
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+</html>
