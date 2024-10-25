@@ -4,23 +4,28 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 const app = Vue.createApp({
     data() {
       return {
+        // map related
         map: null,
         directionsService: null,
         directionsRenderer: null,
         routePolyline: null,
-        // search:'',
+
+        // Control related
         waypoints: [],
         markers: [], // Array to store markers
-        currentColor: '#FF0000',
+        currentColor: '#e81416',
         totalDistance: 0,
         geocoder: null, // Add a geocoder for reverse geocoding
         colors: ['#e81416','#ffa500','#faeb36','#79c314','#487de7','#4b369d','#70369d'], // Available colors
         mapsApiKey: '', // Maps API key to be dynamically loaded
-        // Alert
+
+        // Alert related
         showAlert: false,
+        alertTimeout: null,
         hidden:true,
         alertType: '',
         alertMessage: '', 
+
         // Post related
         postTitle:'',
         postDescription:'',
@@ -46,7 +51,7 @@ const app = Vue.createApp({
             
                 // Dynamically load Google Maps script with the fetched API key
                 const script = document.createElement('script');
-                script.src = `https://maps.googleapis.com/maps/api/js?key=${this.mapsApiKey}&callback=initMap`;
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${this.mapsApiKey}&callback=initMap&libraries=places`;
                 script.async = true;
                 script.defer = true;
                 document.body.appendChild(script);
@@ -57,128 +62,95 @@ const app = Vue.createApp({
         initMap() {
             // Initialize the map and its settings
             this.map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 18,
-                center: { lat: 1.36241, lng: 103.82606 }, // Singapore's coordinates
-                mapTypeId: "roadmap",
-                streetViewControl: false,
-                styles: [
-                    { 
-                        "featureType": "road.highway",
-                        "elementType": "geometry",
-                        "stylers": [
-                            { 
-                                "visibility": "off" 
-                            }
-                        ] 
-                    },
-                    {
-                        "featureType": "poi",
-                        "elementType": "labels.text",
-                        "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                        ]
-                    },
-                    {
-                        "featureType": "poi.business",
-                        "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                        ]
-                    },
-                    {
-                        "featureType": "transit.station.bus",
-                        "stylers":  [
-                        { 
-                            "visibility": "off" 
-                        }
-                        ]
-                    }
-                ]
+              zoom: 18,
+              center: { lat: 1.36241, lng: 103.82606 }, // Singapore's coordinates
+              mapTypeId: "roadmap",
+              streetViewControl: false,
+              mapTypeControl: false,
+              styles: [
+                {
+                  "featureType": "road.highway",
+                  "elementType": "geometry",
+                  "stylers": [{ "visibility": "off" }]
+                },
+                {
+                  "featureType": "poi",
+                  "elementType": "labels.text",
+                  "stylers": [{ "visibility": "off" }]
+                },
+                {
+                  "featureType": "poi.business",
+                  "stylers": [{ "visibility": "off" }]
+                },
+                {
+                  "featureType": "transit.station.bus",
+                  "stylers": [{ "visibility": "off" }]
+                }
+              ],
             });
-    
+          
             this.directionsService = new google.maps.DirectionsService();
             this.directionsRenderer = new google.maps.DirectionsRenderer({
-                suppressMarkers: true,
+              suppressMarkers: true,
             });
-    
+          
             this.routePolyline = new google.maps.Polyline({
-                strokeColor: this.currentColor,
-                strokeOpacity: 1.0,
-                strokeWeight: 4,
-                map: this.map
+              strokeColor: this.currentColor,
+              strokeOpacity: 1.0,
+              strokeWeight: 4,
+              map: this.map
             });
-            
-            this.geocoder = new google.maps.Geocoder(); // Ensure geocoder is initialized here
+          
+            this.geocoder = new google.maps.Geocoder();
 
-            // Fix this part to make sure that search bar is able to auto reload like example in "https://developers.google.com/maps/documentation/javascript/examples/places-searchbox" 
-            // // Add the search box and link it to the input element
-            // const input = document.getElementById("pac-input");
-            // const searchBox = new google.maps.places.SearchBox(input);
-            
-            // // Bias the SearchBox results towards current map's viewport
-            // this.map.addListener("bounds_changed", () => {
-            //     searchBox.setBounds(this.map.getBounds());
-            // });
+            /* ======== Add Search Box Using map.controls ======== */
+            // Get the input element
+            const input = document.getElementById("pac-input");
+            const searchBox = new google.maps.places.SearchBox(input);
 
-            // // Listen for the event fired when the user selects a prediction and retrieve
-            // // more details for that place
-            // searchBox.addListener("places_changed", () => {
-            //     const places = searchBox.getPlaces();
+            // Bias the SearchBox results towards current map's viewport
+            this.map.addListener("bounds_changed", () => {
+                searchBox.setBounds(this.map.getBounds());
+            });
 
-            //     if (places.length === 0) {
-            //         return;
-            //     }
-
-            //     // Clear out the old markers.
-            //     this.markers.forEach((marker) => {
-            //         marker.setMap(null);
-            //     });
-            //     this.markers = [];
-
-            //     // For each place, get the name and location.
-            //     const bounds = new google.maps.LatLngBounds();
-
-            //     places.forEach((place) => {
-            //         if (!place.geometry || !place.geometry.location) {
-            //             console.log("Returned place contains no geometry");
-            //             return;
-            //         }
-
-            //         // Create a marker for each place
-            //         this.addMarker(place.geometry.location);
-
-            //         if (place.geometry.viewport) {
-            //             bounds.union(place.geometry.viewport);
-            //         } else {
-            //             bounds.extend(place.geometry.location);
-            //         }
-            //     });
-
-            //     this.map.fitBounds(bounds);
-            // });
-
+            // Listen for the event fired when the user selects a prediction
+            searchBox.addListener("places_changed", () => {
+                const places = searchBox.getPlaces();
+              
+                if (places.length === 0) {
+                  return;
+                }
+              
+                const place = places[0]; // Get the first place
+              
+                if (!place.geometry || !place.geometry.location) {
+                  console.log("Returned place contains no geometry");
+                  return;
+                }
+              
+                // Center the map on the selected place and set zoom to 18
+                this.map.setCenter(place.geometry.location);
+                this.map.setZoom(18);
+            });
+            /* ======== End of Search Box Functionality ======== */
+          
             // Listen for clicks on the map to add waypoints
             this.map.addListener("click", (event) => {
-                this.addWaypoint(event.latLng);
+              this.addWaypoint(event.latLng);
             });
-            
+          
             // Automatically try to get the user's current location on page load
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const pos = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                        };
-                        // Pan the map to the user's current location
-                        this.map.setCenter(pos);
-                    }
-                );
+              navigator.geolocation.getCurrentPosition((position) => {
+                const pos = {
+                  lat: position.coords.latitude,
+                  lng: position.coords.longitude,
+                };
+                // Pan the map to the user's current location
+                this.map.setCenter(pos);
+              });
             }
-        },
+        },          
 
         addWaypoint(latLng) {
             // Add a new waypoint
@@ -249,17 +221,17 @@ const app = Vue.createApp({
             });
         
             // Create an InfoWindow for the marker
-            const infoWindow = new google.maps.InfoWindow({
-                content: `Marker ${markerIndex}<br>Lat: ${latLng.lat().toFixed(5)}, Lng: ${latLng.lng().toFixed(5)}`
-            });
+            // const infoWindow = new google.maps.InfoWindow({
+            //     content: `Marker ${markerIndex}<br>Lat: ${latLng.lat().toFixed(5)}, Lng: ${latLng.lng().toFixed(5)}`
+            // });
         
-            // Add event listeners for hovering to show InfoWindow
-            marker.addListener("mouseover", () => {
-                infoWindow.open(this.map, marker);
-            });
-            marker.addListener("mouseout", () => {
-                infoWindow.close();
-            });
+            // // Add event listeners for hovering to show InfoWindow
+            // marker.addListener("mouseover", () => {
+            //     infoWindow.open(this.map, marker);
+            // });
+            // marker.addListener("mouseout", () => {
+            //     infoWindow.close();
+            // });
         
             // Wait for 700ms (duration of the drop animation) before adding the label
             setTimeout(() => {
@@ -310,7 +282,7 @@ const app = Vue.createApp({
               // Allow further deletions after the animation completes
               this.isDeleting = false;
         
-            }, 1000);  // Wait for the animation to complete (1 second)
+            }, 500);  // Wait for the animation to complete (300 milisecond)
         },        
         
         updateMarkerLabels() {
@@ -319,17 +291,17 @@ const app = Vue.createApp({
                 marker.setLabel(`${index + 1}`);
                 
                 // Update the InfoWindow content to reflect the updated marker number
-                const infoWindow = new google.maps.InfoWindow({
-                    content: `Marker ${index + 1}<br>Lat: ${marker.getPosition().lat().toFixed(5)}, Lng: ${marker.getPosition().lng().toFixed(5)}`
-                });
+                // const infoWindow = new google.maps.InfoWindow({
+                //     content: `Marker ${index + 1}<br>Lat: ${marker.getPosition().lat().toFixed(5)}, Lng: ${marker.getPosition().lng().toFixed(5)}`
+                // });
                 
-                // Update event listeners for the new InfoWindow content
-                marker.addListener("mouseover", () => {
-                    infoWindow.open(this.map, marker);
-                });
-                marker.addListener("mouseout", () => {
-                    infoWindow.close();
-                });
+                // // Update event listeners for the new InfoWindow content
+                // marker.addListener("mouseover", () => {
+                //     infoWindow.open(this.map, marker);
+                // });
+                // marker.addListener("mouseout", () => {
+                //     infoWindow.close();
+                // });
             });
         },
         
@@ -402,7 +374,8 @@ const app = Vue.createApp({
             // Clear waypoints and the route
             this.waypoints = [];
             this.clearRoute();
-
+            const input = document.getElementById("pac-input");
+            input.value='';
             this.setAlert('success', 'Route cleared successfully.');
         },
 
@@ -425,12 +398,24 @@ const app = Vue.createApp({
         
             // Then, after a delay (matching the fade-out duration), set hidden to true
             setTimeout(() => {
-                this.hidden = true;  // Hide the alert completely after the fade-out animation
-                this.alertMessage = '';  // Clear the message if needed
-            }, 300); // Adjust this timing to match your CSS transition duration (300ms here)
+              this.hidden = true; // Hide the alert completely after the fade-out animation
+              this.alertMessage = ''; // Clear the message if needed
+            }, 300); // Adjust this timing to match your CSS transition duration
+        
+            // Clear the timeout if dismissAlert is called manually
+            if (this.alertTimeout) {
+              clearTimeout(this.alertTimeout);
+              this.alertTimeout = null;
+            }
         },
         
         setAlert(type, message) {
+            // Clear any existing timeout to prevent stacking
+            if (this.alertTimeout) {
+              clearTimeout(this.alertTimeout);
+              this.alertTimeout = null;
+            }
+        
             // First, unhide the alert box
             this.hidden = false;
         
@@ -440,8 +425,14 @@ const app = Vue.createApp({
         
             // Add a short delay to trigger the fade-in effect after the alert becomes unhidden
             setTimeout(() => {
-                this.showAlert = true;  // Make the alert visible after un-hiding it
-            }, 10);  // A small delay (e.g., 10ms) to ensure the DOM reflects the 'hidden' state before showing
+              this.showAlert = true; // Make the alert visible after un-hiding it
+            }, 10); // A small delay to ensure the DOM reflects the 'hidden' state before showing
+        
+            // Automatically dismiss the alert after 10 seconds
+            this.alertTimeout = setTimeout(() => {
+              this.dismissAlert();
+              this.alertTimeout = null; // Reset the timeout ID
+            }, 3000); // 10,000 milliseconds = 10 seconds
         },
 
         createPost() {
@@ -503,6 +494,7 @@ const app = Vue.createApp({
                 }
                 this.submitting = false;
             });
+            
         },
 
         clearPost(){
@@ -511,7 +503,7 @@ const app = Vue.createApp({
             this.postAnonymously = false;
             this.clearMap();
             this.setAlert('success', 'Post cleared successfully.');
-        }
+        },          
     },
     mounted() {
         // Assign initMap as a global function

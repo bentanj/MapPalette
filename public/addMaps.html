@@ -21,36 +21,62 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
-        <a class="navbar-brand" href="./homepage.html"><img src="./resources/mappalettelogo.png" width="30" height="30">MapPalette</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
+        <a class="navbar-brand" href="#">
+            <img src="resources/mappalettelogo.png" alt="MapPalette Logo">MapPalette
+        </a>
+        <button class="navbar-toggler" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav" 
+                aria-expanded="false" 
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="./homepage.html">Feed</a></li>
-            <li class="nav-item"><a class="nav-link" href="./routes.html">Routes</a></li>
-            <li class="nav-item"><a class="nav-link active">Draw</a></li>
-            <div class="dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="./resources/download.jpeg" alt="Profile" class="profile-pic" width="30" height="24">
+            <li class="nav-item">
+              <a class="nav-link" href="homepage.html">Feed</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="routes.html">Routes</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="addMaps.html">Draw</a>
+            </li>
+            <!--Profile picture with dropdown-->
+            <li class="nav-item dropdown d-flex align-items-center ms-3">
+              <a class="nav-link dropdown-toggle p-0" 
+              href="#" 
+              id="profileDropdown" 
+              role="button" 
+              data-bs-toggle="dropdown" 
+              aria-expanded="false">
+                <img :src="" 
+                    alt="Profile" 
+                    class="rounded-circle" 
+                    width="32" 
+                    height="32">
               </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+              <ul class="dropdown-menu dropdown-menu-end" 
+                aria-labelledby="profileDropdown">
                 <li><a class="dropdown-item" href="#">Your Profile</a></li>
                 <li><a class="dropdown-item" href="#">Settings</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="#">Log Out</a></li>
               </ul>
-            </div>
+            </li>
           </ul>
         </div>
       </div>
     </nav>
 
     <!-- Alert Bar -->
-    <div class="alert alert-dismissible fade w-100 top-0 left-0 position-sticky" style="z-index:5;"
-        :class="{'alert-warning': alertType === 'error', 'alert-success': alertType === 'success', 'show': showAlert}"
-        :hidden="hidden" 
-        role="alert" >
+    <div class="alert alert-dismissible fade" 
+      :class="{'alert-warning': alertType === 'error', 'alert-success': alertType === 'success', 'show': showAlert}"
+      :hidden="hidden" 
+      role="alert">
+
       <!-- Icons for Error or Success -->
       <svg v-if="alertType === 'error'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
         <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -73,9 +99,17 @@
 
     <!-- Row 1: Map and Controls -->
     <div class="row">
-      <!-- Map -->
-      <div id="map" class="col-md-9"></div>
-
+      <!-- Map Container -->
+      <div class="col-md-9 position-relative p-0">
+        <!-- Search Bar -->
+        <div id="map-search">
+          <input id="pac-input" class="form-control" type="text" placeholder="Search for a place" />
+        </div>
+        <!-- Map -->
+        <div id="map">
+        </div>
+      </div>
+      
       <!-- Controls -->
       <div id="controls" class="col-md-3 d-flex flex-column">
         <!-- Fixed Section (Route Color, Distance, Buttons) -->
