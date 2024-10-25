@@ -1,3 +1,6 @@
+// Define endpoint URL as a constant
+const endPointURL = "https://app-907670644284.us-central1.run.app";
+
 // Import Firebase functions (ensure this is at the top of your addMaps.js file)
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
@@ -35,7 +38,7 @@ const app = Vue.createApp({
         async loadGoogleMapsScript() {
             try {
                 // Fetch the API key from the Firebase function with CORS enabled
-                const response = await fetch('https://app-6kmdo5luna-uc.a.run.app/getGoogleMapsApiKey');
+                const response = await fetch(`${endPointURL}/getGoogleMapsApiKey`);
             
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -53,6 +56,76 @@ const app = Vue.createApp({
             } catch (error) {
                 console.error('Error fetching API key:', error);
             }
+        },
+
+        createPost() {
+            // First, ensure the post has a title
+            if (this.postTitle.trim() === '') {
+                this.alertMsg = 'Post must include a title.';
+                this.setAlert('error', this.alertMsg);
+                this.alertMsg = '';
+                return;
+            }
+
+            if (this.waypoints.length < 2) {
+                this.setAlert('error','You need at least two points to submit the route!')
+                return;
+            }
+
+            // Ensure post description isn't empty, default if it is
+            if (this.postDescription.trim() === '') {
+                this.postDescription = "No description.";
+            }
+            this.submitting = true;
+            // Check Firebase Auth to get user details
+            const auth = getAuth(); // This line should now work
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // User is authenticated
+                    const userId = user.uid; // Get Firebase UID
+                    const username = user.email; // Assuming email as username, change if necessary
+                    // Make the API call to create a post using axios
+                    axios.post(`${endPointURL}/api/create/`, {
+                        title: this.postTitle,
+                        description: this.postDescription,
+                        waypoints: this.waypoints,
+                        userID: userId,
+                        // Currently, API does not support username, so we'll exclude it for now
+                    })
+                    .then(response => {
+                        const data = response.data;
+                        if (data.id) {
+                            // Post was successfully created
+                            this.setAlert('success', 'Your post has been successfully created.');
+                            // Clear post fields
+                            this.postTitle = '';
+                            this.postDescription = '';
+                            this.postAnonymously = false;
+                            this.clearMap();
+                        } else {
+                            // Something went wrong with the creation
+                            this.setAlert('error', 'Failed to create the post. Please try again.');
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error creating post:', error);
+                        this.setAlert('error', 'An error occurred while creating the post.');
+                    });
+                } else {
+                    // User is not authenticated
+                    this.setAlert('error', 'You must be logged in to create a post.');
+                    window.location.href = 'login.html';
+                }
+                this.submitting = false;
+            });
+        },
+
+        clearPost(){
+            this.postTitle = '';
+            this.postDescription = '';
+            this.postAnonymously = false;
+            this.clearMap();
+            this.setAlert('success', 'Post cleared successfully.');
         },      
         initMap() {
             // Initialize the map and its settings
@@ -442,76 +515,8 @@ const app = Vue.createApp({
             setTimeout(() => {
                 this.showAlert = true;  // Make the alert visible after un-hiding it
             }, 10);  // A small delay (e.g., 10ms) to ensure the DOM reflects the 'hidden' state before showing
-        },
-
-        createPost() {
-            // First, ensure the post has a title
-            if (this.postTitle.trim() === '') {
-                this.alertMsg = 'Post must include a title.';
-                this.setAlert('error', this.alertMsg);
-                this.alertMsg = '';
-                return;
-            }
-
-            if (this.waypoints.length < 2) {
-                this.setAlert('error','You need at least two points to submit the route!')
-                return;
-            }
-        
-            // Ensure post description isn't empty, default if it is
-            if (this.postDescription.trim() === '') {
-                this.postDescription = "No description.";
-            }
-            this.submitting = true;
-            // Check Firebase Auth to get user details
-            const auth = getAuth(); // This line should now work
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    // User is authenticated
-                    const userId = user.uid; // Get Firebase UID
-                    const username = user.email; // Assuming email as username, change if necessary
-                    // Make the API call to create a post using axios
-                    axios.post('https://app-6kmdo5luna-uc.a.run.app/api/create/', {
-                        title: this.postTitle,
-                        description: this.postDescription,
-                        waypoints: this.waypoints,
-                        userID: userId,
-                        // Currently, API does not support username, so we'll exclude it for now
-                    })
-                    .then(response => {
-                        const data = response.data;
-                        if (data.id) {
-                            // Post was successfully created
-                            this.setAlert('success', 'Your post has been successfully created.');
-                            // Clear post fields
-                            this.postTitle = '';
-                            this.postDescription = '';
-                            this.postAnonymously = false;
-                            this.clearMap();
-                        } else {
-                            // Something went wrong with the creation
-                            this.setAlert('error', 'Failed to create the post. Please try again.');
-                        }
-                    })
-                    .catch((error) => {
-                        console.error('Error creating post:', error);
-                        this.setAlert('error', 'An error occurred while creating the post.');
-                    });
-                } else {
-                    // User is not authenticated
-                    this.setAlert('error', 'You must be logged in to create a post.');
-                }
-                this.submitting = false;
-            });
-        },
-
-        clearPost(){
-            this.postTitle = '';
-            this.postDescription = '';
-            this.postAnonymously = false;
-            this.clearMap();
-            this.setAlert('success', 'Post cleared successfully.');
         }
+
     },
     mounted() {
         // Assign initMap as a global function
