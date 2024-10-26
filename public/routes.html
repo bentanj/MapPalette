@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <!-- Updated CSS Styles -->
-    <link rel="stylesheet" href="routesstyle.css">
+    <link rel="stylesheet" href="search.css">
 
     <!-- Vue.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -28,7 +28,7 @@
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg stroke">
             <div class="container-fluid">
-                <a class="navbar-brand" href="./homepage.html"><img src="./resources/route_photos/mappalettelogo.png">MapPalette</a>
+                <a class="navbar-brand" href="#"><img src="route_photos/mappalettelogo.png">MapPalette</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon text-white"></span>
@@ -36,18 +36,25 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto align-items-center">
                         <li class="nav-item">
-                            <a class="nav-link" href="./homepage.html">Feed</a>
+                            <a class="nav-link" href="#">Feed</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                                id="searchDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Search
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="searchDropdown">
+                                <li><a class="dropdown-item" href="routes.html">Routes</a></li>
+                                <li><a class="dropdown-item" href="friends.html">Friends</a></li>
+                            </ul>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="./routes.html">Routes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="./addMaps.html">Draw</a>
+                            <a class="nav-link" href="#">Draw</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
                                 id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="./resources/route_photos/download.jpeg" alt="Profile" class="profile-pic">
+                                <img src="route_photos/download.jpeg" alt="Profile" class="profile-pic">
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                                 <li><a class="dropdown-item" href="#">Your Profile</a></li>
@@ -154,6 +161,10 @@
 
         <!-- Modals -->
         <route-modals :routes="filteredRoutes" @post-comment="postComment"></route-modals>
+
+        <button @click="scrollToTop" class="btn back-to-top">
+            <i class="fas fa-chevron-up"></i>
+        </button>
     </div>
 
 
@@ -188,10 +199,6 @@
         </div>
     </footer>
 
-    <!-- Back to Top Button -->
-    <button @click="scrollToTop" href="#" class="btn back-to-top">
-        <i class="fas fa-chevron-up"></i>
-    </button>
     </div>
 </body>
 
@@ -220,11 +227,10 @@
         methods: {
             getRoutesData() {
                 axios
-                    // NEED TO REPLACE THIS WITH THE DATABASE CALL
-                    .get('routes.json')
+                    .get('data.json')
                     .then((response) => {
                         // Precompute the time since for each route
-                        this.routes = response.data.map((route) => ({
+                        this.routes = response.data.routes.map((route) => ({
                             ...route,
                             timeSince: this.calculateTimeSince(route.date),
                         }));
