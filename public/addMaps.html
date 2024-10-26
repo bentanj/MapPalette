@@ -126,8 +126,14 @@
         <!-- Scrollable Section (Plotted Points) -->
         <div id="scrollable-points" class="flex-grow-1">
           <h4>Plotted Points</h4>
-          <div id="point-list" class="list-group mx-2">
-            <a v-for="(point, index) in waypoints" :class="['list-group-item', 'list-group-item-action', 'point-item', 'rounded', { 'is-filling': point.isFilling }]" @mouseover="startMarkerBounce(index)" @mouseleave="stopMarkerBounce(index)">
+          <transition-group name="list" tag="div" id="point-list" class="list-group mx-2">
+            <a
+              v-for="(point, index) in waypoints"
+              :key="point.id"
+              class="list-group-item list-group-item-action point-item rounded"
+              @mouseover="startMarkerBounce(index)"
+              @mouseleave="stopMarkerBounce(index)"
+            >
               <div class="details ms-2 me-auto">
                 <h5>Marker {{ index + 1 }}</h5>
                 <h6 class="fw-bold mb-1">{{ point.address }}</h6>
@@ -142,16 +148,23 @@
                 </button>
               </span>
             </a>
-          </div>
+          </transition-group>
         </div>
+        
       </div>
     </div>
+    
+  <!-- Form Start -->
+  <form @submit.prevent="validateAndSubmit" novalidate :class="{ 'was-validated': formValidated }">
 
     <!-- Row 2: Title Input -->
     <div class="row mt-3">
       <div class="col">
         <label for="title" class="form-label">Title</label>
-        <input type="text" class="form-control" id="title" placeholder="Enter title here" v-model="postTitle">
+        <input type="text" class="form-control" id="title" placeholder="Enter title here" v-model="postTitle" required>
+        <div class="invalid-feedback">
+          Please provide a title.
+        </div>
       </div>
     </div>
 
@@ -159,7 +172,10 @@
     <div class="row mt-3">
       <div class="col">
         <label for="description" class="form-label">Description</label>
-        <textarea class="form-control" id="description" rows="4" placeholder="Enter description here" v-model="postDescription"></textarea>
+        <textarea class="form-control" id="description" rows="4" placeholder="Enter description here" v-model="postDescription" required></textarea>
+        <div class="invalid-feedback">
+          Please provide a description.
+        </div>
       </div>
     </div>
 
@@ -177,13 +193,17 @@
     <!-- Row 5: Buttons -->
     <div class="row mt-3">
       <div class="col-6">
-        <button class="btn btn-danger w-100" @click="clearPost()">Clear</button>
+        <button type="button" class="btn btn-danger w-100" @click="clearPost()">Clear</button>
       </div>
       <div class="col-6">
-        <button class="btn btn-primary w-100" @click="createPost()">Create</button>
+        <button type="submit" class="btn btn-primary w-100">Create</button>
       </div>
     </div>
-  </div>
+
+  </form>
+  <!-- Form End -->
+
+
   <!-- Footer Section -->
   <footer class="bg-light text-center text-lg-start mt-5">
     <div class="container p-4">

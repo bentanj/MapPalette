@@ -4,7 +4,7 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 const app = Vue.createApp({
     data() {
       return {
-        // map related
+        // Map related
         map: null,
         directionsService: null,
         directionsRenderer: null,
@@ -15,8 +15,8 @@ const app = Vue.createApp({
         markers: [], // Array to store markers
         currentColor: '#e81416',
         totalDistance: 0,
-        geocoder: null, // Add a geocoder for reverse geocoding
-        colors: ['#e81416','#ffa500','#faeb36','#79c314','#487de7','#4b369d','#70369d'], // Available colors
+        geocoder: null,
+        colors: ['#e81416','#ffa500','#faeb36','#79c314','#487de7','#4b369d','#70369d'], // Colors of the rainbow
         mapsApiKey: '', // Maps API key to be dynamically loaded
 
         // Alert related
@@ -33,6 +33,7 @@ const app = Vue.createApp({
         userID:'',
         username:'',
         submitting:false,
+        formValidated: false,
       };
 
     },
@@ -153,22 +154,25 @@ const app = Vue.createApp({
         },          
 
         addWaypoint(latLng) {
-            // Add a new waypoint
+            // Generate a unique ID for the waypoint
+            const id = Date.now() + Math.random();
+          
             this.geocoder.geocode({ location: latLng }, (results, status) => {
-                if (status === 'OK') {
-                    const address = results[0] ? results[0].formatted_address : 'Address not found';
-                    this.waypoints.push({
-                        location: latLng,
-                        stopover: true,
-                        address: address // Store the address (street name)
-                    });
-            
-                    // Add a marker for each waypoint
-                    this.addMarker(latLng);
-                    this.calculateAndDisplayRoute()
-                }
+              if (status === 'OK') {
+                const address = results[0] ? results[0].formatted_address : 'Address not found';
+                this.waypoints.push({
+                  id: id, // Assign the unique ID
+                  location: latLng,
+                  stopover: true,
+                  address: address, // Store the address (street name)
+                });
+          
+                // Add a marker for each waypoint
+                this.addMarker(latLng);
+                this.calculateAndDisplayRoute();
+              }
             });
-        },
+        },   
 
         // Make marker "bounce" when hovering over the anchor tag
         startMarkerBounce(index) {
@@ -256,33 +260,30 @@ const app = Vue.createApp({
             // Add the is-filling class to trigger the animation
             this.waypoints[index].isFilling = true; 
         
-            // Wait for the animation to complete (1 second), then remove the item
-            setTimeout(() => {
-              this.waypoints.splice(index, 1);  // Remove the waypoint from the array
-        
-              // Remove the corresponding marker from the map
-              var marker = this.markers[index];
-              if (marker) {
-                marker.setMap(null);
-                marker.setVisible(false);
-                marker = null;
-              } else {
-                console.error('Marker not found at index:', index);
-              }
-        
-              // Also remove the marker from the markers array
-              this.markers.splice(index, 1);
-        
-              // Recalculate and display the updated route
-              this.calculateAndDisplayRoute();
-        
-              // Update all markers' labels after removing a marker
-              this.updateMarkerLabels();
-        
-              // Allow further deletions after the animation completes
-              this.isDeleting = false;
-        
-            }, 500);  // Wait for the animation to complete (300 milisecond)
+  
+            this.waypoints.splice(index, 1);  // Remove the waypoint from the array
+      
+            // Remove the corresponding marker from the map
+            var marker = this.markers[index];
+            if (marker) {
+              marker.setMap(null);
+              marker.setVisible(false);
+              marker = null;
+            } else {
+              console.error('Marker not found at index:', index);
+            }
+      
+            // Also remove the marker from the markers array
+            this.markers.splice(index, 1);
+            
+            // Recalculate and display the updated route
+            this.calculateAndDisplayRoute();
+      
+            // Update all markers' labels after removing a marker
+            this.updateMarkerLabels();
+      
+            // Allow further deletions after the animation completes
+            this.isDeleting = false;
         },        
         
         updateMarkerLabels() {
@@ -433,6 +434,22 @@ const app = Vue.createApp({
               this.dismissAlert();
               this.alertTimeout = null; // Reset the timeout ID
             }, 3000); // 10,000 milliseconds = 10 seconds
+        },
+        
+        validateAndSubmit() {
+            // Set formValidated to true to apply Bootstrap validation styles
+            this.formValidated = true;
+        
+            // Access the form element
+            const form = document.querySelector('form');
+        
+            if (form.checkValidity()) {
+              // Form is valid, proceed to create the post
+              this.createPost();
+            } else {
+              // Form is invalid, display validation errors
+              this.setAlert('error', 'Please fill out all required fields.');
+            }
         },
 
         createPost() {
