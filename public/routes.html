@@ -220,6 +220,7 @@
         methods: {
             getRoutesData() {
                 axios
+                    // NEED TO REPLACE THIS WITH THE DATABASE CALL
                     .get('routes.json')
                     .then((response) => {
                         // Precompute the time since for each route

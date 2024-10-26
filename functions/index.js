@@ -1,6 +1,7 @@
 // Import function triggers from their respective submodules
 const { onRequest } = require('firebase-functions/v2/https');
-const { initializeApp, cert } = require('firebase-admin/app');
+const { initializeApp, cert, applicationDefault} = require('firebase-admin/app');
+const { getStorage } = require('firebase-admin/storage');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore'); // Modular import for Firestore
 require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
@@ -10,10 +11,12 @@ const cors = require('cors');
 const serviceAccount = require('./serviceAccountKey.json');
 initializeApp({
   credential: cert(serviceAccount),
+  storageBucket: 'gs://mappalette-9e0bd.appspot.com'
 });
 
 // Initialise firestore
 const db = getFirestore();
+const bucket = getStorage().bucket();
 
 // Create Express app
 const app = express();
@@ -47,41 +50,57 @@ app.get('/hello-world', (req, res) => {
 // 
 
 // Create a post with auto-generated ID and add it to the user's MapsCreated subcollection
-app.post('/api/create', async (req, res) => {
-  try {
-    // Define the new route object with all required fields
-    const routeData = {
-      title: req.body.route.title,           // Route title
-      description: req.body.route.description, // Route description
-      distance: req.body.route.distance,     // Initialize distance as 0km
-      location: req.body.route.location,     // Location, using the first waypoint's name
-      image: req.body.route.image || 'Map.jpeg', // Use 'Map.jpeg' as the placeholder image
-      date: FieldValue.serverTimestamp(),    // Automatically store the current timestamp
-      likes: req.body.route.likes || 0,      // Initialize likes to 0
-      comments: req.body.route.comments || 0, // Initialize comments to 0
-      modalId: req.body.route.modalId,       // Modal ID, generated based on userId
-      author: req.body.route.author,         // User's email (or username)
-      commentsList: req.body.route.commentsList || [], // Start with an empty comments list
-      waypoints: req.body.route.waypoints,   // The waypoints data passed from the frontend
-    };
+// Updated POST handler to accept multipart/form-data
+const multer = require('multer');
+const upload = multer().single('imageFile');
 
-    // Create a new post in the 'routes' collection
-    const docRef = await db.collection('routes').add(routeData);
+app.post('/api/create', (req, res) => {
+    upload(req, res, async (err) => {
+        if (err) return res.status(500).send('Image upload failed:', err);
 
-    // Add the post ID to the MapsCreated subcollection of the user
-    const userRef = db.collection('users').doc(req.body.userID);
-    await userRef.collection('MapsCreated').doc(docRef.id).set({
-      mapID: docRef.id,
-      createdAt: FieldValue.serverTimestamp(),
+        try {
+            // Parse route data from request
+            const routeData = JSON.parse(req.body.routeData);
+            const userID = req.body.userID;
+
+            // Add initial route data to Firestore, without the image URL
+            const docRef = await db.collection('routes').add(routeData);
+
+            // Handle image upload if imageFile is present in request
+            if (req.file) {
+                const filePath = `maps/${docRef.id}.jpeg`;
+                const file = bucket.file(filePath);
+
+                await file.save(req.file.buffer, {
+                    metadata: {
+                        contentType: req.file.mimetype,
+                    },
+                });
+
+                // Get public URL for the image
+                const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filePath)}?alt=media`;
+
+                // Update Firestore document with image URL
+                await docRef.update({ image: downloadURL });
+            }
+
+            // Add post ID to the user's MapsCreated subcollection
+            const userRef = db.collection('users').doc(userID);
+            await userRef.collection('MapsCreated').doc(docRef.id).set({
+                mapID: docRef.id,
+                createdAt: FieldValue.serverTimestamp(),
+            });
+
+            return res.status(201).json({ id: docRef.id, message: 'Post created and image uploaded successfully!' });
+        } catch (error) {
+            console.error('Error creating post and uploading image:', error);
+            return res.status(500).send(error);
+        }
     });
-
-    // Respond with success and the document ID
-    return res.status(201).json({ id: docRef.id, message: 'Post created and added to user profile successfully!' });
-  } catch (error) {
-    console.error('Error creating post and updating user profile:', error);
-    return res.status(500).send(error);
-  }
 });
+
+
+
 
 
 // Get a specific post by ID

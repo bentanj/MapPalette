@@ -3,6 +3,7 @@ const endPointURL = "https://app-907670644284.us-central1.run.app";
 
 // Import Firebase functions (ensure this is at the top of your addMaps.js file)
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import * as htmlToImage from 'https://cdn.jsdelivr.net/npm/html-to-image@1.8.0/dist/index.min.js';
 
 const app = Vue.createApp({
     data() {
@@ -35,6 +36,7 @@ const app = Vue.createApp({
 
     },
     methods: {
+
         async loadGoogleMapsScript() {
             try {
                 // Fetch the API key from the Firebase function with CORS enabled
@@ -58,84 +60,93 @@ const app = Vue.createApp({
             }
         },
 
-        createPost() {
-            // Ensure the post has a title
+        async createPost() {
+            
+            if (typeof htmlToImage === 'undefined') {
+                console.error('htmlToImage library not loaded.');
+                this.setAlert('error', 'Map image capture failed. Please reload and try again.');
+                return;
+            }
+
             if (this.postTitle.trim() === '') {
-                this.alertMsg = 'Post must include a title.';
-                this.setAlert('error', this.alertMsg);
-                this.alertMsg = '';
-                return;
+              this.setAlert('error', 'Post must include a title.');
+              return;
             }
-        
-            // Ensure there are at least two waypoints
+          
             if (this.waypoints.length < 2) {
-                this.setAlert('error', 'You need at least two points to submit the route!');
-                return;
+              this.setAlert('error', 'You need at least two points to submit the route!');
+              return;
             }
-        
-            // Ensure post description isn't empty, default to 'No description' if it is
+          
             if (this.postDescription.trim() === '') {
-                this.postDescription = "No description.";
+              this.postDescription = "No description.";
             }
-        
+          
             this.submitting = true;
-        
-            // Check Firebase Auth to get user details
+          
             const auth = getAuth();
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    // User is authenticated
-                    const userId = user.uid; // Firebase UID
-                    const username = user.username || "Anonymous"; // Use email as username, fallback to "Anonymous" if not present
-        
-                    // Create the new route object following the new structure
-                    const newRoute = {
-                        title: this.postTitle,
-                        description: this.postDescription,
-                        distance: "0km", // Initialize with 0 km as we don't have actual distance data yet
-                        location: this.waypoints[0].name || "Unknown Location", // Set location to the first waypoint's name
-                        image: "", // Placeholder image
-                        date: new Date().toISOString(), // Current timestamp
-                        likes: 0, // Initialize likes to 0
-                        comments: 0, // Initialize comments to 0
-                        modalId: userId + "-modal", // Unique modal ID using userId
-                        author: username, // Use the user's email as author
-                        commentsList: [], // Initialize with an empty array
-                        waypoints: this.waypoints // Pass the waypoints data
-                    };
-        
-                    // Make the API call to create a post using axios
-                    axios.post(`${endPointURL}/api/create/`, {
-                        route: newRoute, // Send the new route structure to the backend
-                        userID: userId
-                    })
-                    .then(response => {
-                        const data = response.data;
-                        if (data.id) {
-                            // Post was successfully created
-                            this.setAlert('success', 'Your post has been successfully created.');
-                            // Clear post fields
-                            this.postTitle = '';
-                            this.postDescription = '';
-                            this.postAnonymously = false;
-                            this.clearMap();
-                        } else {
-                            // Something went wrong with the creation
-                            this.setAlert('error', 'Failed to create the post. Please try again.');
+            onAuthStateChanged(auth, async (user) => {
+              if (user) {
+                const userId = user.uid;
+                const username = user.displayName || "Anonymous";
+          
+                const mapElement = document.getElementById('map');
+                try {
+                  const blob = await htmlToImage.toBlob(mapElement); // Use htmlToImage globally
+                  if (blob) {
+                    const formData = new FormData();
+                    formData.append('routeData', JSON.stringify({
+                      title: this.postTitle,
+                      description: this.postDescription,
+                      distance: "0km",
+                      location: this.waypoints[0].name || "Unknown Location",
+                      image: "", 
+                      date: new Date().toISOString(),
+                      likes: 0,
+                      comments: 0,
+                      modalId: `${userId}-modal`,
+                      author: username,
+                      commentsList: [],
+                      waypoints: this.waypoints
+                    }));
+                    formData.append('userID', userId);
+                    formData.append('imageFile', blob, 'map-screenshot.png'); 
+          
+                    try {
+                      const response = await axios.post(`${endPointURL}/api/create`, formData, {
+                        headers: {
+                          'Content-Type': 'multipart/form-data'
                         }
-                    })
-                    .catch((error) => {
-                        console.error('Error creating post:', error);
-                        this.setAlert('error', 'An error occurred while creating the post.');
-                    });
-                } else {
-                    // User is not authenticated
-                    this.setAlert('error', 'You must be logged in to create a post.');
-                    window.location.href = 'login.html';
+                      });
+                      if (response.data.id) {
+                        this.setAlert('success', 'Your post has been successfully created.');
+                        this.clearMap();
+                        this.postTitle = '';
+                        this.postDescription = '';
+                      } else {
+                        this.setAlert('error', 'Failed to create the post. Please try again.');
+                      }
+                    } catch (error) {
+                      console.error('Error creating post:', error);
+                      this.setAlert('error', 'An error occurred while creating the post.');
+                    } finally {
+                      this.submitting = false;
+                    }
+                  } else {
+                    this.setAlert('error', 'Could not capture map image. Please try again.');
+                    this.submitting = false;
+                  }
+                } catch (error) {
+                  console.error('Error capturing map image:', error);
+                  this.setAlert('error', 'An error occurred while capturing the map image.');
+                  this.submitting = false;
                 }
-                this.submitting = false;
+              } else {
+                this.setAlert('error', 'You must be logged in to create a post.');
+                window.location.href = 'login.html';
+              }
             });
-        },
+          },
         clearPost(){
             this.postTitle = '';
             this.postDescription = '';
@@ -541,4 +552,7 @@ const app = Vue.createApp({
         // Fetch the Google Maps API key from Firebase Functions and load the script
         this.loadGoogleMapsScript();
     }
-}).mount('#app');
+})
+
+app.mount('#app');
+
