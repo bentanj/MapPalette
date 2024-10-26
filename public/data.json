@@ -1,0 +1,746 @@
+{
+    "me": {
+        "id": "user_011",
+        "name": "Bean",
+        "profileImage": "profile_photos/current_user.jpg",
+        "routes": [
+            12345,
+            23456,
+            34567
+        ]
+    },
+    "friends": [
+        {
+            "id": "user_001",
+            "name": "Wei Shen",
+            "profileImage": "profile_photos/weishen.jpg",
+            "routes": [
+                10123,
+                20345,
+                30789
+            ]
+        },
+        {
+            "id": "user_004",
+            "name": "Maria Lee",
+            "profileImage": "profile_photos/maria.jpg",
+            "routes": [
+                40912,
+                51234
+            ]
+        },
+        {
+            "id": "user_006",
+            "name": "David Lim",
+            "profileImage": "profile_photos/david.jpg",
+            "routes": [
+                61458
+            ]
+        }
+    ],
+    "otherUsers": [
+        {
+            "id": "user_007",
+            "name": "Megan Tan",
+            "profileImage": "profile_photos/megan.jpg",
+            "routes": [
+                71569
+            ]
+        },
+        {
+            "id": "user_69",
+            "name": "Zhong Yan",
+            "profileImage": "profile_photos/megan.jpg",
+            "routes": []
+        },
+        {
+            "id": "user_008",
+            "name": "Jason Wong",
+            "profileImage": "profile_photos/jason.jpg",
+            "routes": [
+                81672
+            ]
+        },
+        {
+            "id": "user_009",
+            "name": "Sophia Goh",
+            "profileImage": "profile_photos/sophia.jpg",
+            "routes": [
+                91783
+            ]
+        },
+        {
+            "id": "user_010",
+            "name": "Henry Chua",
+            "profileImage": "profile_photos/henry.jpg",
+            "routes": [
+                10234
+            ]
+        },
+        {
+            "id": "user_012",
+            "name": "Anna Kim",
+            "profileImage": "profile_photos/anna.jpg",
+            "routes": [
+                56789,
+                67890
+            ]
+        },
+        {
+            "id": "user_013",
+            "name": "Ben Chang",
+            "profileImage": "profile_photos/ben.jpg",
+            "routes": [
+                78901
+            ]
+        },
+        {
+            "id": "user_014",
+            "name": "Cathy Lim",
+            "profileImage": "profile_photos/cathy.jpg",
+            "routes": [
+                89012,
+                90123
+            ]
+        },
+        {
+            "id": "user_015",
+            "name": "David Yeo",
+            "profileImage": "profile_photos/david.jpg",
+            "routes": [
+                67891
+            ]
+        },
+        {
+            "id": "user_016",
+            "name": "Eva Tan",
+            "profileImage": "profile_photos/eva.jpg",
+            "routes": [
+                67892,
+                67893
+            ]
+        },
+        {
+            "id": "user_017",
+            "name": "Frankie Chen",
+            "profileImage": "profile_photos/frankie.jpg",
+            "routes": [
+                67894
+            ]
+        },
+        {
+            "id": "user_018",
+            "name": "Grace Wong",
+            "profileImage": "profile_photos/grace.jpg",
+            "routes": [
+                67895,
+                67896,
+                67897
+            ]
+        },
+        {
+            "id": "user_019",
+            "name": "Harry Lee",
+            "profileImage": "profile_photos/harry.jpg",
+            "routes": [
+                67898,
+                67899
+            ]
+        },
+        {
+            "id": "user_020",
+            "name": "Ivy Koh",
+            "profileImage": "profile_photos/ivy.jpg",
+            "routes": [
+                67900,
+                67901
+            ]
+        },
+        {
+            "id": "user_021",
+            "name": "Jackie Lau",
+            "profileImage": "profile_photos/jackie.jpg",
+            "routes": [
+                67902
+            ]
+        }
+    ],
+    "routes": [
+        {
+            "id": 10123,
+            "title": "Ring of Resilience",
+            "description": "Challenge yourself on the Ring of Resilience, a circular route around Yishun Ring Road that tests your endurance and determination. It’s more than just a run—it’s a journey to discover your inner strength. Lace up, hit the ring, and let your resilience shine!",
+            "distance": "20km",
+            "location": "Yishun Ring Road",
+            "image": "route_photos/bob.jpg",
+            "date": "2024-10-21T11:02:30Z",
+            "likes": 51,
+            "modalId": "ringModal",
+            "author": "Wei Shen",
+            "commentsList": [
+                {
+                    "name": "Jane",
+                    "text": "Amazing route!"
+                },
+                {
+                    "name": "Tom",
+                    "text": "Loved the scenic views! @Zhong Yan, I challenge you to run 100 rounds around it!"
+                },
+                {
+                    "name": "Zhong Yan",
+                    "text": "This is so amazing! Thank you for this fun challenge @Tom, I'm gonna run 100 rounds around it tomorrow!"
+                }
+            ]
+        },
+        {
+            "id": 20345,
+            "title": "Dino Dash: Punggol Edition",
+            "description": "Tackle the Dino Dash: Punggol Edition, a unique route shaped like a dinosaur. Trace the curves of this prehistoric path and let its playful design fuel your run. Lace up and conquer this one-of-a-kind trail!",
+            "distance": "15km",
+            "location": "Punggol",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-11-21T16:45:00Z",
+            "likes": 51,
+            "modalId": "dinoModal",
+            "author": "Wei Shen",
+            "commentsList": [
+                {
+                    "name": "Sarah",
+                    "text": "So much fun!"
+                },
+                {
+                    "name": "Mike",
+                    "text": "Great for a weekend run!"
+                }
+            ]
+        },
+        {
+            "id": 30789,
+            "title": "Marina Bay Loop",
+            "description": "Run around the iconic Marina Bay area, where the skyline meets the sea. This loop offers scenic views and is perfect for both tourists and locals looking to experience the beauty of Singapore.",
+            "distance": "10km",
+            "location": "Marina Bay",
+            "image": "route_photos/bob.jpg",
+            "date": "2021-07-09T13:10:15Z",
+            "likes": 40,
+            "modalId": "marinaBayModal",
+            "author": "Wei Shen",
+            "commentsList": [
+                {
+                    "name": "Lina",
+                    "text": "Beautiful scenery!"
+                },
+                {
+                    "name": "Chris",
+                    "text": "Great run for mornings!"
+                }
+            ]
+        },
+        {
+            "id": 40912,
+            "title": "Botanic Gardens Trail",
+            "description": "Escape the city and run through the lush greenery of the Botanic Gardens. The perfect route for nature lovers seeking peace and quiet.",
+            "distance": "8km",
+            "location": "Botanic Gardens",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-01-26T22:55:45Z",
+            "likes": 32,
+            "modalId": "botanicModal",
+            "author": "Maria Lee",
+            "commentsList": [
+                {
+                    "name": "Helen",
+                    "text": "Love the fresh air!"
+                },
+                {
+                    "name": "Victor",
+                    "text": "Very peaceful run."
+                }
+            ]
+        },
+        {
+            "id": 51234,
+            "title": "East Coast Park Stretch",
+            "description": "Run alongside the beach with the sound of the waves as your companion. The East Coast Park stretch is perfect for long-distance runners and offers beautiful coastal views.",
+            "distance": "18km",
+            "location": "East Coast Park",
+            "image": "route_photos/bob.jpg",
+            "date": "2022-03-03T05:30:00Z",
+            "likes": 50,
+            "modalId": "eastCoastModal",
+            "author": "Maria Lee",
+            "commentsList": [
+                {
+                    "name": "Daniel",
+                    "text": "A bit long, but the view is worth it!"
+                },
+                {
+                    "name": "Sophie",
+                    "text": "Perfect for beach lovers."
+                }
+            ]
+        },
+        {
+            "id": 61458,
+            "title": "Mount Faber Challenge",
+            "description": "Conquer the Mount Faber ascent, a challenging uphill run that rewards you with breathtaking views of the city at the top.",
+            "distance": "7km",
+            "location": "Mount Faber",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-08-18T11:15:25Z",
+            "likes": 28,
+            "modalId": "mountFaberModal",
+            "author": "David Lim",
+            "commentsList": [
+                {
+                    "name": "Emily",
+                    "text": "Hard but worth it!"
+                },
+                {
+                    "name": "Jack",
+                    "text": "Great workout!"
+                }
+            ]
+        },
+        {
+            "id": 71569,
+            "title": "Sentosa Island Loop",
+            "description": "Enjoy a scenic run around the beautiful Sentosa Island. This loop offers both adventure and relaxation with the perfect blend of nature and resorts.",
+            "distance": "12km",
+            "location": "Sentosa",
+            "image": "route_photos/bob.jpg",
+            "date": "2021-12-31T23:59:59Z",
+            "likes": 30,
+            "modalId": "sentosaModal",
+            "author": "Megan Tan",
+            "commentsList": [
+                {
+                    "name": "Olivia",
+                    "text": "Amazing views!"
+                },
+                {
+                    "name": "Leo",
+                    "text": "A fun run through the island!"
+                }
+            ]
+        },
+        {
+            "id": 81672,
+            "title": "Punggol Waterway",
+            "description": "Run along the scenic Punggol Waterway, where nature and urban life coexist in harmony. A great spot for families and leisure runners.",
+            "distance": "9km",
+            "location": "Punggol",
+            "image": "route_photos/bob.jpg",
+            "date": "2022-09-07T14:40:50Z",
+            "likes": 22,
+            "modalId": "punggolModal",
+            "author": "Jason Wong",
+            "commentsList": [
+                {
+                    "name": "Fiona",
+                    "text": "Such a relaxing run!"
+                },
+                {
+                    "name": "Ben",
+                    "text": "Good for all fitness levels."
+                }
+            ]
+        },
+        {
+            "id": 91783,
+            "title": "Jurong Lake Gardens Jog",
+            "description": "Jog through the tranquil Jurong Lake Gardens, where lush greenery and the calm waters of the lake offer a peaceful running experience.",
+            "distance": "11km",
+            "location": "Jurong Lake Gardens",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-06-12T19:05:35Z",
+            "likes": 20,
+            "modalId": "jurongLakeModal",
+            "author": "Sophia Goh",
+            "commentsList": [
+                {
+                    "name": "Nina",
+                    "text": "Such a peaceful spot."
+                },
+                {
+                    "name": "Gavin",
+                    "text": "Perfect for evening runs."
+                }
+            ]
+        },
+        {
+            "id": 10234,
+            "title": "Coney Island Expedition",
+            "description": "Venture out to Coney Island and explore its wild, untamed nature. This route is perfect for runners seeking a bit of adventure off the beaten path.",
+            "distance": "6km",
+            "location": "Coney Island",
+            "image": "route_photos/bob.jpg",
+            "date": "2021-10-01T03:20:10Z",
+            "likes": 1,
+            "modalId": "coneyIslandModal",
+            "author": "Henry Chua",
+            "commentsList": [
+                {
+                    "name": "Amy",
+                    "text": "Felt like a nature expedition!"
+                },
+                {
+                    "name": "Martin",
+                    "text": "Great if you love nature!"
+                }
+            ]
+        },
+        {
+            "id": 12345,
+            "title": "City Skylines",
+            "description": "Take on the City Skylines route for an invigorating journey through the heart of the metropolis. This 12km course winds through bustling city streets, quiet parks, and waterfront promenades, offering spectacular views of the skyline. With every stride, you’ll encounter iconic skyscrapers, vibrant city life, and the peacefulness of nature in city parks. Perfect for runners who love the urban landscape, this route is best enjoyed during early mornings when the sun casts a golden hue on the buildings. Don’t forget to pause at some of the observation spots to capture breathtaking photos of the skyline!",
+            "distance": "12km",
+            "location": "City Center",
+            "image": "route_photos/bob.jpg",
+            "date": "2024-01-15T08:30:00Z",
+            "likes": 45,
+            "modalId": "citySkylinesModal",
+            "author": "Bean",
+            "commentsList": [
+                {
+                    "name": "Alex",
+                    "text": "Amazing views!"
+                },
+                {
+                    "name": "Kelly",
+                    "text": "Perfect route for a morning run."
+                }
+            ]
+        },
+        {
+            "id": 23456,
+            "title": "Riverfront Run",
+            "description": "Experience tranquility on the Riverfront Run, a 10km route along the scenic riverside. This path is designed for runners seeking a refreshing escape from the busy city. You’ll pass under graceful bridges, alongside tranquil water features, and through lush riverside parks filled with flowers and greenery. Perfect for an evening jog, the gentle breeze from the river cools you down, making it a refreshing and serene running experience. Evening runners are rewarded with beautiful reflections of the sunset on the river surface, creating a truly magical atmosphere. This route is ideal for those who enjoy a peaceful yet invigorating run.",
+            "distance": "10km",
+            "location": "Riverfront",
+            "image": "route_photos/bob.jpg",
+            "date": "2024-03-02T18:00:00Z",
+            "likes": 78,
+            "modalId": "riverfrontModal",
+            "author": "Bean",
+            "commentsList": [
+                {
+                    "name": "Sophia",
+                    "text": "Love the water views."
+                },
+                {
+                    "name": "George",
+                    "text": "A relaxing route!"
+                }
+            ]
+        },
+        {
+            "id": 34567,
+            "title": "Sunset Boulevard",
+            "description": "The Sunset Boulevard run offers an 8km stretch perfect for those who appreciate a peaceful and scenic route as the day winds down. This course follows a quiet boulevard lined with trees, park benches, and gentle hills. Starting at the beach entrance, runners are treated to panoramic views of the setting sun over the horizon. This is a place where time seems to slow, allowing you to savor the golden hour as the sky changes colors. Great for both solo runners and groups, this route also provides multiple spots to stop and take in the breathtaking sunset views. Run this route at the end of the day for a perfect combination of fitness and relaxation!",
+            "distance": "8km",
+            "location": "Sunset Boulevard",
+            "image": "route_photos/bob.jpg",
+            "date": "2024-05-19T19:00:00Z",
+            "likes": 28,
+            "modalId": "sunsetModal",
+            "author": "Bean",
+            "commentsList": [
+                {
+                    "name": "Lily",
+                    "text": "Absolutely stunning at sunset!"
+                },
+                {
+                    "name": "Mark",
+                    "text": "A great end to a long day."
+                }
+            ]
+        },
+        {
+            "id": 56789,
+            "title": "The Lakeside Stroll",
+            "description": "Take a peaceful journey along The Lakeside Stroll, a 5km path that hugs the city’s largest lake. This route winds around the waterfront, passing through areas rich with local flora and fauna. Frequent benches, open picnic spots, and quaint parks offer opportunities to rest and enjoy the surroundings. Gentle breezes and the sound of rippling water make it perfect for a morning jog or an evening walk. Runners can enjoy unobstructed views of the water, reflecting the changing sky, and watch for ducks and other wildlife that call this area home.",
+            "distance": "5km",
+            "location": "Central Lake",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-09-01T07:00:00Z",
+            "likes": 35,
+            "modalId": "lakesideStrollModal",
+            "author": "Anna Kim",
+            "commentsList": [
+                {
+                    "name": "Alex",
+                    "text": "Peaceful and beautiful."
+                },
+                {
+                    "name": "Mia",
+                    "text": "Loved the quiet spots along the way!"
+                }
+            ]
+        },
+        {
+            "id": 67890,
+            "title": "Urban Jungle Adventure",
+            "description": "The Urban Jungle Adventure offers a thrilling 6km journey through the heart of the city’s greenery. This route meanders through hidden city parks, botanical gardens, and nature trails nestled between towering skyscrapers. Every twist and turn brings a new sight, from urban art installations to small waterfalls and ponds. Designed for nature enthusiasts and city lovers alike, this route is a beautiful escape that still feels deeply connected to the urban landscape. Start early to experience the mist rising from the gardens, adding a mystical vibe to your run.",
+            "distance": "6km",
+            "location": "City Park District",
+            "image": "route_photos/bob.jpg",
+            "date": "2024-02-15T06:30:00Z",
+            "likes": 42,
+            "modalId": "urbanJungleModal",
+            "author": "Anna Kim",
+            "commentsList": [
+                {
+                    "name": "Leo",
+                    "text": "Great city escape!"
+                },
+                {
+                    "name": "Sophia",
+                    "text": "Perfect for morning runs."
+                }
+            ]
+        },
+        {
+            "id": 78901,
+            "title": "Mountain Edge Trail",
+            "description": "Mountain Edge Trail is an 8km journey along rocky paths with stunning cliffside views. Ideal for adventurers, this trail has its challenges—steep climbs, rugged paths, and sharp turns—but the reward is worth it. At every peak, you’ll find panoramic vistas of the valley below and the forest canopy stretching to the horizon. The trail includes several resting areas where you can pause, take photos, and soak in the views. Start early to catch the sunrise illuminating the valley, transforming the trail into a breathtaking experience.",
+            "distance": "8km",
+            "location": "Mountain Range",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-11-05T07:45:00Z",
+            "likes": 47,
+            "modalId": "mountainEdgeModal",
+            "author": "Ben Chang",
+            "commentsList": [
+                {
+                    "name": "Daniel",
+                    "text": "A challenging but rewarding route."
+                },
+                {
+                    "name": "Emma",
+                    "text": "The views are unbeatable!"
+                }
+            ]
+        },
+        {
+            "id": 89012,
+            "title": "Forest of Ferns",
+            "description": "The Forest of Ferns is a 4km trail set within a lush, secluded forest reserve, designed for runners looking to escape into nature. As you run through this trail, you’ll be surrounded by a variety of ferns, tall trees, and wildflowers. The quiet serenity of the forest is occasionally punctuated by the sound of rustling leaves and birdsong, making this a tranquil, immersive experience. Enjoy the fresh forest air and the scenic natural beauty that make this trail a peaceful retreat.",
+            "distance": "4km",
+            "location": "Fern Forest",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-08-10T08:15:00Z",
+            "likes": 29,
+            "modalId": "forestFernsModal",
+            "author": "Cathy Lim",
+            "commentsList": [
+                {
+                    "name": "Megan",
+                    "text": "Felt like a fairytale!"
+                },
+                {
+                    "name": "Alice",
+                    "text": "So calm and beautiful."
+                }
+            ]
+        },
+        {
+            "id": 90123,
+            "title": "Seaside Promenade",
+            "description": "Breathe in the fresh ocean air on the Seaside Promenade, a beautiful 7km route along the coast. This path offers panoramic ocean views, sandy beaches, and the soothing sound of waves. Popular for sunset jogs, the route also has plenty of benches and scenic lookouts where you can relax and enjoy the ocean breeze. Joggers can expect an array of sights, from fishermen casting their lines to seagulls diving over the water. For runners who enjoy the sea, this is an ideal trail to unwind and reconnect with nature.",
+            "distance": "7km",
+            "location": "Ocean Shoreline",
+            "image": "route_photos/bob.jpg",
+            "date": "2024-03-22T17:00:00Z",
+            "likes": 65,
+            "modalId": "seasidePromenadeModal",
+            "author": "Cathy Lim",
+            "commentsList": [
+                {
+                    "name": "Liam",
+                    "text": "Great spot for evening runs!"
+                },
+                {
+                    "name": "Olivia",
+                    "text": "Loved the ocean breeze!"
+                }
+            ]
+        },
+        {
+            "id": 67891,
+            "title": "Historic Heartbeat",
+            "description": "Historic Heartbeat offers a 5km journey through the city’s oldest neighborhoods, where each building and monument tells a story. The route takes runners past ancient temples, heritage buildings, and iconic landmarks. With informational plaques along the way, you’ll learn about the city’s history as you run. This route is ideal for history enthusiasts who want to combine sightseeing with exercise, offering a memorable, culturally rich experience.",
+            "distance": "5km",
+            "location": "Old Town",
+            "image": "route_photos/bob.jpg",
+            "date": "2024-01-03T06:45:00Z",
+            "likes": 30,
+            "modalId": "historicHeartbeatModal",
+            "author": "David Yeo",
+            "commentsList": [
+                {
+                    "name": "Ben",
+                    "text": "Loved learning about the landmarks!"
+                },
+                {
+                    "name": "Eva",
+                    "text": "Great morning run."
+                }
+            ]
+        },
+        {
+            "id": 67892,
+            "title": "Blossom Boulevard",
+            "description": "Blossom Boulevard is a vibrant 3km route filled with seasonal flowers and trees in full bloom. This short but scenic route takes you through a series of flower beds, green lawns, and garden paths. Each season brings a new wave of colors and fragrances, from cherry blossoms in the spring to vivid autumn leaves. It’s perfect for a relaxed run or a walk, ideal for flower enthusiasts and anyone looking to immerse themselves in nature’s beauty.",
+            "distance": "3km",
+            "location": "Flower Valley",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-05-18T07:30:00Z",
+            "likes": 34,
+            "modalId": "blossomBoulevardModal",
+            "author": "Eva Tan",
+            "commentsList": [
+                {
+                    "name": "Anna",
+                    "text": "The flowers were beautiful!"
+                },
+                {
+                    "name": "Grace",
+                    "text": "Short but so sweet."
+                }
+            ]
+        },
+        {
+            "id": 67893,
+            "title": "The Serene Loop",
+            "description": "Nestled within Greenfield Park, The Serene Loop is a 4km path ideal for a peaceful run or a leisurely stroll. Surrounded by trees, small lakes, and shaded pathways, this route provides a calming escape from the city’s hustle. Runners can expect occasional sightings of swans and ducks in the ponds, adding to the serene atmosphere. This is a perfect choice for those who seek tranquility and a gentle pace within the natural beauty of a park setting.",
+            "distance": "4km",
+            "location": "Greenfield Park",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-09-12T08:20:00Z",
+            "likes": 27,
+            "modalId": "sereneLoopModal",
+            "author": "Eva Tan",
+            "commentsList": [
+                {
+                    "name": "Leo",
+                    "text": "So calming and relaxing!"
+                },
+                {
+                    "name": "Sophia",
+                    "text": "Nice escape within the city."
+                }
+            ]
+        },
+        {
+            "id": 67894,
+            "title": "Peak Performance",
+            "description": "For a challenging yet rewarding workout, Peak Performance is a 9km trail that climbs steadily to the top of a scenic hill. As you ascend, the landscape opens up, revealing sweeping views of the valley and forests below. The path is a mix of gravel and stone, adding to the difficulty, but the views from the top are breathtaking. Perfect for runners looking to build endurance, this route will test your stamina and reward you with a sense of achievement upon reaching the summit.",
+            "distance": "9km",
+            "location": "Highland Ridge",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-10-05T09:00:00Z",
+            "likes": 52,
+            "modalId": "peakPerformanceModal",
+            "author": "Grace Wong",
+            "commentsList": [
+                {
+                    "name": "Harry",
+                    "text": "Amazing workout and views!"
+                },
+                {
+                    "name": "Ivy",
+                    "text": "Challenging but worth it."
+                }
+            ]
+        },
+        {
+            "id": 67895,
+            "title": "Coastal Breeze Path",
+            "description": "Coastal Breeze Path is a scenic 8km run along the coastline, perfect for beach lovers. This route takes you past sandy shores, bustling beach cafes, and surf shops. The fresh ocean breeze and sound of crashing waves make this a delightful experience. Runners can expect gentle slopes, boardwalks, and opportunities to dip their feet in the water at various points. It's best enjoyed at sunset, with golden hues lighting up the path and casting reflections across the water.",
+            "distance": "8km",
+            "location": "Seaside Town",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-06-28T18:30:00Z",
+            "likes": 59,
+            "modalId": "coastalBreezeModal",
+            "author": "Harry Lee",
+            "commentsList": [
+                {
+                    "name": "Jackie",
+                    "text": "Loved the ocean vibes!"
+                },
+                {
+                    "name": "Eva",
+                    "text": "Perfect for an evening run."
+                }
+            ]
+        },
+        {
+            "id": 67896,
+            "title": "Sunrise Trail",
+            "description": "Sunrise Trail is a picturesque 5km route with the perfect view of the sunrise over the valley. For early risers, this trail offers a unique experience as the sun gradually lights up the surrounding landscape, painting the sky with warm hues. Enjoy the fresh morning air and the calm surroundings as you run through a path flanked by wildflowers and the scent of morning dew.",
+            "distance": "5km",
+            "location": "East Valley",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-03-19T06:15:00Z",
+            "likes": 41,
+            "modalId": "sunriseTrailModal",
+            "author": "Harry Lee",
+            "commentsList": [
+                {
+                    "name": "Ben",
+                    "text": "Beautiful start to the day!"
+                },
+                {
+                    "name": "Grace",
+                    "text": "A refreshing morning run."
+                }
+            ]
+        },
+        {
+            "id": 67897,
+            "title": "Rolling Hills Circuit",
+            "description": "Rolling Hills Circuit is a 7km route that takes runners through gentle slopes and pastoral landscapes. This is an excellent route for runners looking for a little bit of elevation mixed with scenic countryside views. The trail features rolling hills that provide a moderate workout, complemented by open fields and occasional herds of grazing animals.",
+            "distance": "7km",
+            "location": "Countryside",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-11-10T07:00:00Z",
+            "likes": 36,
+            "modalId": "rollingHillsModal",
+            "author": "Ivy Koh",
+            "commentsList": [
+                {
+                    "name": "Megan",
+                    "text": "Loved the rolling hills."
+                },
+                {
+                    "name": "Jackie",
+                    "text": "A nice mix of hills and flat areas."
+                }
+            ]
+        },
+        {
+            "id": 67898,
+            "title": "Valley View Path",
+            "description": "Valley View Path is a 6km scenic route with multiple observation points. Perfect for photographers and nature lovers, this trail offers panoramic views of the valley and the nearby hills. Ideal for evening jogs as the light fades, this route brings a peaceful, reflective experience.",
+            "distance": "6km",
+            "location": "Valley Overlook",
+            "image": "route_photos/bob.jpg",
+            "date": "2023-08-15T17:30:00Z",
+            "likes": 40,
+            "modalId": "valleyViewModal",
+            "author": "Jackie Lau",
+            "commentsList": [
+                {
+                    "name": "Alex",
+                    "text": "Incredible views!"
+                },
+                {
+                    "name": "Olivia",
+                    "text": "A great route for unwinding."
+                }
+            ]
+        }
+    ]
+}
