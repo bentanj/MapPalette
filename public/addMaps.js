@@ -88,7 +88,7 @@ const app = Vue.createApp({
             onAuthStateChanged(auth, async (user) => {
               if (user) {
                 const userId = user.uid;
-                const username = user.displayName || "Anonymous";
+                const username = user.username || "Anonymous";
           
                 const mapElement = document.getElementById('map');
                 try {
@@ -104,7 +104,7 @@ const app = Vue.createApp({
                       date: new Date().toISOString(),
                       likes: 0,
                       comments: 0,
-                      modalId: `${userId}-modal`,
+                      modalId: `${this.postDescription}-modal`,
                       author: username,
                       commentsList: [],
                       waypoints: this.waypoints
