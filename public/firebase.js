@@ -17,6 +17,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const storage = firebase.storage();
 
 // Handle login
 document.getElementById('login-form')?.addEventListener('submit', (event) => {
