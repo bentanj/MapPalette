@@ -1,5 +1,6 @@
 // Import Firebase functions (ensure this is at the top of your addMaps.js file)
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { auth } from "./firebase.js"; // Ensure this path matches where firebase.js is located
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
 const app = Vue.createApp({
     data() {
@@ -34,32 +35,41 @@ const app = Vue.createApp({
         username:'',
         submitting:false,
         formValidated: false,
+        API_ENDPOINT: 'https://app-6kmdo5luna-uc.a.run.app',
+        isFetching: false,
+        deleteCountdown: 0,
+        deleteTimeout: null,
+        deleteModalTitle: "Delete post?",
+        
+        // Existing post related
+        mapId: null,
+        isEditing: false,
       };
 
     },
     methods: {
         async loadGoogleMapsScript() {
             try {
-                // Fetch the API key from the Firebase function with CORS enabled
-                const response = await fetch('https://app-6kmdo5luna-uc.a.run.app/getGoogleMapsApiKey');
-            
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-            
+                const response = await fetch(`${this.API_ENDPOINT}/getGoogleMapsApiKey`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
                 const data = await response.json();
                 this.mapsApiKey = data.apiKey;
-            
-                // Dynamically load Google Maps script with the fetched API key
-                const script = document.createElement('script');
-                script.src = `https://maps.googleapis.com/maps/api/js?key=${this.mapsApiKey}&callback=initMap&libraries=places`;
-                script.async = true;
-                script.defer = true;
-                document.body.appendChild(script);
+                
+                // Dynamically load Google Maps script
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${this.mapsApiKey}&callback=initMap&libraries=places`;
+                    script.async = true;
+                    script.defer = true;
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error("Failed to load Google Maps API"));
+                    document.body.appendChild(script);
+                });
             } catch (error) {
                 console.error('Error fetching API key:', error);
             }
-        },      
+        },   
         initMap() {
             // Initialize the map and its settings
             this.map = new google.maps.Map(document.getElementById("map"), {
@@ -137,7 +147,8 @@ const app = Vue.createApp({
           
             // Listen for clicks on the map to add waypoints
             this.map.addListener("click", (event) => {
-              this.addWaypoint(event.latLng);
+                console.log(event.latLng);
+                this.addWaypoint(event.latLng);
             });
           
             // Automatically try to get the user's current location on page load
@@ -153,26 +164,33 @@ const app = Vue.createApp({
             }
         },          
 
-        addWaypoint(latLng) {
-            // Generate a unique ID for the waypoint
-            const id = Date.now() + Math.random();
-          
-            this.geocoder.geocode({ location: latLng }, (results, status) => {
-              if (status === 'OK') {
-                const address = results[0] ? results[0].formatted_address : 'Address not found';
-                this.waypoints.push({
-                  id: id, // Assign the unique ID
-                  location: latLng,
-                  stopover: true,
-                  address: address, // Store the address (street name)
+        async addWaypoint(latLng, index = null) {
+            return new Promise((resolve) => {
+                // Generate a unique ID for the waypoint
+                const id = Date.now() + Math.random();
+              
+                this.geocoder.geocode({ location: latLng }, (results, status) => {
+                    if (status === 'OK') {
+                        const address = results[0] ? results[0].formatted_address : 'Address not found';
+                        this.waypoints.push({
+                            id: id,
+                            location: { lat: latLng.lat(), lng: latLng.lng() },
+                            stopover: true,
+                            address: address,
+                            order: index !== null ? index : this.waypoints.length // Keep order if index is provided
+                        });
+        
+                        this.addMarker(latLng);
+                        this.calculateAndDisplayRoute();
+                        resolve(); // Resolve the promise once done
+                    } else {
+                        console.error('Geocode failed:', status);
+                        resolve(); // Resolve to continue even if geocoding fails
+                    }
                 });
-          
-                // Add a marker for each waypoint
-                this.addMarker(latLng);
-                this.calculateAndDisplayRoute();
-              }
             });
-        },   
+        }
+        ,   
 
         // Make marker "bounce" when hovering over the anchor tag
         startMarkerBounce(index) {
@@ -290,19 +308,6 @@ const app = Vue.createApp({
             this.markers.forEach((marker, index) => {
                 // Update the marker label
                 marker.setLabel(`${index + 1}`);
-                
-                // Update the InfoWindow content to reflect the updated marker number
-                // const infoWindow = new google.maps.InfoWindow({
-                //     content: `Marker ${index + 1}<br>Lat: ${marker.getPosition().lat().toFixed(5)}, Lng: ${marker.getPosition().lng().toFixed(5)}`
-                // });
-                
-                // // Update event listeners for the new InfoWindow content
-                // marker.addListener("mouseover", () => {
-                //     infoWindow.open(this.map, marker);
-                // });
-                // marker.addListener("mouseout", () => {
-                //     infoWindow.close();
-                // });
             });
         },
         
@@ -314,23 +319,22 @@ const app = Vue.createApp({
         },
 
         calculateAndDisplayRoute() {
-            // Prepare waypoints for the directionsService (only send location and stopover)
-            const processedWaypoints = this.waypoints.map(point => ({
-                location: point.location,
-                stopover: point.stopover
-            }));
+            const processedWaypoints = this.waypoints
+                .sort((a, b) => a.order - b.order) // Sort waypoints by order
+                .map(point => ({
+                    location: point.location,
+                    stopover: point.stopover
+                }));
         
-            // If there are fewer than 2 waypoints, clear the route and the polyline
-            if (this.waypoints.length < 2) {
+            if (processedWaypoints.length < 2) {
                 this.clearRoute();
                 return;
             }
         
-            // Request route directions from the DirectionsService
             this.directionsService.route({
-                origin: this.waypoints[0].location,
-                destination: this.waypoints[this.waypoints.length - 1].location,
-                waypoints: processedWaypoints.slice(1, -1), // Only pass valid waypoint data
+                origin: processedWaypoints[0].location,
+                destination: processedWaypoints[processedWaypoints.length - 1].location,
+                waypoints: processedWaypoints.slice(1, -1),
                 travelMode: 'WALKING',
                 avoidHighways: true,
             }, (response, status) => {
@@ -342,7 +346,7 @@ const app = Vue.createApp({
                         strokeColor: this.currentColor
                     });
                 } else {
-                    this.setAlert('error','Directions request failed due to ' + status);
+                    this.setAlert('error', 'Directions request failed due to ' + status);
                 }
             });
         },
@@ -362,24 +366,28 @@ const app = Vue.createApp({
             this.directionsRenderer.set('directions', null); // Clear the DirectionsRenderer
         },
 
-        clearMap() {
+        clearMap(showAlert = true) {
             // Clear all markers
-            for(let marker of this.markers){
+            for (let marker of this.markers) {
                 marker.setVisible(false);
                 marker.setMap(null);
                 marker.setPosition(null);
                 marker = null;
             }
             this.markers = [];
-
+        
             // Clear waypoints and the route
             this.waypoints = [];
             this.clearRoute();
             const input = document.getElementById("pac-input");
-            input.value='';
-            this.setAlert('success', 'Route cleared successfully.');
+            input.value = '';
+        
+            // Show alert only if showAlert is true
+            if (showAlert) {
+                this.setAlert('success', 'Route cleared successfully.');
+            }
         },
-
+        
         exportToGoogleMaps() {
             if (this.waypoints.length < 2) {
                 this.setAlert('error','You need at least two points to export the route!')
@@ -388,7 +396,7 @@ const app = Vue.createApp({
 
             let googleMapsLink = 'https://www.google.com/maps/dir/';
             this.waypoints.forEach((waypoint) => {
-                googleMapsLink += `${waypoint.location.lat()},${waypoint.location.lng()}/`;
+                googleMapsLink += `${waypoint.location.lat},${waypoint.location.lng}/`;
             });
             window.open(googleMapsLink, '_blank');
         },
@@ -437,81 +445,49 @@ const app = Vue.createApp({
         },
         
         validateAndSubmit() {
-            // Set formValidated to true to apply Bootstrap validation styles
             this.formValidated = true;
-        
-            // Access the form element
             const form = document.querySelector('form');
         
             if (form.checkValidity()) {
-              // Form is valid, proceed to create the post
-              this.createPost();
+                // Form is valid, proceed to create the post
+                this.createPost();
             } else {
-              // Form is invalid, display validation errors
-              this.setAlert('error', 'Please fill out all required fields.');
+                // Form is invalid, display validation errors
+                this.setAlert('error', 'Please fill out all required fields.');
             }
         },
 
-        createPost() {
-            // First, ensure the post has a title
-            if (this.postTitle.trim() === '') {
-                this.alertMsg = 'Post must include a title.';
-                this.setAlert('error', this.alertMsg);
-                this.alertMsg = '';
-                return;
-            }
-
+        async createPost() {
+            if (this.isEditing) return;
+        
             if (this.waypoints.length < 2) {
-                this.setAlert('error','You need at least two points to submit the route!')
+                this.setAlert('error', 'You need at least two points to submit the route!');
                 return;
             }
         
-            // Ensure post description isn't empty, default if it is
-            if (this.postDescription.trim() === '') {
-                this.postDescription = "No description.";
-            }
-            this.submitting = true;
-            // Check Firebase Auth to get user details
-            const auth = getAuth(); // This line should now work
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    // User is authenticated
-                    const userId = user.uid; // Get Firebase UID
-                    const username = user.email; // Assuming email as username, change if necessary
-                    // Make the API call to create a post using axios
-                    axios.post('https://app-6kmdo5luna-uc.a.run.app/api/create/', {
-                        title: this.postTitle,
-                        description: this.postDescription,
-                        waypoints: this.waypoints,
-                        userID: userId,
-                        // Currently, API does not support username, so we'll exclude it for now
-                    })
-                    .then(response => {
-                        const data = response.data;
-                        if (data.id) {
-                            // Post was successfully created
-                            this.setAlert('success', 'Your post has been successfully created.');
-                            // Clear post fields
-                            this.postTitle = '';
-                            this.postDescription = '';
-                            this.postAnonymously = false;
-                            this.clearMap();
-                        } else {
-                            // Something went wrong with the creation
-                            this.setAlert('error', 'Failed to create the post. Please try again.');
-                        }
-                    })
-                    .catch((error) => {
-                        console.error('Error creating post:', error);
-                        this.setAlert('error', 'An error occurred while creating the post.');
-                    });
+            try {
+                const response = await axios.post(`${this.API_ENDPOINT}/api/create/`, {
+                    title: this.postTitle,
+                    description: this.postDescription,
+                    waypoints: this.waypoints,
+                    userID: this.userID,
+                });
+                if (response.data.id) {
+                    // Show success alert for post creation
+                    this.setAlert('success', 'Your post has been successfully created.');
+                    
+                    // Clear map, title, and description without showing the "Route cleared successfully" alert
+                    this.postTitle = '';
+                    this.postDescription = '';
+                    this.clearMap(false);
+                    this.formValidated = false;
                 } else {
-                    // User is not authenticated
-                    this.setAlert('error', 'You must be logged in to create a post.');
+                    this.setAlert('error', 'Failed to create the post. Please try again.');
                 }
-                this.submitting = false;
-            });
-            
+            } catch (error) {
+                console.error('Error creating post:', error);
+                this.setAlert('error', 'An error occurred while creating the post.');
+            }
         },
 
         clearPost(){
@@ -520,13 +496,173 @@ const app = Vue.createApp({
             this.postAnonymously = false;
             this.clearMap();
             this.setAlert('success', 'Post cleared successfully.');
-        },          
-    },
-    mounted() {
-        // Assign initMap as a global function
-        window.initMap = this.initMap;
+        },
+        
+        getMapIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        },
 
-        // Fetch the Google Maps API key from Firebase Functions and load the script
-        this.loadGoogleMapsScript();
-    }
+        async fetchMapData() {
+            if (this.isFetching) return;
+            this.isFetching = true;
+        
+            try {
+                const response = await axios.get(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`);
+                
+                // Check if the response data is empty or undefined, indicating the post is deleted or doesn't exist
+                if (!response.data || Object.keys(response.data).length === 0) {
+                    throw new Error("Post not found or already deleted.");
+                }
+        
+                this.postTitle = response.data.title;
+                this.postDescription = response.data.description;
+                this.mapIdUserID = response.data.userID; // Set the userID of the post for edit authorization
+        
+                for (const [index, waypoint] of response.data.waypoints.entries()) {
+                    const latLng = new google.maps.LatLng(waypoint.location.lat, waypoint.location.lng);
+                    await this.addWaypoint(latLng, index); // Await to ensure sequential order
+                }
+            } catch (error) {
+                console.error("Error fetching map data:", error);
+                this.mapId = null; // Reset mapId to null since the post is unavailable
+                this.isEditing = false;
+                this.setAlert('error', 'This post has been deleted or does not exist.');
+            } finally {
+                this.isFetching = false;
+            }
+        },
+
+        retBack() {
+            window.location.href = "homepage.html";
+        },
+
+        async editPost() {
+            if (this.mapIdUserID !== this.userID) {
+                this.setAlert('error', 'You are not authorised to edit this post.');
+                return;
+            }
+
+            // Ensure the user ID matches the post's user ID before allowing edits
+            this.formValidated = true;
+            const form = document.querySelector('form');
+        
+            if (this.waypoints.length < 2) {
+                this.setAlert('error', 'You need at least two points to submit the route!');
+                return;
+            }
+
+            if (form.checkValidity()) {
+                // Form is valid, proceed to create the post
+                try {
+                    const response = await axios.put(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`, {
+                        title: this.postTitle,
+                        description: this.postDescription,
+                        waypoints: this.waypoints,
+                    });
+                    if (response.data) {
+                        this.setAlert('success', 'Your post has been successfully updated.');
+    
+                        const modal = new bootstrap.Modal(document.getElementById('editPost'));
+                        modal.show();
+                    }
+                } catch (error) {
+                    console.error('Error updating post:', error);
+                    this.setAlert('error', 'Failed to update the post. Please try again.');
+                }
+            } else {
+                // Form is invalid, display validation errors
+                this.setAlert('error', 'Please fill out all required fields.');
+            }
+        },
+
+        undoChanges() {
+            window.location.reload();
+        },
+
+        deletePost() {
+            // Start the countdown without deleting the post immediately
+            if (this.mapIdUserID !== this.userID) {
+                this.setAlert('error', 'You are not authorised to edit this post.');
+                return;
+            };
+            this.deleteCountdown = 3;
+            this.deleteModalTitle = "Post deleted!";
+            this.startDeleteCountdown();
+          },
+        
+        async performDelete() {
+        // Only perform delete if countdown completes without interruption
+        try {
+            await axios.delete(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`);
+            this.setAlert("success", "Your post has been successfully deleted.");
+            window.location.href = "homepage.html"; // Redirect to homepage
+        } catch (error) {
+            console.error("Error deleting post:", error);
+            this.setAlert("error", "Failed to delete the post. Please try again.");
+        }
+        },
+    
+        startDeleteCountdown() {
+        // Start countdown
+        this.deleteTimeout = setInterval(() => {
+            if (this.deleteCountdown > 1) {
+            this.deleteCountdown -= 1;
+            } else {
+            clearInterval(this.deleteTimeout);
+            this.performDelete(); // Proceed with the actual delete
+            }
+        }, 1000); // 1-second interval
+        },
+    
+        undoDelete() {
+            // Stop countdown and reset
+            clearInterval(this.deleteTimeout);
+            this.deleteCountdown = 0;
+            this.resetDeleteModal();
+            this.setAlert("success", "Post deletion undone.");
+        },
+    
+        resetDeleteModal() {
+            // Reset modal to initial state
+            this.deleteCountdown = 0;
+            this.deleteModalTitle = "Delete post?";
+        },
+   
+
+    },
+    created() {
+        // Assign initMap as a global function to initialize the map once the API loads
+        window.initMap = () => this.initMap();
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // User is authenticated
+                this.userID = user.uid;
+                this.username = user.email;
+                
+                // Determine if editing or creating a new post
+                this.mapId = this.getMapIdFromUrl();
+                this.isEditing = !!this.mapId;
+    
+                try {
+                    // Ensure Google Maps API is loaded before continuing
+                    await this.loadGoogleMapsScript();
+    
+                    if (this.isEditing) {
+                        // Fetch existing map data only after Google Maps API has loaded
+                        await this.fetchMapData();
+                    } else {
+                        // Initialize new map for post creation
+                        this.initMap();
+                    }
+                } catch (error) {
+                    console.error("Failed to load Google Maps API:", error);
+                }
+            } else {
+                // Redirect to login if not authenticated
+                window.location.href = "index.html";
+            }
+        });
+    }    
 }).mount('#app');
