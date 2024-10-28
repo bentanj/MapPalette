@@ -1,11 +1,18 @@
 {
   "dependencies": {
     "axios": "^1.7.7",
+    "dom-to-image": "^2.6.0",
     "dotenv": "^16.4.5",
     "firebase": "^10.14.1",
-    "firebase-functions": "^6.0.1"
+    "firebase-functions": "^6.1.0",
+    "html-to-image": "^1.11.11",
+    "html2canvas": "^1.4.1",
+    "puppeteer": "^23.6.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "babel-loader": "^9.2.1",
     "webpack": "^5.95.0",
     "webpack-cli": "^5.1.4"
   }
