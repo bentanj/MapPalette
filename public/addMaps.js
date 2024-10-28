@@ -128,7 +128,7 @@ const app = Vue.createApp({
                     formData.append('imageFile', blob, 'map-screenshot.png'); 
           
                     try {
-                      const response = await axios.post(`${this.API_ENDPOINT}/api/create`, formData, {
+                      const response = await axios.post(`${endPointURL}/api/create`, formData, {
                         headers: {
                           'Content-Type': 'multipart/form-data'
                         }
@@ -533,19 +533,209 @@ const app = Vue.createApp({
         
             // Add a short delay to trigger the fade-in effect after the alert becomes unhidden
             setTimeout(() => {
-                this.showAlert = true;  // Make the alert visible after un-hiding it
-            }, 10);  // A small delay (e.g., 10ms) to ensure the DOM reflects the 'hidden' state before showing
+              this.showAlert = true; // Make the alert visible after un-hiding it
+            }, 10); // A small delay to ensure the DOM reflects the 'hidden' state before showing
+        
+            // Automatically dismiss the alert after 10 seconds
+            this.alertTimeout = setTimeout(() => {
+              this.dismissAlert();
+              this.alertTimeout = null; // Reset the timeout ID
+            }, 3000); // 10,000 milliseconds = 10 seconds
+        },
+        
+        validateAndSubmit() {
+            this.formValidated = true;
+            const form = document.querySelector('form');
+        
+            if (form.checkValidity()) {
+                if (!this.isEditing) {
+                    // Not the owner, save as a new post
+                    this.createPost();
+                } else {
+                    // User is the owner, edit the existing post
+                    this.editPost();
+                }
+            } else {
+                this.setAlert('error', 'Please fill out all required fields.');
+            }
+        },
+        
+        getMapIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        },
+
+        async fetchMapData() {
+            if (this.isFetching) return;
+            this.isFetching = true;
+        
+            try {
+                const response = await axios.get(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`);
+        
+                if (!response.data || Object.keys(response.data).length === 0) {
+                    throw new Error("Post not found or already deleted.");
+                }
+        
+                // Load map data into form fields
+                this.postTitle = response.data.title;
+                this.postDescription = response.data.description;
+                this.mapIdUserID = response.data.userID;
+        
+                // Check if the current user owns the map
+                if (this.mapIdUserID === this.userID) {
+                    // User is the owner, allow editing
+                    this.isEditing = true;
+                } else {
+                    // User is not the owner, set as new map
+                    this.mapId = null; // Clears mapId for new save
+                    this.isEditing = false; // Switch to "create" mode
+                    this.setAlert('error', 'You are viewing a copy of this map. Changes will save as a new post.');
+                }
+        
+                // Load waypoints as viewable/editable data
+                for (const [index, waypoint] of response.data.waypoints.entries()) {
+                    const latLng = new google.maps.LatLng(waypoint.location.lat, waypoint.location.lng);
+                    await this.addWaypoint(latLng, index); 
+                }
+            } catch (error) {
+                console.error("Error fetching map data:", error);
+                this.setAlert('error', 'This post has been deleted or does not exist.');
+                this.isEditing=false;
+            } finally {
+                this.isFetching = false;
+            }
+        },
+
+        retBack() {
+            window.location.href = "homepage.html";
+        },
+
+        async editPost() {
+            if (this.mapIdUserID !== this.userID) {
+                this.setAlert('error', 'You are not authorised to edit this post.');
+                return;
+            }
+
+            // Ensure the user ID matches the post's user ID before allowing edits
+            this.formValidated = true;
+            const form = document.querySelector('form');
+        
+            if (this.waypoints.length < 2) {
+                this.setAlert('error', 'You need at least two points to submit the route!');
+                return;
+            }
+
+            if (form.checkValidity()) {
+                // Form is valid, proceed to create the post
+                try {
+                    const response = await axios.put(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`, {
+                        title: this.postTitle,
+                        description: this.postDescription,
+                        waypoints: this.waypoints,
+                    });
+                    if (response.data) {
+                        this.setAlert('success', 'Your post has been successfully updated.');
+    
+                        const modal = new bootstrap.Modal(document.getElementById('editPost'));
+                        modal.show();
+                    }
+                } catch (error) {
+                    console.error('Error updating post:', error);
+                    this.setAlert('error', 'Failed to update the post. Please try again.');
+                }
+            } else {
+                // Form is invalid, display validation errors
+                this.setAlert('error', 'Please fill out all required fields.');
+            }
+        },
+
+        undoChanges() {
+            window.location.reload();
+        },
+
+        deletePost() {
+            // Start the countdown without deleting the post immediately
+            if (this.mapIdUserID !== this.userID) {
+                this.setAlert('error', 'You are not authorised to edit this post.');
+                return;
+            };
+            this.deleteCountdown = 3;
+            this.deleteModalTitle = "Post deleted!";
+            this.startDeleteCountdown();
+          },
+        
+        async performDelete() {
+        // Only perform delete if countdown completes without interruption
+        try {
+            await axios.delete(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`);
+            this.setAlert("success", "Your post has been successfully deleted.");
+            window.location.href = "homepage.html"; // Redirect to homepage
+        } catch (error) {
+            console.error("Error deleting post:", error);
+            this.setAlert("error", "Failed to delete the post. Please try again.");
         }
+        },
+    
+        startDeleteCountdown() {
+        // Start countdown
+        this.deleteTimeout = setInterval(() => {
+            if (this.deleteCountdown > 1) {
+            this.deleteCountdown -= 1;
+            } else {
+            clearInterval(this.deleteTimeout);
+            this.performDelete(); // Proceed with the actual delete
+            }
+        }, 1000); // 1-second interval
+        },
+    
+        undoDelete() {
+            // Stop countdown and reset
+            clearInterval(this.deleteTimeout);
+            this.deleteCountdown = 0;
+            this.resetDeleteModal();
+            this.setAlert("success", "Post deletion undone.");
+        },
+    
+        resetDeleteModal() {
+            // Reset modal to initial state
+            this.deleteCountdown = 0;
+            this.deleteModalTitle = "Delete post?";
+        },
+   
 
     },
-    mounted() {
-        // Assign initMap as a global function
-        window.initMap = this.initMap;
-
-        // Fetch the Google Maps API key from Firebase Functions and load the script
-        this.loadGoogleMapsScript();
-    }
-})
-
-app.mount('#app');
-
+    created() {
+        // Assign initMap as a global function to initialize the map once the API loads
+        window.initMap = () => this.initMap();
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // User is authenticated
+                this.userID = user.uid;
+                this.username = user.email;
+                
+                // Determine if editing or creating a new post
+                this.mapId = this.getMapIdFromUrl();
+                this.isEditing = !!this.mapId;
+    
+                try {
+                    // Ensure Google Maps API is loaded before continuing
+                    await this.loadGoogleMapsScript();
+    
+                    if (this.isEditing) {
+                        // Fetch existing map data only after Google Maps API has loaded
+                        await this.fetchMapData();
+                    } else {
+                        // Initialize new map for post creation
+                        this.initMap();
+                    }
+                } catch (error) {
+                    console.error("Failed to load Google Maps API:", error);
+                }
+            } else {
+                // Redirect to login if not authenticated
+                window.location.href = "index.html";
+            }
+        });
+    }    
+}).mount('#app');
