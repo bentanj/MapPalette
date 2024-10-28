@@ -86,6 +86,7 @@ const app = Vue.createApp({
               mapTypeId: "roadmap",
               streetViewControl: false,
               mapTypeControl: false,
+              gestureHandling: 'greedy',
               styles: [
                 {
                   "featureType": "road.highway",
@@ -116,7 +117,7 @@ const app = Vue.createApp({
             this.routePolyline = new google.maps.Polyline({
               strokeColor: this.currentColor,
               strokeOpacity: 1.0,
-              strokeWeight: 4,
+              strokeWeight: 8,
               map: this.map
             });
           
@@ -715,7 +716,7 @@ const app = Vue.createApp({
             });
         
             // Apply padding and fit map to bounds
-            this.map.fitBounds(bounds, 250); // Adjust padding as needed
+            this.map.fitBounds(bounds, 250); 
             this.map.panToBounds(bounds);
         },        
 
