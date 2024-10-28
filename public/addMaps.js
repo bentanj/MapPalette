@@ -4,34 +4,49 @@ const endPointURL = "https://app-907670644284.us-central1.run.app";
 // Import Firebase functions (ensure this is at the top of your addMaps.js file)
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import * as htmlToImage from 'https://cdn.jsdelivr.net/npm/html-to-image@1.8.0/dist/index.min.js';
+import { auth } from "./firebase.js"; // Ensure this path matches where firebase.js is located
 
 const app = Vue.createApp({
     data() {
       return {
+        // Map related
         map: null,
         directionsService: null,
         directionsRenderer: null,
         routePolyline: null,
-        // search:'',
+
+        // Control related
         waypoints: [],
         markers: [], // Array to store markers
-        currentColor: '#FF0000',
+        currentColor: '#e81416',
         totalDistance: 0,
-        geocoder: null, // Add a geocoder for reverse geocoding
-        colors: ['#e81416','#ffa500','#faeb36','#79c314','#487de7','#4b369d','#70369d'], // Available colors
+        geocoder: null,
+        colors: ['#e81416','#ffa500','#faeb36','#79c314','#487de7','#4b369d','#70369d'], // Colors of the rainbow
         mapsApiKey: '', // Maps API key to be dynamically loaded
-        // Alert
+
+        // Alert related
         showAlert: false,
+        alertTimeout: null,
         hidden:true,
         alertType: '',
         alertMessage: '', 
+
         // Post related
         postTitle:'',
         postDescription:'',
-        postAnonymously:false,
         userID:'',
         username:'',
         submitting:false,
+        formValidated: false,
+        API_ENDPOINT: 'https://app-907670644284.us-central1.run.app',
+        isFetching: false,
+        deleteCountdown: 0,
+        deleteTimeout: null,
+        deleteModalTitle: "Delete post?",
+        
+        // Existing post related
+        mapId: null,
+        isEditing: false,
       };
 
     },
@@ -39,22 +54,22 @@ const app = Vue.createApp({
 
         async loadGoogleMapsScript() {
             try {
-                // Fetch the API key from the Firebase function with CORS enabled
-                const response = await fetch(`${endPointURL}/getGoogleMapsApiKey`);
-            
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-            
+                const response = await fetch(`${this.API_ENDPOINT}/getGoogleMapsApiKey`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
                 const data = await response.json();
                 this.mapsApiKey = data.apiKey;
-            
-                // Dynamically load Google Maps script with the fetched API key
-                const script = document.createElement('script');
-                script.src = `https://maps.googleapis.com/maps/api/js?key=${this.mapsApiKey}&callback=initMap`;
-                script.async = true;
-                script.defer = true;
-                document.body.appendChild(script);
+                
+                // Dynamically load Google Maps script
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${this.mapsApiKey}&callback=initMap&libraries=places`;
+                    script.async = true;
+                    script.defer = true;
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error("Failed to load Google Maps API"));
+                    document.body.appendChild(script);
+                });
             } catch (error) {
                 console.error('Error fetching API key:', error);
             }
@@ -113,7 +128,7 @@ const app = Vue.createApp({
                     formData.append('imageFile', blob, 'map-screenshot.png'); 
           
                     try {
-                      const response = await axios.post(`${endPointURL}/api/create`, formData, {
+                      const response = await axios.post(`${this.API_ENDPOINT}/api/create`, formData, {
                         headers: {
                           'Content-Type': 'multipart/form-data'
                         }
@@ -157,146 +172,124 @@ const app = Vue.createApp({
         initMap() {
             // Initialize the map and its settings
             this.map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 18,
-                center: { lat: 1.36241, lng: 103.82606 }, // Singapore's coordinates
-                mapTypeId: "roadmap",
-                streetViewControl: false,
-                styles: [
-                    { 
-                        "featureType": "road.highway",
-                        "elementType": "geometry",
-                        "stylers": [
-                            { 
-                                "visibility": "off" 
-                            }
-                        ] 
-                    },
-                    {
-                        "featureType": "poi",
-                        "elementType": "labels.text",
-                        "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                        ]
-                    },
-                    {
-                        "featureType": "poi.business",
-                        "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                        ]
-                    },
-                    {
-                        "featureType": "transit.station.bus",
-                        "stylers":  [
-                        { 
-                            "visibility": "off" 
-                        }
-                        ]
-                    }
-                ]
+              zoom: 18,
+              center: { lat: 1.36241, lng: 103.82606 }, // Singapore's coordinates
+              mapTypeId: "roadmap",
+              streetViewControl: false,
+              mapTypeControl: false,
+              styles: [
+                {
+                  "featureType": "road.highway",
+                  "elementType": "geometry",
+                  "stylers": [{ "visibility": "off" }]
+                },
+                {
+                  "featureType": "poi",
+                  "elementType": "labels.text",
+                  "stylers": [{ "visibility": "off" }]
+                },
+                {
+                  "featureType": "poi.business",
+                  "stylers": [{ "visibility": "off" }]
+                },
+                {
+                  "featureType": "transit.station.bus",
+                  "stylers": [{ "visibility": "off" }]
+                }
+              ],
             });
-    
+          
             this.directionsService = new google.maps.DirectionsService();
             this.directionsRenderer = new google.maps.DirectionsRenderer({
-                suppressMarkers: true,
+              suppressMarkers: true,
             });
-    
+          
             this.routePolyline = new google.maps.Polyline({
-                strokeColor: this.currentColor,
-                strokeOpacity: 1.0,
-                strokeWeight: 4,
-                map: this.map
+              strokeColor: this.currentColor,
+              strokeOpacity: 1.0,
+              strokeWeight: 4,
+              map: this.map
             });
-            
-            this.geocoder = new google.maps.Geocoder(); // Ensure geocoder is initialized here
+          
+            this.geocoder = new google.maps.Geocoder();
 
-            // Fix this part to make sure that search bar is able to auto reload like example in "https://developers.google.com/maps/documentation/javascript/examples/places-searchbox" 
-            // // Add the search box and link it to the input element
-            // const input = document.getElementById("pac-input");
-            // const searchBox = new google.maps.places.SearchBox(input);
-            
-            // // Bias the SearchBox results towards current map's viewport
-            // this.map.addListener("bounds_changed", () => {
-            //     searchBox.setBounds(this.map.getBounds());
-            // });
+            /* ======== Add Search Box Using map.controls ======== */
+            // Get the input element
+            const input = document.getElementById("pac-input");
+            const searchBox = new google.maps.places.SearchBox(input);
 
-            // // Listen for the event fired when the user selects a prediction and retrieve
-            // // more details for that place
-            // searchBox.addListener("places_changed", () => {
-            //     const places = searchBox.getPlaces();
+            // Bias the SearchBox results towards current map's viewport
+            this.map.addListener("bounds_changed", () => {
+                searchBox.setBounds(this.map.getBounds());
+            });
 
-            //     if (places.length === 0) {
-            //         return;
-            //     }
-
-            //     // Clear out the old markers.
-            //     this.markers.forEach((marker) => {
-            //         marker.setMap(null);
-            //     });
-            //     this.markers = [];
-
-            //     // For each place, get the name and location.
-            //     const bounds = new google.maps.LatLngBounds();
-
-            //     places.forEach((place) => {
-            //         if (!place.geometry || !place.geometry.location) {
-            //             console.log("Returned place contains no geometry");
-            //             return;
-            //         }
-
-            //         // Create a marker for each place
-            //         this.addMarker(place.geometry.location);
-
-            //         if (place.geometry.viewport) {
-            //             bounds.union(place.geometry.viewport);
-            //         } else {
-            //             bounds.extend(place.geometry.location);
-            //         }
-            //     });
-
-            //     this.map.fitBounds(bounds);
-            // });
-
+            // Listen for the event fired when the user selects a prediction
+            searchBox.addListener("places_changed", () => {
+                const places = searchBox.getPlaces();
+              
+                if (places.length === 0) {
+                  return;
+                }
+              
+                const place = places[0]; // Get the first place
+              
+                if (!place.geometry || !place.geometry.location) {
+                  console.log("Returned place contains no geometry");
+                  return;
+                }
+              
+                // Center the map on the selected place and set zoom to 18
+                this.map.setCenter(place.geometry.location);
+                this.map.setZoom(18);
+            });
+            /* ======== End of Search Box Functionality ======== */
+          
             // Listen for clicks on the map to add waypoints
             this.map.addListener("click", (event) => {
+                console.log(event.latLng);
                 this.addWaypoint(event.latLng);
             });
-            
+          
             // Automatically try to get the user's current location on page load
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const pos = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                        };
-                        // Pan the map to the user's current location
-                        this.map.setCenter(pos);
-                    }
-                );
+              navigator.geolocation.getCurrentPosition((position) => {
+                const pos = {
+                  lat: position.coords.latitude,
+                  lng: position.coords.longitude,
+                };
+                // Pan the map to the user's current location
+                this.map.setCenter(pos);
+              });
             }
-        },
+        },          
 
-        addWaypoint(latLng) {
-            // Add a new waypoint
-            this.geocoder.geocode({ location: latLng }, (results, status) => {
-                if (status === 'OK') {
-                    const address = results[0] ? results[0].formatted_address : 'Address not found';
-                    this.waypoints.push({
-                        location: latLng,
-                        stopover: true,
-                        address: address // Store the address (street name)
-                    });
-            
-                    // Add a marker for each waypoint
-                    this.addMarker(latLng);
-                    this.calculateAndDisplayRoute()
-                }
+        async addWaypoint(latLng, index = null) {
+            return new Promise((resolve) => {
+                // Generate a unique ID for the waypoint
+                const id = Date.now() + Math.random();
+              
+                this.geocoder.geocode({ location: latLng }, (results, status) => {
+                    if (status === 'OK') {
+                        const address = results[0] ? results[0].formatted_address : 'Address not found';
+                        this.waypoints.push({
+                            id: id,
+                            location: { lat: latLng.lat(), lng: latLng.lng() },
+                            stopover: true,
+                            address: address,
+                            order: index !== null ? index : this.waypoints.length // Keep order if index is provided
+                        });
+        
+                        this.addMarker(latLng);
+                        this.calculateAndDisplayRoute();
+                        resolve(); // Resolve the promise once done
+                    } else {
+                        console.error('Geocode failed:', status);
+                        resolve(); // Resolve to continue even if geocoding fails
+                    }
+                });
             });
-        },
+        }
+        ,   
 
         // Make marker "bounce" when hovering over the anchor tag
         startMarkerBounce(index) {
@@ -349,17 +342,17 @@ const app = Vue.createApp({
             });
         
             // Create an InfoWindow for the marker
-            const infoWindow = new google.maps.InfoWindow({
-                content: `Marker ${markerIndex}<br>Lat: ${latLng.lat().toFixed(5)}, Lng: ${latLng.lng().toFixed(5)}`
-            });
+            // const infoWindow = new google.maps.InfoWindow({
+            //     content: `Marker ${markerIndex}<br>Lat: ${latLng.lat().toFixed(5)}, Lng: ${latLng.lng().toFixed(5)}`
+            // });
         
-            // Add event listeners for hovering to show InfoWindow
-            marker.addListener("mouseover", () => {
-                infoWindow.open(this.map, marker);
-            });
-            marker.addListener("mouseout", () => {
-                infoWindow.close();
-            });
+            // // Add event listeners for hovering to show InfoWindow
+            // marker.addListener("mouseover", () => {
+            //     infoWindow.open(this.map, marker);
+            // });
+            // marker.addListener("mouseout", () => {
+            //     infoWindow.close();
+            // });
         
             // Wait for 700ms (duration of the drop animation) before adding the label
             setTimeout(() => {
@@ -384,52 +377,36 @@ const app = Vue.createApp({
             // Add the is-filling class to trigger the animation
             this.waypoints[index].isFilling = true; 
         
-            // Wait for the animation to complete (1 second), then remove the item
-            setTimeout(() => {
-              this.waypoints.splice(index, 1);  // Remove the waypoint from the array
-        
-              // Remove the corresponding marker from the map
-              var marker = this.markers[index];
-              if (marker) {
-                marker.setMap(null);
-                marker.setVisible(false);
-                marker = null;
-              } else {
-                console.error('Marker not found at index:', index);
-              }
-        
-              // Also remove the marker from the markers array
-              this.markers.splice(index, 1);
-        
-              // Recalculate and display the updated route
-              this.calculateAndDisplayRoute();
-        
-              // Update all markers' labels after removing a marker
-              this.updateMarkerLabels();
-        
-              // Allow further deletions after the animation completes
-              this.isDeleting = false;
-        
-            }, 1000);  // Wait for the animation to complete (1 second)
+  
+            this.waypoints.splice(index, 1);  // Remove the waypoint from the array
+      
+            // Remove the corresponding marker from the map
+            var marker = this.markers[index];
+            if (marker) {
+              marker.setMap(null);
+              marker.setVisible(false);
+              marker = null;
+            } else {
+              console.error('Marker not found at index:', index);
+            }
+      
+            // Also remove the marker from the markers array
+            this.markers.splice(index, 1);
+            
+            // Recalculate and display the updated route
+            this.calculateAndDisplayRoute();
+      
+            // Update all markers' labels after removing a marker
+            this.updateMarkerLabels();
+      
+            // Allow further deletions after the animation completes
+            this.isDeleting = false;
         },        
         
         updateMarkerLabels() {
             this.markers.forEach((marker, index) => {
                 // Update the marker label
                 marker.setLabel(`${index + 1}`);
-                
-                // Update the InfoWindow content to reflect the updated marker number
-                const infoWindow = new google.maps.InfoWindow({
-                    content: `Marker ${index + 1}<br>Lat: ${marker.getPosition().lat().toFixed(5)}, Lng: ${marker.getPosition().lng().toFixed(5)}`
-                });
-                
-                // Update event listeners for the new InfoWindow content
-                marker.addListener("mouseover", () => {
-                    infoWindow.open(this.map, marker);
-                });
-                marker.addListener("mouseout", () => {
-                    infoWindow.close();
-                });
             });
         },
         
@@ -441,23 +418,22 @@ const app = Vue.createApp({
         },
 
         calculateAndDisplayRoute() {
-            // Prepare waypoints for the directionsService (only send location and stopover)
-            const processedWaypoints = this.waypoints.map(point => ({
-                location: point.location,
-                stopover: point.stopover
-            }));
+            const processedWaypoints = this.waypoints
+                .sort((a, b) => a.order - b.order) // Sort waypoints by order
+                .map(point => ({
+                    location: point.location,
+                    stopover: point.stopover
+                }));
         
-            // If there are fewer than 2 waypoints, clear the route and the polyline
-            if (this.waypoints.length < 2) {
+            if (processedWaypoints.length < 2) {
                 this.clearRoute();
                 return;
             }
         
-            // Request route directions from the DirectionsService
             this.directionsService.route({
-                origin: this.waypoints[0].location,
-                destination: this.waypoints[this.waypoints.length - 1].location,
-                waypoints: processedWaypoints.slice(1, -1), // Only pass valid waypoint data
+                origin: processedWaypoints[0].location,
+                destination: processedWaypoints[processedWaypoints.length - 1].location,
+                waypoints: processedWaypoints.slice(1, -1),
                 travelMode: 'WALKING',
                 avoidHighways: true,
             }, (response, status) => {
@@ -469,7 +445,7 @@ const app = Vue.createApp({
                         strokeColor: this.currentColor
                     });
                 } else {
-                    this.setAlert('error','Directions request failed due to ' + status);
+                    this.setAlert('error', 'Directions request failed due to ' + status);
                 }
             });
         },
@@ -489,23 +465,28 @@ const app = Vue.createApp({
             this.directionsRenderer.set('directions', null); // Clear the DirectionsRenderer
         },
 
-        clearMap() {
+        clearMap(showAlert = true) {
             // Clear all markers
-            for(let marker of this.markers){
+            for (let marker of this.markers) {
                 marker.setVisible(false);
                 marker.setMap(null);
                 marker.setPosition(null);
                 marker = null;
             }
             this.markers = [];
-
+        
             // Clear waypoints and the route
             this.waypoints = [];
             this.clearRoute();
-
-            this.setAlert('success', 'Route cleared successfully.');
+            const input = document.getElementById("pac-input");
+            input.value = '';
+        
+            // Show alert only if showAlert is true
+            if (showAlert) {
+                this.setAlert('success', 'Route cleared successfully.');
+            }
         },
-
+        
         exportToGoogleMaps() {
             if (this.waypoints.length < 2) {
                 this.setAlert('error','You need at least two points to export the route!')
@@ -514,7 +495,7 @@ const app = Vue.createApp({
 
             let googleMapsLink = 'https://www.google.com/maps/dir/';
             this.waypoints.forEach((waypoint) => {
-                googleMapsLink += `${waypoint.location.lat()},${waypoint.location.lng()}/`;
+                googleMapsLink += `${waypoint.location.lat},${waypoint.location.lng}/`;
             });
             window.open(googleMapsLink, '_blank');
         },
@@ -525,12 +506,24 @@ const app = Vue.createApp({
         
             // Then, after a delay (matching the fade-out duration), set hidden to true
             setTimeout(() => {
-                this.hidden = true;  // Hide the alert completely after the fade-out animation
-                this.alertMessage = '';  // Clear the message if needed
-            }, 300); // Adjust this timing to match your CSS transition duration (300ms here)
+              this.hidden = true; // Hide the alert completely after the fade-out animation
+              this.alertMessage = ''; // Clear the message if needed
+            }, 300); // Adjust this timing to match your CSS transition duration
+        
+            // Clear the timeout if dismissAlert is called manually
+            if (this.alertTimeout) {
+              clearTimeout(this.alertTimeout);
+              this.alertTimeout = null;
+            }
         },
         
         setAlert(type, message) {
+            // Clear any existing timeout to prevent stacking
+            if (this.alertTimeout) {
+              clearTimeout(this.alertTimeout);
+              this.alertTimeout = null;
+            }
+        
             // First, unhide the alert box
             this.hidden = false;
         
