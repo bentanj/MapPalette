@@ -21,36 +21,62 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
-        <a class="navbar-brand" href="./homepage.html"><img src="./resources/mappalettelogo.png" width="30" height="30">MapPalette</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
+        <a class="navbar-brand" href="#">
+            <img src="resources/mappalettelogo.png" alt="MapPalette Logo">MapPalette
+        </a>
+        <button class="navbar-toggler" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav" 
+                aria-expanded="false" 
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="./homepage.html">Feed</a></li>
-            <li class="nav-item"><a class="nav-link" href="./routes.html">Routes</a></li>
-            <li class="nav-item"><a class="nav-link active">Draw</a></li>
-            <div class="dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="./resources/download.jpeg" alt="Profile" class="profile-pic" width="30" height="24">
+            <li class="nav-item">
+              <a class="nav-link" href="homepage.html">Feed</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="routes.html">Routes</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="addMaps.html">Draw</a>
+            </li>
+            <!--Profile picture with dropdown-->
+            <li class="nav-item dropdown d-flex align-items-center ms-3">
+              <a class="nav-link dropdown-toggle p-0" 
+              href="#" 
+              id="profileDropdown" 
+              role="button" 
+              data-bs-toggle="dropdown" 
+              aria-expanded="false">
+                <img
+                    alt="Profile" 
+                    class="rounded-circle" 
+                    width="32" 
+                    height="32">
               </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+              <ul class="dropdown-menu dropdown-menu-end" 
+                aria-labelledby="profileDropdown">
                 <li><a class="dropdown-item" href="#">Your Profile</a></li>
                 <li><a class="dropdown-item" href="#">Settings</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="#">Log Out</a></li>
               </ul>
-            </div>
+            </li>
           </ul>
         </div>
       </div>
     </nav>
 
     <!-- Alert Bar -->
-    <div class="alert alert-dismissible fade w-100 top-0 left-0 position-sticky" style="z-index:5;"
-        :class="{'alert-warning': alertType === 'error', 'alert-success': alertType === 'success', 'show': showAlert}"
-        :hidden="hidden" 
-        role="alert" >
+    <div class="alert alert-dismissible fade" 
+      :class="{'alert-warning': alertType === 'error', 'alert-success': alertType === 'success', 'show': showAlert}"
+      :hidden="hidden" 
+      role="alert">
+
       <!-- Icons for Error or Success -->
       <svg v-if="alertType === 'error'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
         <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -73,31 +99,76 @@
 
     <!-- Row 1: Map and Controls -->
     <div class="row">
-      <!-- Map -->
-      <div id="map" class="col-md-9"></div>
-
+      <!-- Map Container -->
+      <div class="col-md-9 position-relative p-0">
+        <!-- Search Bar -->
+        <div id="map-search">
+          <input id="pac-input" class="form-control" type="text" placeholder="Search for a place" />
+        </div>
+        <!-- Map -->
+        <div id="map">
+        </div>
+      </div>
+      
       <!-- Controls -->
       <div id="controls" class="col-md-3 d-flex flex-column">
         <!-- Fixed Section (Route Color, Distance, Buttons) -->
         <div id="fixed-controls" class="mb-3">
           <h4>Choose Route Color</h4>
           <div id="colorPalette">
-            <div v-for="color in colors" class="color-box" :style="{ backgroundColor: color }" @click="changeColor(color)"></div>
+            <button
+              v-for="color in colors"
+              :key="color"
+              class="color-box-btn"
+              :class="{ active: currentColor === color }"
+              :style="{ backgroundColor: color }"
+              @click="changeColor(color)"
+            ></button>
           </div>
-          <button class="btn btn-danger" @click="clearMap" style="margin-right:5px;">Clear Route</button>
-          <button id="export-button" class="btn btn-success" @click="exportToGoogleMaps">Export to Google Maps</button>
+          <button v-if="isEditing" class="btn btn-danger position-absolute top-0 end-0" data-bs-toggle="modal" data-bs-target="#deletePost">Delete post</button>
+          
+          <!-- Delete Confirmation Modal -->
+          <div class="modal fade" id="deletePost" tabindex="-1" aria-labelledby="deletePostLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="deletePostLabel">{{ deleteModalTitle }}</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="resetDeleteModa()"></button>
+                </div>
+                <div class="modal-body">
+                  <span v-if="deleteCountdown === 0">Are you sure? Once your post is deleted, it is lost forever!</span>
+                  <span v-else>Post deleted! Redirecting in {{ deleteCountdown }} seconds...</span>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetDeleteModal()" v-if="deleteCountdown === 0">Close</button>
+                  <button v-if="deleteCountdown === 0" type="button" class="btn btn-danger" @click="deletePost()">Delete forever!</button>
+                  <button v-else type="button" class="btn btn-secondary" @click="undoDelete">Undo</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-danger m-1" @click="clearMap">Clear Route</button>
+          <button v-if="isEditing" class="btn btn-secondary m-1" @click="undoChanges()">Undo Changes</button>
+          <button id="export-button" class="btn btn-success m-1" @click="exportToGoogleMaps()">Export to Google Maps</button>
           <div id="distance">Total Distance: {{ totalDistance }} km</div>
         </div>
 
         <!-- Scrollable Section (Plotted Points) -->
         <div id="scrollable-points" class="flex-grow-1">
           <h4>Plotted Points</h4>
-          <div id="point-list" class="list-group mx-2">
-            <a v-for="(point, index) in waypoints" :class="['list-group-item', 'list-group-item-action', 'point-item', 'rounded', { 'is-filling': point.isFilling }]" @mouseover="startMarkerBounce(index)" @mouseleave="stopMarkerBounce(index)">
+          <transition-group name="list" tag="div" id="point-list" class="list-group mx-2">
+            <a
+              v-for="(point, index) in waypoints"
+              :key="point.id"
+              class="list-group-item list-group-item-action point-item rounded"
+              @mouseover="startMarkerBounce(index)"
+              @mouseleave="stopMarkerBounce(index)"
+            >
               <div class="details ms-2 me-auto">
                 <h5>Marker {{ index + 1 }}</h5>
                 <h6 class="fw-bold mb-1">{{ point.address }}</h6>
-                Lat: {{ point.location.lat().toFixed(5) }}, Lng: {{ point.location.lng().toFixed(5) }} <br>
+                Lat: {{ point.location.lat.toFixed(5) }}, Lng: {{ point.location.lng.toFixed(5) }} <br>
               </div>
               <span class="trash-container">
                 <button class="trash-btn" @click="removeWaypoint(index)">
@@ -108,16 +179,23 @@
                 </button>
               </span>
             </a>
-          </div>
+          </transition-group>
         </div>
+        
       </div>
     </div>
+    
+  <!-- Form Start -->
+  <form @submit.prevent novalidate :class="{ 'was-validated': formValidated }">
 
     <!-- Row 2: Title Input -->
     <div class="row mt-3">
       <div class="col">
         <label for="title" class="form-label">Title</label>
-        <input type="text" class="form-control" id="title" placeholder="Enter title here" v-model="postTitle">
+        <input type="text" class="form-control" id="title" placeholder="Enter title here" v-model="postTitle" required>
+        <div class="invalid-feedback">
+          Please provide a title.
+        </div>
       </div>
     </div>
 
@@ -125,7 +203,10 @@
     <div class="row mt-3">
       <div class="col">
         <label for="description" class="form-label">Description</label>
-        <textarea class="form-control" id="description" rows="4" placeholder="Enter description here" v-model="postDescription"></textarea>
+        <textarea class="form-control" id="description" rows="4" placeholder="Enter description here" v-model="postDescription" required></textarea>
+        <div class="invalid-feedback">
+          Please provide a description.
+        </div>
       </div>
     </div>
 
@@ -143,13 +224,38 @@
     <!-- Row 5: Buttons -->
     <div class="row mt-3">
       <div class="col-6">
-        <button class="btn btn-danger w-100" @click="clearPost()">Clear</button>
+        <button v-if="isEditing" type="button" class="btn btn-secondary w-100" @click="retBack()">Return home</button>
+        <button v-else type="button" class="btn btn-danger w-100" @click="clearPost()">Clear Post</button>
       </div>
       <div class="col-6">
-        <button class="btn btn-primary w-100" @click="createPost()">Create</button>
+        <button v-if="isEditing" class="btn btn-primary w-100" @click="editPost()">Save Changes</button>
+        <button v-else class="btn btn-primary w-100" @click="validateAndSubmit()">Create Post</button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="editPost" tabindex="-1" aria-labelledby="editPostLabel">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="editPostLabel">Post edited!</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Your post has been successfully edited!
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Editing</button>
+                <button type="button" class="btn btn-primary" @click="retBack()">Return Home</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+
+  </form>
+  <!-- Form End -->
+
+
   <!-- Footer Section -->
   <footer class="bg-light text-center text-lg-start mt-5">
     <div class="container p-4">
