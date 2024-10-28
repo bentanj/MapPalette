@@ -1,6 +1,7 @@
 // Import function triggers from their respective submodules
 const { onRequest } = require('firebase-functions/v2/https');
-const { initializeApp, cert } = require('firebase-admin/app');
+const { initializeApp, cert, applicationDefault} = require('firebase-admin/app');
+const { getStorage } = require('firebase-admin/storage');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore'); // Modular import for Firestore
 require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
@@ -10,10 +11,12 @@ const cors = require('cors');
 const serviceAccount = require('./serviceAccountKey.json');
 initializeApp({
   credential: cert(serviceAccount),
+  storageBucket: 'gs://mappalette-9e0bd.appspot.com'
 });
 
 // Initialise firestore
 const db = getFirestore();
+const bucket = getStorage().bucket();
 
 // Create Express app
 const app = express();
@@ -46,28 +49,59 @@ app.get('/hello-world', (req, res) => {
 // CRUD operations for route posts
 // 
 
-// Create a post with auto-generated ID
-app.post('/api/create', async (req, res) => {
-  try {
-    const postData = {
-      title: req.body.title,
-      description: req.body.description,
-      waypoints: req.body.waypoints, // Array of waypoints
-      userID: req.body.userID, // ID of the creator
-      likeCount: 0,
-      shareCount: 0,
-      commentCount: 0,
-      createdAt: FieldValue.serverTimestamp(), // Correct usage of serverTimestamp()
-    };
+// Create a post with auto-generated ID and add it to the user's MapsCreated subcollection
+// Updated POST handler to accept multipart/form-data
+const multer = require('multer');
+const upload = multer().single('imageFile');
 
-    // Create a new document with an auto-generated ID
-    const docRef = await db.collection('routes').add(postData);
-    return res.status(201).json({ id: docRef.id, message: 'Post created successfully!' });
-  } catch (error) {
-    console.error('Error creating post:', error);
-    return res.status(500).send(error);
-  }
+app.post('/api/create', (req, res) => {
+    upload(req, res, async (err) => {
+        if (err) return res.status(500).send('Image upload failed:', err);
+
+        try {
+            // Parse route data from request
+            const routeData = JSON.parse(req.body.routeData);
+            const userID = req.body.userID;
+
+            // Add initial route data to Firestore, without the image URL
+            const docRef = await db.collection('routes').add(routeData);
+
+            // Handle image upload if imageFile is present in request
+            if (req.file) {
+                const filePath = `maps/${docRef.id}.jpeg`;
+                const file = bucket.file(filePath);
+
+                await file.save(req.file.buffer, {
+                    metadata: {
+                        contentType: req.file.mimetype,
+                    },
+                });
+
+                // Get public URL for the image
+                const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filePath)}?alt=media`;
+
+                // Update Firestore document with image URL
+                await docRef.update({ image: downloadURL });
+            }
+
+            // Add post ID to the user's MapsCreated subcollection
+            const userRef = db.collection('users').doc(userID);
+            await userRef.collection('MapsCreated').doc(docRef.id).set({
+                mapID: docRef.id,
+                createdAt: FieldValue.serverTimestamp(),
+            });
+
+            return res.status(201).json({ id: docRef.id, message: 'Post created and image uploaded successfully!' });
+        } catch (error) {
+            console.error('Error creating post and uploading image:', error);
+            return res.status(500).send(error);
+        }
+    });
 });
+
+
+
+
 
 // Get a specific post by ID
 app.get('/api/posts', async (req, res) => {
