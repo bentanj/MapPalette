@@ -4,7 +4,7 @@ const endPointURL = "https://app-907670644284.us-central1.run.app";
 // Import Firebase functions (ensure this is at the top of your addMaps.js file)
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { auth } from "./firebase.js"; // Ensure this path matches where firebase.js is located
-import { getStorage, ref, uploadString, getDownloadURL, uploadBytes } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+import { getStorage, ref, uploadString, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 
 
 const app = Vue.createApp({
@@ -155,7 +155,6 @@ const app = Vue.createApp({
           
             // Listen for clicks on the map to add waypoints
             this.map.addListener("click", (event) => {
-                console.log(event.latLng);
                 this.addWaypoint(event.latLng);
             });
           
@@ -550,6 +549,8 @@ const app = Vue.createApp({
                     const latLng = new google.maps.LatLng(waypoint.location.lat, waypoint.location.lng);
                     await this.addWaypoint(latLng, index); 
                 }
+
+                this.fitMapToBounds();
             } catch (error) {
                 console.error("Error fetching map data:", error);
                 this.setAlert('error', 'This post has been deleted or does not exist.');
@@ -697,9 +698,13 @@ const app = Vue.createApp({
                 const publicUrl = await getDownloadURL(storageRef);
                 this.image = publicUrl;
         
-                console.log("Image successfully uploaded:", publicUrl);
+                // console.log("Image successfully uploaded:", publicUrl);
             } catch (error) {
                 console.error("Error capturing map as image:", error);
+            } finally{
+                if(this.isEditing){
+                    this.markers.forEach(marker => marker.setVisible(true));
+                }
             }
         },
 
