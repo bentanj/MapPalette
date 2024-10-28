@@ -125,3 +125,6 @@ async function uploadProfilePicture(user, file) {
   await uploadBytes(storageRef, file);
   return await getDownloadURL(storageRef);
 }
+// Export initialized services for use in other files
+export { auth };        // Named export for `auth`
+export default app;      // Default export for the Firebase app
