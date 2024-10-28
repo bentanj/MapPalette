@@ -1,7 +1,7 @@
 // Import Firebase functions (ensure this is at the top of your addMaps.js file)
 import { auth } from "./firebase.js"; // Ensure this path matches where firebase.js is located
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+import { getStorage, ref, uploadString, getDownloadURL, uploadBytes } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 
 const app = Vue.createApp({
     data() {
@@ -662,20 +662,35 @@ const app = Vue.createApp({
 
         // Capture map as image and upload to Firebase Storage
         async captureMapAsImage(mapId) {
-            const mapContainer = document.getElementById("map");
             try {
-                // Capture the map area as an image using html2canvas
-                const canvas = await html2canvas(mapContainer); 
-                const imageData = canvas.toDataURL("image/png");
+                this.markers.forEach(marker => marker.setVisible(false));
 
-                // Reference to Firebase Storage location for the image
+                // Ensure the map fits all waypoints within bounds
+                this.fitMapToBounds();
+                
+                // Add a slight delay to allow for the map to re-render with new bounds before capture
+                await new Promise(resolve => setTimeout(resolve, 1000));
+        
+                const mapContainer = document.getElementById("map");
+        
+                // Capture the entire map view as an image using html2canvas
+                const canvas = await html2canvas(mapContainer, {
+                    useCORS: true, // Enables cross-origin loading
+                    allowTaint: false, // Prevents errors related to cross-origin
+                    scale: 2, // Enhances resolution for Firebase storage
+                    backgroundColor: "#ffffff" // Ensures a non-transparent background
+                });
+        
+                const imageData = canvas.toDataURL("image/png");
+        
+                // Firebase storage reference for the image
                 const storageRef = ref(this.storage, `maps_created/${mapId}.png`);
                 await uploadString(storageRef, imageData, 'data_url');
-
-                // Get the public URL
+        
+                // Retrieve and store the public URL
                 const publicUrl = await getDownloadURL(storageRef);
-                this.image = publicUrl;  // Store the public URL to use or display on the frontend
-
+                this.image = publicUrl;
+        
                 console.log("Image successfully uploaded:", publicUrl);
             } catch (error) {
                 console.error("Error capturing map as image:", error);
@@ -684,10 +699,13 @@ const app = Vue.createApp({
 
         fitMapToBounds() {
             const bounds = new google.maps.LatLngBounds();
-            this.waypoints.forEach((point) => {
+            this.waypoints.forEach(point => {
                 bounds.extend(new google.maps.LatLng(point.location.lat, point.location.lng));
             });
-            this.map.fitBounds(bounds);
+        
+            // Apply padding and fit map to bounds
+            this.map.fitBounds(bounds, 250); // Adjust padding as needed
+            this.map.panToBounds(bounds);
         },        
 
     },
