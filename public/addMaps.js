@@ -449,17 +449,19 @@ const app = Vue.createApp({
             const form = document.querySelector('form');
         
             if (form.checkValidity()) {
-                // Form is valid, proceed to create the post
-                this.createPost();
+                if (!this.isEditing) {
+                    // Not the owner, save as a new post
+                    this.createPost();
+                } else {
+                    // User is the owner, edit the existing post
+                    this.editPost();
+                }
             } else {
-                // Form is invalid, display validation errors
                 this.setAlert('error', 'Please fill out all required fields.');
             }
         },
 
         async createPost() {
-            if (this.isEditing) return;
-        
             if (this.waypoints.length < 2) {
                 this.setAlert('error', 'You need at least two points to submit the route!');
                 return;
@@ -470,15 +472,13 @@ const app = Vue.createApp({
                     title: this.postTitle,
                     description: this.postDescription,
                     waypoints: this.waypoints,
-                    userID: this.userID,
+                    userID: this.userID, // New map under current user
                 });
                 if (response.data.id) {
-                    // Show success alert for post creation
-                    this.setAlert('success', 'Your post has been successfully created.');
-                    
-                    // Clear map, title, and description without showing the "Route cleared successfully" alert
-                    this.postTitle = '';
-                    this.postDescription = '';
+                    this.setAlert('success', 'Your copy has been saved successfully.');
+        
+                    // Clear mapId to continue in create mode if further edits are made
+                    this.mapId = null;
                     this.clearMap(false);
                     this.formValidated = false;
                 } else {
@@ -509,24 +509,34 @@ const app = Vue.createApp({
         
             try {
                 const response = await axios.get(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`);
-                
-                // Check if the response data is empty or undefined, indicating the post is deleted or doesn't exist
+        
                 if (!response.data || Object.keys(response.data).length === 0) {
                     throw new Error("Post not found or already deleted.");
                 }
         
+                // Load map data into form fields
                 this.postTitle = response.data.title;
                 this.postDescription = response.data.description;
-                this.mapIdUserID = response.data.userID; // Set the userID of the post for edit authorization
+                this.mapIdUserID = response.data.userID;
         
+                // Check if the current user owns the map
+                if (this.mapIdUserID === this.userID) {
+                    // User is the owner, allow editing
+                    this.isEditing = true;
+                } else {
+                    // User is not the owner, set as new map
+                    this.mapId = null; // Clears mapId for new save
+                    this.isEditing = false; // Switch to "create" mode
+                    this.setAlert('error', 'You are viewing a copy of this map. Changes will save as a new post.');
+                }
+        
+                // Load waypoints as viewable/editable data
                 for (const [index, waypoint] of response.data.waypoints.entries()) {
                     const latLng = new google.maps.LatLng(waypoint.location.lat, waypoint.location.lng);
-                    await this.addWaypoint(latLng, index); // Await to ensure sequential order
+                    await this.addWaypoint(latLng, index); 
                 }
             } catch (error) {
                 console.error("Error fetching map data:", error);
-                this.mapId = null; // Reset mapId to null since the post is unavailable
-                this.isEditing = false;
                 this.setAlert('error', 'This post has been deleted or does not exist.');
             } finally {
                 this.isFetching = false;

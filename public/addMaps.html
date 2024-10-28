@@ -224,12 +224,12 @@
     <!-- Row 5: Buttons -->
     <div class="row mt-3">
       <div class="col-6">
-        <button v-if="isEditing" type="button" class="btn btn-secondary w-100" @click="retBack()">Cancel</button>
-        <button v-else type="button" class="btn btn-danger w-100" @click="clearPost()">Clear</button>
+        <button v-if="isEditing" type="button" class="btn btn-secondary w-100" @click="retBack()">Return home</button>
+        <button v-else type="button" class="btn btn-danger w-100" @click="clearPost()">Clear Post</button>
       </div>
       <div class="col-6">
-        <button v-if="isEditing" class="btn btn-primary w-100" @click="editPost()">Edit</button>
-        <button v-else class="btn btn-primary w-100" @click="validateAndSubmit()">Create</button>
+        <button v-if="isEditing" class="btn btn-primary w-100" @click="editPost()">Save Changes</button>
+        <button v-else class="btn btn-primary w-100" @click="validateAndSubmit()">Create Post</button>
 
         <!-- Modal -->
         <div class="modal fade" id="editPost" tabindex="-1" aria-labelledby="editPostLabel">
