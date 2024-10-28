@@ -1,6 +1,7 @@
 // Import function triggers from their respective submodules
 const { onRequest } = require('firebase-functions/v2/https');
-const { initializeApp, cert } = require('firebase-admin/app');
+const { initializeApp, cert, applicationDefault} = require('firebase-admin/app');
+const { getStorage } = require('firebase-admin/storage');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore'); // Modular import for Firestore
 require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
@@ -10,10 +11,12 @@ const cors = require('cors');
 const serviceAccount = require('./serviceAccountKey.json');
 initializeApp({
   credential: cert(serviceAccount),
+  storageBucket: 'gs://mappalette-9e0bd.appspot.com'
 });
 
 // Initialise firestore
 const db = getFirestore();
+const bucket = getStorage().bucket();
 
 // Create Express app
 const app = express();
@@ -70,6 +73,10 @@ app.post('/api/create', async (req, res) => {
     return res.status(500).send(error);
   }
 });
+
+
+
+
 
 // Get a specific post by ID
 app.get('/api/posts', async (req, res) => {

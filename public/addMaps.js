@@ -1,7 +1,11 @@
+// Define endpoint URL as a constant
+const endPointURL = "https://app-907670644284.us-central1.run.app";
+
 // Import Firebase functions (ensure this is at the top of your addMaps.js file)
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { auth } from "./firebase.js"; // Ensure this path matches where firebase.js is located
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { getStorage, ref, uploadString, getDownloadURL, uploadBytes } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+
 
 const app = Vue.createApp({
     data() {
@@ -35,7 +39,7 @@ const app = Vue.createApp({
         username:'',
         submitting:false,
         formValidated: false,
-        API_ENDPOINT: 'https://app-6kmdo5luna-uc.a.run.app',
+        API_ENDPOINT: 'https://app-907670644284.us-central1.run.app',
         isFetching: false,
         deleteCountdown: 0,
         deleteTimeout: null,
@@ -50,6 +54,7 @@ const app = Vue.createApp({
 
     },
     methods: {
+
         async loadGoogleMapsScript() {
             try {
                 const response = await fetch(`${this.API_ENDPOINT}/getGoogleMapsApiKey`);
@@ -71,7 +76,8 @@ const app = Vue.createApp({
             } catch (error) {
                 console.error('Error fetching API key:', error);
             }
-        },   
+        },
+     
         initMap() {
             // Initialize the map and its settings
             this.map = new google.maps.Map(document.getElementById("map"), {
