@@ -1,6 +1,7 @@
 // Import Firebase functions (ensure this is at the top of your addMaps.js file)
 import { auth } from "./firebase.js"; // Ensure this path matches where firebase.js is located
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 
 const app = Vue.createApp({
     data() {
@@ -39,6 +40,8 @@ const app = Vue.createApp({
         deleteCountdown: 0,
         deleteTimeout: null,
         deleteModalTitle: "Delete post?",
+        storage: null,
+        image: '',
         
         // Existing post related
         mapId: null,
@@ -467,11 +470,16 @@ const app = Vue.createApp({
             }
         
             try {
+                const mapId = Date.now();
+                await this.captureMapAsImage(mapId);
+
                 const response = await axios.post(`${this.API_ENDPOINT}/api/create/`, {
                     title: this.postTitle,
                     description: this.postDescription,
                     waypoints: this.waypoints,
-                    userID: this.userID, // New map under current user
+                    userID: this.userID,
+                    color: this.currentColor,
+                    image: this.image
                 });
                 if (response.data.id) {
                     this.setAlert('success', 'Your copy has been saved successfully.');
@@ -479,6 +487,8 @@ const app = Vue.createApp({
                     // Clear mapId to continue in create mode if further edits are made
                     this.mapId = null;
                     this.clearMap(false);
+                    this.postTitle ='';
+                    this.postDescription = '';
                     this.formValidated = false;
                 } else {
                     this.setAlert('error', 'Failed to create the post. Please try again.');
@@ -516,7 +526,8 @@ const app = Vue.createApp({
                 this.postTitle = response.data.title;
                 this.postDescription = response.data.description;
                 this.mapIdUserID = response.data.userID;
-        
+                this.currentColor = response.data.color;
+
                 // Check if the current user owns the map
                 if (this.mapIdUserID === this.userID) {
                     // User is the owner, allow editing
@@ -564,10 +575,15 @@ const app = Vue.createApp({
             if (form.checkValidity()) {
                 // Form is valid, proceed to create the post
                 try {
+                    const mapId = Date.now();
+                    await this.captureMapAsImage(mapId);
+
                     const response = await axios.put(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`, {
                         title: this.postTitle,
                         description: this.postDescription,
                         waypoints: this.waypoints,
+                        color: this.currentColor,
+                        image: this.image
                     });
                     if (response.data) {
                         this.setAlert('success', 'Your post has been successfully updated.');
@@ -603,6 +619,12 @@ const app = Vue.createApp({
         async performDelete() {
         // Only perform delete if countdown completes without interruption
         try {
+            // Check if an image path is associated with the post
+            if (this.image) {
+            const imageRef = ref(getStorage(), this.image);
+            await deleteObject(imageRef);
+            };
+
             await axios.delete(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`);
             this.setAlert("success", "Your post has been successfully deleted.");
             window.location.href = "homepage.html"; // Redirect to homepage
@@ -637,13 +659,43 @@ const app = Vue.createApp({
             this.deleteCountdown = 0;
             this.deleteModalTitle = "Delete post?";
         },
-   
+
+        // Capture map as image and upload to Firebase Storage
+        async captureMapAsImage(mapId) {
+            const mapContainer = document.getElementById("map");
+            try {
+                // Capture the map area as an image using html2canvas
+                const canvas = await html2canvas(mapContainer); 
+                const imageData = canvas.toDataURL("image/png");
+
+                // Reference to Firebase Storage location for the image
+                const storageRef = ref(this.storage, `maps_created/${mapId}.png`);
+                await uploadString(storageRef, imageData, 'data_url');
+
+                // Get the public URL
+                const publicUrl = await getDownloadURL(storageRef);
+                this.image = publicUrl;  // Store the public URL to use or display on the frontend
+
+                console.log("Image successfully uploaded:", publicUrl);
+            } catch (error) {
+                console.error("Error capturing map as image:", error);
+            }
+        },
+
+        fitMapToBounds() {
+            const bounds = new google.maps.LatLngBounds();
+            this.waypoints.forEach((point) => {
+                bounds.extend(new google.maps.LatLng(point.location.lat, point.location.lng));
+            });
+            this.map.fitBounds(bounds);
+        },        
 
     },
     created() {
         // Assign initMap as a global function to initialize the map once the API loads
         window.initMap = () => this.initMap();
-        
+        this.storage = getStorage();
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 // User is authenticated

@@ -52,11 +52,13 @@ app.post('/api/create', async (req, res) => {
     const postData = {
       title: req.body.title,
       description: req.body.description,
-      waypoints: req.body.waypoints, // Array of waypoints
-      userID: req.body.userID, // ID of the creator
+      waypoints: req.body.waypoints,
+      userID: req.body.userID, 
+      color:req.body.color,
       likeCount: 0,
       shareCount: 0,
       commentCount: 0,
+      image:req.body.image,
       createdAt: FieldValue.serverTimestamp(), // Correct usage of serverTimestamp()
     };
 
