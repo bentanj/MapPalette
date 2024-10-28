@@ -30,7 +30,6 @@ const app = Vue.createApp({
         // Post related
         postTitle:'',
         postDescription:'',
-        postAnonymously:false,
         userID:'',
         username:'',
         submitting:false,
@@ -493,7 +492,6 @@ const app = Vue.createApp({
         clearPost(){
             this.postTitle = '';
             this.postDescription = '';
-            this.postAnonymously = false;
             this.clearMap();
             this.setAlert('success', 'Post cleared successfully.');
         },
@@ -538,6 +536,7 @@ const app = Vue.createApp({
             } catch (error) {
                 console.error("Error fetching map data:", error);
                 this.setAlert('error', 'This post has been deleted or does not exist.');
+                this.isEditing=false;
             } finally {
                 this.isFetching = false;
             }
