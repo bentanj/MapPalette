@@ -75,8 +75,8 @@ app.component('nav-bar', {
                                :class="{ 'active': isCurrentPage('addMaps.html') }"
                                href="addMaps.html">Draw</a>
                         </li>
-                        <li class="nav-item dropdown d-flex align-items-center ms-3">
-                            <a class="nav-link dropdown-toggle p-0" 
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center profile-link"
                                :class="{ 'active': isProfileRelatedPage() }"
                                href="#" 
                                id="profileDropdown" 
