@@ -6,10 +6,20 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { auth } from "./firebase.js"; // Ensure this path matches where firebase.js is located
 import { getStorage, ref, uploadString, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 
-
 const app = Vue.createApp({
     data() {
       return {
+        userProfile: {
+            name: 'John Doe',
+            username: '@johndoe',
+            avatar: 'resources/download.jpeg',
+            stats: {
+                routes: 24,
+                following: 156,
+                followers: 198
+            }
+        },
+        
         // Map related
         map: null,
         directionsService: null,
@@ -755,5 +765,154 @@ const app = Vue.createApp({
                 window.location.href = "index.html";
             }
         });
-    }    
-}).mount('#app');
+    }
+});
+
+app.component('nav-bar', {
+    // get user profile from parent
+    props: ['user_profile'], 
+    
+    data() {
+        return {
+            currentPage: '',
+            defaultAvatar: 'resources/download.jpeg'
+        }
+    },
+
+    mounted() {
+        this.currentPage = window.location.pathname.split('/').pop() || 'homepage.html';
+    },
+
+    methods: {
+        isCurrentPage(pageName) {
+            return this.currentPage === pageName;
+        },
+        isSearchRelatedPage() {
+            return ['routes.html', 'friends.html'].includes(this.currentPage);
+        },
+        isProfileRelatedPage() {
+            return ['profile_page.html', 'settings_page.html'].includes(this.currentPage);
+        }
+    },
+
+    template: `
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="homepage.html">
+                    <img src="resources/mappalettelogo.png" alt="MapPalette Logo" style="width: 40px; height: 40px" >MapPalette
+                </a>
+                <button class="navbar-toggler" 
+                        type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" 
+                        aria-expanded="false" 
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" 
+                               :class="{ 'active': isCurrentPage('homepage.html') }" 
+                               href="homepage.html">Feed</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" 
+                               :class="{ 'active': isSearchRelatedPage() }"
+                               href="#" 
+                               id="searchDropdown" 
+                               role="button" 
+                               data-bs-toggle="dropdown" 
+                               aria-expanded="false">
+                                Search
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="searchDropdown">
+                                <li>
+                                    <a class="dropdown-item" 
+                                       :class="{ 'active': isCurrentPage('routes.html') }"
+                                       href="routes.html">Routes</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" 
+                                       :class="{ 'active': isCurrentPage('friends.html') }"
+                                       href="friends.html">Friends</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" 
+                               :class="{ 'active': isCurrentPage('addMaps.html') }"
+                               href="addMaps.html">Draw</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center profile-link"
+                               :class="{ 'active': isProfileRelatedPage() }"
+                               href="#" 
+                               id="profileDropdown" 
+                               role="button" 
+                               data-bs-toggle="dropdown" 
+                               aria-expanded="false">
+                                <img :src="user_profile?.avatar || defaultAvatar" 
+                                     alt="Profile" 
+                                     class="rounded-circle" 
+                                     width="50" 
+                                     height="50">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" 
+                                aria-labelledby="profileDropdown">
+                                <li>
+                                    <a class="dropdown-item" 
+                                       :class="{ 'active': isCurrentPage('profile_page.html') }"
+                                       href="profile_page.html">Your Profile</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" 
+                                       :class="{ 'active': isCurrentPage('settings_page.html') }"
+                                       href="settings_page.html">Settings</a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Log Out</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    `
+});
+
+app.component('site-footer', {
+    template: `
+    <footer class="footer-wrapper text-center">
+        <div class="container p-5">
+            <!-- Grid row -->
+            <div class="row align-items-center">
+                <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                    <h5 class="text-uppercase fw-bold">MapPalette</h5>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                    <h6 class="fw-bold">Contact us</h6>
+                    <p class="mb-1">mappalette@gmail.com</p>
+                    <p class="mb-1">+65-687654321</p>
+                    <p>81 Victoria St, Singapore 188065</p>
+                </div>
+
+                <div class="col-lg-4 col-md-12 text-md-end">
+                    <a href="#" class="me-3"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="me-3"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="me-3"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2024. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    `
+});
+
+app.mount("#app");

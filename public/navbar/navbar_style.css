@@ -1,4 +1,10 @@
 /* navbar styles */
+:root {
+    --primary-color: #FF6B6B;       
+    --background-light: #F7F7F7;    
+    --border-color: rgba(160, 160, 160, 0.2);
+}
+
 .navbar {
     position: fixed;
     top: 0;
