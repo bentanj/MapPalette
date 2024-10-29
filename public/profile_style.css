@@ -1,6 +1,11 @@
 /* Profile Header Styles */
+.main-content-wrapper {
+    flex: 1;
+    padding-bottom: 3rem; /* Add spacing before footer */
+}
+
 .profile-header {
-    margin-top: -76px;
+    margin-top: 0;
     background: white;
     margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
