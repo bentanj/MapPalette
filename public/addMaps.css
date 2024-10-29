@@ -1,4 +1,9 @@
-/* Map and Controls Layout */
+/* navbar_style styles */
+@import 'navbar/navbar_style.css';
+
+/* footer_style styles */
+@import 'footer/footer_style.css';
+
 /* Set the height of the map to take full screen minus the navbar */
 #app{
   padding-top:70px;
