@@ -5,6 +5,7 @@ const endPointURL = "https://app-907670644284.us-central1.run.app";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { auth } from "./firebase.js"; // Ensure this path matches where firebase.js is located
 import { getStorage, ref, uploadString, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+import { driver } from "../node_modules/driver.js/dist/driver.js.mjs";
 
 const app = Vue.createApp({
     data() {
@@ -60,6 +61,9 @@ const app = Vue.createApp({
         // Existing post related
         mapId: null,
         isEditing: false,
+
+        // Tour
+        tourStarted: false,
       };
 
     },
@@ -737,6 +741,91 @@ const app = Vue.createApp({
             this.map.panToBounds(bounds);
         },        
 
+        startTour() {
+            const driverObj = driver({
+                showProgress: true,
+                steps: [
+                    {
+                        element: '#map',
+                        popover: {
+                            title: 'Map Interaction',
+                            description: 'Use scroll to zoom in and out of the map.',
+                            position: 'top',
+                        },
+                    },
+                    {
+                        element: '#pac-input',
+                        popover: {
+                            title: 'Search Location',
+                            description: 'Enter a location in the search bar, then press Enter or click a suggestion.',
+                            position: 'bottom',
+                        },
+                    },
+                    {
+                        element: '#map',
+                        popover: {
+                            title: 'Plot a Waypoint',
+                            description: 'Click on the map to plot a waypoint. Each click adds a new point.',
+                            position: 'top',
+                        },
+                        onNext: () => {
+                            const mapCenter = this.map.getCenter();
+                            this.addWaypoint(mapCenter);
+                        },
+                    },
+                    {
+                        element: '#colorPalette',
+                        popover: {
+                            title: 'Change Route Color',
+                            description: 'Click on a color to change the route color.',
+                            position: 'top',
+                        },
+                    },
+                    {
+                        element: '.btn.btn-danger.m-1',
+                        popover: {
+                            title: 'Clear Route',
+                            description: 'Click here to clear all waypoints instantly.',
+                            position: 'left',
+                        },
+                    },
+                    {
+                        element: '#export-button',
+                        popover: {
+                            title: 'Export Route',
+                            description: 'Click here to export your route to Google Maps.',
+                            position: 'left',
+                        },
+                    },
+                    {
+                        element: 'form',
+                        popover: {
+                            title: 'Add Post Details',
+                            description: 'Provide a title and description for your route. These fields are required.',
+                            position: 'top',
+                        },
+                    },
+                    {
+                        element: '.btn.btn-danger.w-100',
+                        popover: {
+                            title: 'Delete Post',
+                            description: 'Click here to delete this post if needed.',
+                            position: 'left',
+                        },
+                    },
+                    {
+                        element: '.btn.btn-primary.w-100',
+                        popover: {
+                            title: 'Create Post',
+                            description: 'Click here to create a post for your route.',
+                            position: 'top',
+                        },
+                    },
+                ],
+            });
+        
+            driverObj.drive();
+        },
     },
     created() {
         // Assign initMap as a global function to initialize the map once the API loads
