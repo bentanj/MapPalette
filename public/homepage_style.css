@@ -37,7 +37,6 @@ body {
 /* Content spacing */
 .content {
     margin-top: 20px;
-    padding-left: calc(100% / 9);
 }
 
 /* Hero section base styles */
@@ -57,7 +56,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('resources/run.jpg');
+    background-image: url('resources/homepage_run.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -411,10 +410,17 @@ body {
     .hero-section {
         height: 400px;
     }
+    .content {
+        padding-left: calc(100% / 9);
+    }
 }
 
 /* Medium screens (md) */
 @media (max-width: 991.98px) {
+    .content {
+        padding-left: 15px;
+    }
+    
     .hero-section {
         height: 350px;
     }

@@ -62,6 +62,11 @@
     width: 100%;
 }
 
+.profile-link {
+    padding: 0 !important;
+    margin-left: 1.5rem;
+}
+
 /* profile image */
 .navbar .rounded-circle {
     width: 50px;
@@ -98,6 +103,27 @@
 
 /* responsive styles */
 @media (max-width: 991.98px) {
+    .profile-link {
+        margin: 0.5rem 1rem;
+        padding: 0 !important;
+    }
+
+    .navbar .dropdown-menu {
+        border: none;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .navbar .dropdown-item {
+        padding: 0.5rem 1rem;
+        margin-left: 3.5rem; 
+    }
+    
+    .navbar .dropdown-divider {
+        margin-left: 3.5rem;
+        margin-right: 1rem;
+    }
+
     .nav-link {
         margin-left: 0;
         padding: 0.5rem 1rem;
