@@ -1,4 +1,4 @@
-const routes = [
+export const routes = [
     {
       routeID: "E7fHyD4K92jP4hU6cZ1L",
       color: "#ff5733",

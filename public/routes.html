@@ -151,16 +151,27 @@
                         </div>
                     </div>
 
+                    <div class="mb-4">
+                        <input type="text" class="form-control" v-model="searchQuery" @input="applyFilters"
+                            placeholder="Search for a route by name">
+                    </div>
+
+                    <!-- Modals -->
+                    <route-modals :routes="filteredRoutes"></route-modals>
+
                     <!-- Cards -->
                     <div class="row mt-4">
                         <route-cards :routes="filteredRoutes"></route-cards>
+                    </div>
+
+                    <!-- Load More Button -->
+                    <div class="text-center mt-4" v-if="displayedRoutes < routes.length">
+                        <button class="btn btn-outline-primary" @click="loadMoreRoutes">Load More</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Modals -->
-        <route-modals :routes="filteredRoutes" @post-comment="postComment"></route-modals>
 
         <button @click="scrollToTop" class="btn back-to-top">
             <i class="fas fa-chevron-up"></i>
@@ -212,39 +223,56 @@
                     sortOption: null
                 },
                 routes: [],
+                users: [],
                 filteredRoutes: [],
-                userName: 'You' // have to replace this with whatever the CURRENT username is
+                displayedRoutes: 8,
+                userName: 'You',
+                searchQuery: '',
             };
         },
         created() {
-            this.getRoutesData();
+            const routesPromise = axios.get('./databaseTemplateFolder/routeTemplate.json');
+            const usersPromise = axios.get('./databaseTemplateFolder/userTemplate.json');
+
+            Promise.all([routesPromise, usersPromise])
+                .then(([routesResponse, usersResponse]) => {
+                    console.log('Users Data:', usersResponse.data);
+                    console.log('Routes Data:', routesResponse.data);
+
+                    this.users = usersResponse.data.users;
+                    this.routes = routesResponse.data.routes.map(route => {
+                        const user = this.users.find(user => user.id === route.userID);
+
+                        if (!user) {
+                            console.warn(`User not found for route ${route.routeID} with userID ${route.userID}`);
+                        }
+
+                        return {
+                            ...route,
+                            modalId: 'modal-' + route.routeID,
+                            timeSince: this.calculateTimeSince(route.createdAt),
+                            commentsList: route.commentsList || [],
+                            username: user ? user.username : 'Unknown User',
+                        };
+                    });
+                    this.applyFilters();
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                });
         },
+
+
         computed: {
             activeFilters() {
                 return this.filters.sortOption ? [{ key: 'Sort By', value: this.filters.sortOption }] : [];
             }
         },
         methods: {
-            getRoutesData() {
-                axios
-                    .get('data.json')
-                    .then((response) => {
-                        // Precompute the time since for each route
-                        this.routes = response.data.routes.map((route) => ({
-                            ...route,
-                            timeSince: this.calculateTimeSince(route.date),
-                        }));
-                        this.filteredRoutes = [...this.routes];
-                    })
-                    .catch((error) => {
-                        console.error('There was an error fetching the routes:', error);
-                    });
-            },
             calculateTimeSince(dateString) {
                 const postDate = new Date(dateString);
                 const currentDate = new Date();
                 const diffInSeconds = Math.floor((currentDate - postDate) / 1000);
-
                 const intervals = [
                     { label: 'year', seconds: 31536000 },
                     { label: 'month', seconds: 2592000 },
@@ -253,7 +281,6 @@
                     { label: 'minute', seconds: 60 },
                     { label: 'second', seconds: 1 },
                 ];
-
                 for (const interval of intervals) {
                     const count = Math.floor(diffInSeconds / interval.seconds);
                     if (count >= 1) {
@@ -264,58 +291,53 @@
                 }
                 return 'Just Now';
             },
-            postComment(route, commentText) {
-                const newComment = {
-                    name: this.userName,
-                    text: commentText
-                };
-
-                // Directly update the route's commentsList
-                route.commentsList.push(newComment);
+            loadMoreRoutes() {
+                this.displayedRoutes += 8;
+                this.applyFilters();
             },
-            formatFilterLabel(key) {
-                // Capitalize the first letter and replace underscores with spaces if any
-                return key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+            applyFilters() {
+                let routes = [...this.routes];
+                if (this.searchQuery) {
+                    const lowerQuery = this.searchQuery.toLowerCase();
+                    routes = routes.filter(route => route.title.toLowerCase().includes(lowerQuery));
+                }
+                if (this.filters.sortOption) {
+                    switch (this.filters.sortOption) {
+                        case 'Shortest':
+                            routes.sort((a, b) => a.distance - b.distance);
+                            break;
+                        case 'Longest':
+                            routes.sort((a, b) => b.distance - a.distance);
+                            break;
+                        case 'Most Popular':
+                            routes.sort((a, b) => b.likeCount - a.likeCount);
+                            break;
+                        case 'Least Popular':
+                            routes.sort((a, b) => a.likeCount - b.likeCount);
+                            break;
+                        case 'Newest':
+                            routes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                            break;
+                        case 'Oldest':
+                            routes.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                            break;
+                        default:
+                    }
+                }
+                this.filteredRoutes = routes.slice(0, this.displayedRoutes);
             },
             setFilter(value) {
                 this.filters.sortOption = value;
+                this.displayedRoutes = 8;
                 this.applyFilters();
             },
             removeFilter() {
                 this.filters.sortOption = null;
                 this.applyFilters();
             },
-            applyFilters() {
-                let routes = [...this.routes];
-
-                if (this.filters.sortOption) {
-                    switch (this.filters.sortOption) {
-                        case 'Shortest':
-                            routes.sort((a, b) => parseInt(a.distance) - parseInt(b.distance));
-                            break;
-                        case 'Longest':
-                            routes.sort((a, b) => parseInt(b.distance) - parseInt(a.distance));
-                            break;
-                        case 'Most Popular':
-                            routes.sort((a, b) => b.likes - a.likes);
-                            break;
-                        case 'Least Popular':
-                            routes.sort((a, b) => a.likes - b.likes);
-                            break;
-                        case 'Newest':
-                            routes.sort((a, b) => new Date(b.date) - new Date(a.date));
-                            break;
-                        case 'Oldest':
-                            routes.sort((a, b) => new Date(a.date) - new Date(b.date));
-                            break;
-                        default:
-                    }
-                }
-
-                this.filteredRoutes = routes;
-            },
             resetFilters() {
                 this.filters.sortOption = null;
+                this.displayedRoutes = 8;
                 this.applyFilters();
             },
             scrollToTop() {
@@ -325,9 +347,8 @@
                 });
             }
         }
-    })
+    });
 
-    // Component for Route Cards
     app.component('route-cards', {
         props: ['routes'],
         methods: {
@@ -339,38 +360,35 @@
                 return text.length > length ? text.substring(0, length) + "..." : text;
             }
         },
+        // Location will be the first waypoint's address
         template: `
-    <div class="col-md-6 mb-4" v-for="route in routes" :key="route.postId">
-      <div class="card post-card" @click="openModal(route)">
-        <div class="card-body d-flex flex-column flex-sm-row align-items-start">
-          <div class="image-box me-3 mb-3 mb-sm-0">
-            <img :src="route.image" class="img-fluid" :alt="route.title">
-          </div>
-          <div>
-            <h5 class="card-title" style="font-weight:bold">{{ route.title }}</h5>
-            <p class="card-text truncate-2-lines">{{ truncateText(route.description, 150) }}</p>
-            <p class="mb-3"><strong>Distance:</strong> {{ route.distance }}</p>
-            <p class="mb-3"><strong>Location:</strong> {{ route.location }}</p>
-          </div>
-        </div>
-        <div class="card-footer text-muted">
-        {{ route.timeSince }} | {{ route.likes }} Likes | {{ route.commentsList.length }} Comments
-        </div>
-      </div>
-    </div>
-  `
+                <div class="col-md-6 mb-4" v-for="route in routes" :key="route.routeID">
+                    <div class="card post-card" @click="openModal(route)">
+                        <div class="card-body d-flex flex-column flex-sm-row align-items-start">
+                            <div class="image-box me-3 mb-3 mb-sm-0">
+                                <img :src="route.image" class="img-fluid" :alt="route.title">
+                            </div>
+                            <div>
+                                <h5 class="card-title" style="font-weight:bold">{{ route.title }}</h5>
+                                <p class="card-text truncate-2-lines">{{ truncateText(route.description, 150) }}</p>
+                                <p class="mb-3"><strong>Distance:</strong> {{ route.distance }} km</p>
+                                <p class="mb-3"><strong>Location:</strong> {{ route.waypoints[0].address }}</p>
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted">
+                            {{ route.timeSince }} | {{ route.likeCount }} Likes | {{ route.commentsList.length }} Comments | by {{ route.username }}
+                        </div>
+                    </div>
+                </div>
+            `
     });
 
-
-
+    // Component for Route Modals
     app.component('route-modals', {
         props: ['routes'],
-        emits: ['post-comment'],
         data() {
             return {
                 newCommentText: {},
-                showAllComments: {},
-                showCommentInput: {},
                 likedRoutes: {},
                 lastApiCallTime: 0,
                 disabledActions: {},
@@ -379,293 +397,252 @@
             };
         },
         methods: {
-            submitComment(route) {
-                const commentText = this.newCommentText[route.postId];
-                if (!commentText) return;
-
-                const currentTime = Date.now();
-
-                if (currentTime - this.lastApiCallTime < 1000) {
-                    alert('Please wait a moment before performing another action.');
-                    return;
-                }
-
-                this.lastApiCallTime = currentTime;
-
-                // Disable the comment button and show loading
-                this.disableAction(route, 'comment');
-                this.newCommentText[route.postId] = ''; // Clear the textarea
-
-                // Simulate delay before adding the comment
-                setTimeout(() => {
-                    // Add the comment to the route's commentsList
-                    this.$emit('post-comment', route, commentText);
-
-                    // Re-enable the comment button
-                    this.disabledActions[route.postId].comment = false;
-                }, 1000);
-
-                // Simulate API call to post comment (commented out)
-                // axios.post(`http://your-api-endpoint.com/routes/${route.postId}/comments`, { text: commentText })
-                //   .then(response => {})
-                //   .catch(error => {
-                //     console.error('Error posting comment:', error);
-                //   });
-            },
-            toggleShowAllComments(route) {
-                if (this.showAllComments[route.postId] === undefined) {
-                    this.showAllComments[route.postId] = false;
-                }
-                this.showAllComments[route.postId] = !this.showAllComments[route.postId];
-            },
-            limitedComments(route) {
-                if (this.showAllComments[route.postId]) {
-                    return route.commentsList;
-                } else {
-                    return route.commentsList.slice(0, 4);
-                }
-            },
-            toggleCommentInput(route) {
-                if (this.showCommentInput[route.postId] === undefined) {
-                    this.showCommentInput[route.postId] = true;
-                } else {
-                    this.showCommentInput[route.postId] = !this.showCommentInput[route.postId];
-                }
-            },
             likeRoute(route) {
+                const apiEndpoint = `https://app-6kmdo5luna-uc.a.run.app/api/posts/like?id=${route.routeID}`; // Dynamic endpoint
                 const currentTime = Date.now();
 
+                // Throttle to avoid rapid calls
                 if (currentTime - this.lastApiCallTime < 1000) {
-                    alert('Please wait a moment before performing another action.');
+                    alert('Please wait a moment before liking again.');
                     return;
                 }
 
                 this.lastApiCallTime = currentTime;
 
-                if (!this.likedRoutes[route.postId]) {
-                    // Update liked state immediately
-                    this.likedRoutes[route.postId] = true;
-                    route.likes++;
+                // Toggle local like state for immediate feedback
+                const isLiked = this.likedRoutes[route.routeID];
+                this.likedRoutes[route.routeID] = !isLiked;
+                route.likeCount += isLiked ? -1 : 1;
 
-                    // Simulate API call to like the post (commented out)
-                    // axios.post(`http://your-api-endpoint.com/routes/${route.postId}/like`)
-                    //   .then(response => {})
-                    //   .catch(error => {
-                    //     console.error('Error updating likes:', error);
-                    //   });
-                } else {
-                    // Update liked state immediately
-                    this.likedRoutes[route.postId] = false;
-                    route.likes--;
-
-                    // Simulate API call to unlike the post (commented out)
-                    // axios.post(`http://your-api-endpoint.com/routes/${route.postId}/unlike`)
-                    //   .then(response => {})
-                    //   .catch(error => {
-                    //     console.error('Error updating likes:', error);
-                    //   });
-                }
-
+                // Disable the button during the API call
                 this.disableAction(route, 'like');
-            },
-            shareRoute(route) {
-                const currentTime = Date.now();
 
-                if (currentTime - this.lastApiCallTime < 1000) {
-                    alert('Please wait a moment before performing another action.');
-                    return;
-                }
-
-                this.lastApiCallTime = currentTime;
-
-                // Disable the share button temporarily
-                this.disableAction(route, 'share');
-
-                // Show loading indicator
-                this.shareableLinks[route.postId] = 'Loading...';
-
-                // Simulate API call to retrieve shareable link (commented out)
-                // axios.post(`http://your-api-endpoint.com/routes/${route.postId}/share`)
-                //   .then(response => {
-                //     const shareableLink = response.data.url;
-                //     this.shareableLinks[route.postId] = shareableLink;
-                //   })
-                //   .catch(error => {
-                //     console.error('Error retrieving shareable link:', error);
-                //     this.shareableLinks[route.postId] = 'Error retrieving link.';
-                //   });
-
-                // Simulate delay
-                setTimeout(() => {
-                    // Placeholder shareable link
-                    const shareableLink = `https://example.com/routes/${route.postId}`;
-
-                    // Set the shareable link
-                    this.shareableLinks[route.postId] = shareableLink;
-
-                    // Open the share modal
-                    this.showShareModal[route.postId] = true;
-
-                    // Re-enable the share button
-                    this.disabledActions[route.postId].share = false;
-                }, 1000);
-            },
-            copyToClipboard(route) {
-                const link = this.shareableLinks[route.postId];
-                navigator.clipboard.writeText(link)
-                    .then(() => {
-                        alert('Link copied to clipboard!');
+                // Send a POST request to update the like count in the database
+                axios.post(apiEndpoint)
+                    .then(response => {
+                        console.log("Like updated in the database:", response.data);
                     })
-                    .catch(err => {
-                        console.error('Failed to copy: ', err);
+                    .catch(error => {
+                        console.error("Error updating like:", error);
+
+                        // Revert like action on error
+                        this.likedRoutes[route.routeID] = isLiked;
+                        route.likeCount += isLiked ? 1 : -1;
+                        alert("Failed to update like. Please try again.");
                     });
             },
-            closeShareModal(route) {
-                this.showShareModal[route.postId] = false;
-            },
+            // submitComment(route) {
+            //     const commentText = this.newCommentText[route.routeID];
+            //     if (!commentText) return;
+
+            //     const currentTime = Date.now();
+
+            //     if (currentTime - this.lastApiCallTime < 1000) {
+            //         alert('Please wait a moment before performing another action.');
+            //         return;
+            //     }
+
+            //     this.lastApiCallTime = currentTime;
+
+            //     // Disable the comment button and show loading
+            //     this.disableAction(route, 'comment');
+            //     this.newCommentText[route.routeID] = ''; // Clear the textarea
+
+            //     // Simulate delay before adding the comment
+            //     setTimeout(() => {
+            //         // Create a new comment object
+            //         const newComment = {
+            //             commenterID: 'currentUserID', // Replace with actual user ID
+            //             commenterName: this.userName,
+            //             commentText: commentText,
+            //             timestamp: new Date().toISOString()
+            //         };
+
+            //         // Add the new comment to the route's commentsList
+            //         route.commentsList.push(newComment);
+
+            //         // Update the comment count
+            //         route.commentCount = route.commentsList.length;
+
+            //         // Re-enable the comment button
+            //         this.disabledActions[route.routeID].comment = false;
+            //     }, 1000);
+            // },
             disableAction(route, actionType) {
-                if (!this.disabledActions[route.postId]) {
-                    this.disabledActions[route.postId] = {};
+                if (!this.disabledActions[route.routeID]) {
+                    this.disabledActions[route.routeID] = {};
                 }
 
-                this.disabledActions[route.postId][actionType] = true;
+                this.disabledActions[route.routeID][actionType] = true;
 
                 setTimeout(() => {
-                    this.disabledActions[route.postId][actionType] = false;
+                    this.disabledActions[route.routeID][actionType] = false;
                 }, 1000);
+            },
+            // API call for "Use" button
+            useRoute(route) {
+                // Define the API endpoint and payload
+                const apiEndpoint = "https://api.example.com/use"; // Replace with your actual API endpoint
+
+                // Send POST request with route's ID
+                axios.post(apiEndpoint, { routeID: route.routeID })
+                    .then(response => {
+                        console.log("Route used:", response.data);
+                        // Optional: provide user feedback
+                    })
+                    .catch(error => {
+                        console.error("Error using route:", error);
+                        alert("Error using route.");
+                    });
+                this.disableAction(route, 'use')
+            },
+
+            // API call for "Share" button
+            shareRoute(route) {
+                // Define the API endpoint and payload
+                const apiEndpoint = "https://api.example.com/share"; // Replace with your actual API endpoint
+
+                // Send POST request with route's ID
+                axios.post(apiEndpoint, { routeID: route.routeID })
+                    .then(response => {
+                        console.log("Route shared:", response.data);
+                        alert("Route shared successfully!");
+                    })
+                    .catch(error => {
+                        console.error("Error sharing route:", error);
+                        alert("Failed to share route.");
+                    });
+                this.disableAction(route, 'share')
             }
         },
-
         template: `
-  <div v-for="route in routes" :key="route.postId">
-    <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'" aria-hidden="true">
-      <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-          <!-- Modal Header -->
-          <div class="modal-header d-flex justify-content-between align-items-start">
-            <div>
-              <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
-              <h6 class="modal-author text-muted">by {{ route.author }}</h6>
+    <div v-for="route in routes" :key="route.routeID">
+      <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header d-flex justify-content-between align-items-start">
+              <div>
+                <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
+                <h6 class="modal-author text-muted">by {{ route.username }}</h6>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <!-- Modal Body -->
-          <div class="modal-body">
-                    <div id="modal-pic">
-              <img :src="route.image" alt="Route Image" class="img-fluid">
-            </div>
-            <!-- Modal Content -->
-            <p class="text-muted">Posted {{ route.timeSince }}</p>
-            <p class="text-muted">{{ route.likes }} Likes | {{ route.commentsList.length }} Comments</p>
-            <p><strong>Distance:</strong> {{ route.distance }}</p>
-            <p>{{ route.description }}</p>
-            <!-- Action Buttons -->
-            <div class="d-flex justify-content-around border-top border-bottom py-3">
-              <!-- Like Button -->
-              <button
-                class="btn btn-link p-0 action-button"
-                @click="likeRoute(route)"
-                :disabled="disabledActions[route.postId]?.like"
-                :class="{ liked: likedRoutes[route.postId] }"
-              >
-                <i :class="likedRoutes[route.postId] ? 'fas fa-thumbs-up me-1' : 'far fa-thumbs-up me-1'"></i>
-                <span>Like</span>
-              </button>
-              <!-- Comment Button -->
-              <button
-                class="btn btn-link p-0 action-button"
-                @click="toggleCommentInput(route)"
-                :disabled="disabledActions[route.postId]?.comment"
-              >
-                <i class="far fa-comment me-1"></i>
-                <span>Comment</span>
-              </button>
-              <!-- Share Button -->
-              <button
-                class="btn btn-link p-0 action-button"
-                @click="shareRoute(route)"
-                :disabled="disabledActions[route.postId]?.share"
-              >
-                <i class="far fa-share-square me-1"></i>
-                <span>Share</span>
-              </button>
-            </div>
-            <!-- Comments Section -->
-            <br>
-            <h6>Comments</h6>
-            <div v-if="showCommentInput[route.postId]" class="mb-3">
-              <textarea
-                class="form-control mb-2"
-                placeholder="Add a comment..."
-                rows="2"
-                v-model="newCommentText[route.postId]"
-              ></textarea>
-              <button
-                class="btn btn-primary"
-                @click="submitComment(route)"
-                :disabled="disabledActions[route.postId]?.comment"
-              >
-                <span v-if="!disabledActions[route.postId]?.comment">Post Comment</span>
-                <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
-              </button>
-            </div>
-            <ul class="list-unstyled">
-              <li v-for="(comment, index) in limitedComments(route)" :key="index">
-                <strong>{{ comment.name }}:</strong> {{ comment.text }}
-              </li>
-            </ul>
-            <button
-              v-if="route.commentsList.length > 4"
-              @click="toggleShowAllComments(route)"
-              class="btn btn-link p-0"
-            >
-              {{ showAllComments[route.postId] ? 'Show Less Comments' : 'Load More Comments' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Share Modal -->
-    <div
-      class="modal fade"
-      :id="'shareModal' + route.modalId"
-      tabindex="-1"
-      :aria-labelledby="'shareModalLabel' + route.modalId"
-      aria-hidden="true"
-      v-if="showShareModal[route.postId]"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" :id="'shareModalLabel' + route.modalId">Share Route</h5>
-            <button type="button" class="btn-close" @click="closeShareModal(route)" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p>Share this link with your friends:</p>
-            <div class="input-group mb-3">
-              <input
-                type="text"
-                class="form-control"
-                :value="shareableLinks[route.postId]"
-                readonly
-              >
-              <button class="btn btn-outline-secondary" type="button" @click="copyToClipboard(route)">
-                Copy
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-`
+            <!-- Modal Body -->
+            <div class="modal-body">
+              <div id="modal-pic">
+                <img :src="route.image" alt="Route Image" class="img-fluid">
+              </div>
+              <!-- Modal Content -->
+              <p class="text-muted">Posted {{ route.timeSince }}</p>
+              <p class="text-muted">{{ route.likeCount }} Likes | {{ route.commentCount }} Comments</p>
+              <p><strong>Distance:</strong> {{ route.distance }} km</p>
+              <p>{{ route.description }}</p>
+<!-- Action Buttons -->
+<div class="d-flex justify-content-around border-top border-bottom py-3">
+  <!-- Like Button -->
+  <button
+    class="btn btn-link p-0 action-button"
+    @click="likeRoute(route)"
+    :disabled="disabledActions[route.routeID]?.like"
+    :class="{ liked: likedRoutes[route.routeID] }"
+  >
+    <i :class="likedRoutes[route.routeID] ? 'fas fa-thumbs-up me-1' : 'far fa-thumbs-up me-1'"></i>
+    <span>Like</span>
+  </button>
+  <!-- Use Button -->
+  <button
+    class="btn btn-link p-0 action-button"
+    @click="useRoute(route)"
+    :disabled="disabledActions[route.routeID]?.use"
+  >
+    <i class="fas fa-route me-1"></i>
+    <span>Use</span>
+  </button>
+  <!-- Share Button -->
+  <button
+    class="btn btn-link p-0 action-button"
+    @click="shareRoute(route)"
+    :disabled="disabledActions[route.routeID]?.share"
+  >
+    <i class="far fa-share-square me-1"></i>
+    <span>Share</span>
+  </button>
+</div>
 
+              <!-- Comments Section -->
+              <br>
+              <h6>Comments ({{ route.commentCount }})</h6>
+              <div v-if="route.commentsList && route.commentsList.length">
+                <div v-for="(comment, index) in route.commentsList" :key="index" class="mb-3">
+                  <strong>{{ comment.commenterName }}</strong> <span class="text-muted">{{ formatTime(comment.timestamp) }}</span>
+                  <p>{{ comment.commentText }}</p>
+                </div>
+              </div>
+              <div v-else>
+                <p>No comments yet. Be the first to comment!</p>
+              </div>
+
+              <!-- Comment Input -->
+              <div class="mb-3">
+                <textarea
+                  class="form-control mb-2"
+                  placeholder="Add a comment..."
+                  rows="2"
+                  v-model="newCommentText[route.routeID]"
+                ></textarea>
+                <button
+                  class="btn btn-primary"
+                  @click="submitComment(route)"
+                  :disabled="disabledActions[route.routeID]?.comment"
+                >
+                  <span v-if="!disabledActions[route.routeID]?.comment">Post Comment</span>
+                  <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Share Modal -->
+      <div
+        class="modal fade"
+        :id="'shareModal' + route.modalId"
+        tabindex="-1"
+        :aria-labelledby="'shareModalLabel' + route.modalId"
+        aria-hidden="true"
+        v-if="showShareModal[route.routeID]"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" :id="'shareModalLabel' + route.modalId">Share Route</h5>
+              <button type="button" class="btn-close" @click="closeShareModal(route)" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Share this link with your friends:</p>
+              <div class="input-group mb-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  :value="shareableLinks[route.routeID]"
+                  readonly
+                >
+                <button class="btn btn-outline-secondary" type="button" @click="copyToClipboard(route)">
+                  Copy
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
     });
-
-
 
     app.mount('#app');
 </script>
+
 
 
 <!-- <script>
