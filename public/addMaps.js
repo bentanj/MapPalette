@@ -486,6 +486,8 @@ const app = Vue.createApp({
             }
         
             try {
+                this.submitting = true; // Show loading overlay
+
                 const mapId = Date.now();
                 await this.captureMapAsImage(mapId);
 
@@ -512,7 +514,9 @@ const app = Vue.createApp({
             } catch (error) {
                 console.error('Error creating post:', error);
                 this.setAlert('error', 'An error occurred while creating the post.');
-            }
+            } finally {
+                this.submitting = false; // Hide loading overlay
+              }
         },
 
         clearPost(){
@@ -593,6 +597,7 @@ const app = Vue.createApp({
             if (form.checkValidity()) {
                 // Form is valid, proceed to create the post
                 try {
+                    this.submitting = true; // Show loading overlay
                     const mapId = Date.now();
                     await this.captureMapAsImage(mapId);
 
@@ -612,6 +617,8 @@ const app = Vue.createApp({
                 } catch (error) {
                     console.error('Error updating post:', error);
                     this.setAlert('error', 'Failed to update the post. Please try again.');
+                } finally {
+                    this.submitting = false; // Hide loading overlay
                 }
             } else {
                 // Form is invalid, display validation errors

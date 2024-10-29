@@ -18,6 +18,11 @@
 </head>
 <body>
   <div id="app" class="container-fluid">
+    <!-- Full-screen loading overlay -->
+    <div v-if="submitting" class="loading-overlay active">
+      <div class="loading-spinner"></div>
+    </div>
+ 
     <!-- Footer Section -->
     <nav-bar :user_profile="userProfile"></nav-bar>
 
