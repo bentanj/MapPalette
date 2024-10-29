@@ -1,4 +1,4 @@
-const users = [
+export const users = [
     // Each object is a user with all of the following attributes
     {
         // personal info
