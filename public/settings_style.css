@@ -7,11 +7,17 @@
 
 /* layout styles */
 .settings-content {
-    min-height: calc(100vh - var(--navbar-height));
+    min-height: auto;
+    margin-bottom: 2rem;
 }
 
 .bg-light {
     background-color: var(--background-light) !important;
+}
+
+.main-content-wrapper {
+    flex: 1;
+    padding-bottom: 3rem;
 }
 
 /* settings sidebar styles */
