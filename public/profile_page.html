@@ -27,143 +27,145 @@
         <nav-bar :user_profile="userProfile"></nav-bar>
 
         <!-- Profile Header Section -->
-        <div class="profile-header">
-            <div class="cover-photo">
-                <img src="resources/coverphoto_profile.jpg" alt="Cover Photo">
-                <button class="btn btn-light btn-sm edit-cover-photo">
-                    <i class="bi bi-camera"></i> Edit Cover Photo
-                </button>
-            </div>
-            <div class="container position-relative">
-                <div class="profile-info">
-                    <div class="profile-picture-container">
-                        <img :src="userProfile.avatar" alt="Profile Picture" class="profile-picture">
-                        <button class="btn btn-light btn-sm edit-profile-photo">
-                            <i class="bi bi-camera"></i>
-                        </button>
-                    </div>
-                    <div class="profile-details">
-                        <h1>{{ userProfile.name }}</h1>
-                        <p class="text-muted">{{ userProfile.bio || 'No bio yet' }}</p>
-                    </div>
-                    <div class="profile-actions">
-                        <button class="btn btn-primary">
-                            <i class="bi bi-pencil"></i> Edit Profile
-                        </button>
+        <div class="main-content-wrapper">
+            <div class="profile-header">
+                <div class="cover-photo">
+                    <img src="resources/coverphoto_profile.jpg" alt="Cover Photo">
+                    <button class="btn btn-light btn-sm edit-cover-photo">
+                        <i class="bi bi-camera"></i> Edit Cover Photo
+                    </button>
+                </div>
+                <div class="container position-relative">
+                    <div class="profile-info">
+                        <div class="profile-picture-container">
+                            <img :src="userProfile.avatar" alt="Profile Picture" class="profile-picture">
+                            <button class="btn btn-light btn-sm edit-profile-photo">
+                                <i class="bi bi-camera"></i>
+                            </button>
+                        </div>
+                        <div class="profile-details">
+                            <h1>{{ userProfile.name }}</h1>
+                            <p class="text-muted">{{ userProfile.bio || 'No bio yet' }}</p>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="btn btn-primary">
+                                <i class="bi bi-pencil"></i> Edit Profile
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Main Content -->
-        <div class="container mt-4">
-            <div class="row">
-                <!-- Left Sidebar -->
-                <div class="col-lg-4">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">About</h5>
-                            <div class="about-items">
-                                <div class="about-item">
-                                    <i class="bi bi-geo-alt"></i>
-                                    <span>Lives in {{ userProfile.location }}</span>
+            <!-- Main Content -->
+            <div class="container mt-4">
+                <div class="row">
+                    <!-- Left Sidebar -->
+                    <div class="col-lg-4">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">About</h5>
+                                <div class="about-items">
+                                    <div class="about-item">
+                                        <i class="bi bi-geo-alt"></i>
+                                        <span>Lives in {{ userProfile.location }}</span>
+                                    </div>
+                                    <div class="about-item">
+                                        <i class="bi bi-calendar3"></i>
+                                        <span>Joined {{ userProfile.joinDate }}</span>
+                                    </div>
                                 </div>
-                                <div class="about-item">
-                                    <i class="bi bi-calendar3"></i>
-                                    <span>Joined {{ userProfile.joinDate }}</span>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Stats</h5>
+                                <div class="stats-grid">
+                                    <div class="stat-item">
+                                        <h3>{{ userProfile.stats.routes }}</h3>
+                                        <span>Routes</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <h3>{{ userProfile.stats.following }}</h3>
+                                        <span>Following</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <h3>{{ userProfile.stats.followers }}</h3>
+                                        <span>Followers</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <h3>{{ userProfile.stats.totalDistance }}km</h3>
+                                        <span>Total Distance</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="card-title mb-0">Recent Badges</h5>
+                                    <a href="#" class="text-primary">See All</a>
+                                </div>
+                                <div class="badges-grid">
+                                    <div v-for="badge in recentBadges" :key="badge.id" class="badge-item">
+                                        <img :src="badge.icon" :alt="badge.name">
+                                        <span>{{ badge.name }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">Stats</h5>
-                            <div class="stats-grid">
-                                <div class="stat-item">
-                                    <h3>{{ userProfile.stats.routes }}</h3>
-                                    <span>Routes</span>
-                                </div>
-                                <div class="stat-item">
-                                    <h3>{{ userProfile.stats.following }}</h3>
-                                    <span>Following</span>
-                                </div>
-                                <div class="stat-item">
-                                    <h3>{{ userProfile.stats.followers }}</h3>
-                                    <span>Followers</span>
-                                </div>
-                                <div class="stat-item">
-                                    <h3>{{ userProfile.stats.totalDistance }}km</h3>
-                                    <span>Total Distance</span>
+                    <!-- Main Content Area -->
+                    <div class="col-lg-8">
+                        <!-- Profile Navigation -->
+                        <div class="profile-nav mb-4">
+                            <div class="nav nav-tabs">
+                                <button class="nav-link" 
+                                        :class="{ 'active': currentTab === 'activities' }"
+                                        @click="currentTab = 'activities'">Activities</button>
+                                <button class="nav-link" 
+                                        :class="{ 'active': currentTab === 'routes' }"
+                                        @click="currentTab = 'routes'">Routes</button>
+                                <button class="nav-link" 
+                                        :class="{ 'active': currentTab === 'badges' }"
+                                        @click="currentTab = 'badges'">Badges</button>
+                            </div>
+                        </div>
+
+                        <!-- Activities Tab -->
+                        <div v-if="currentTab === 'activities'" id="activity-feed">
+                            <activity-card
+                                v-for="activity in activities"
+                                :key="activity.id"
+                                :activity="activity"
+                                :current-user="currentUser"
+                                @like="likeActivity"
+                                @open-modal="openActivityModal"
+                                @edit="handleActivityEdit">
+                            </activity-card>
+                        </div>
+
+                        <!-- Routes Tab -->
+                        <div v-if="currentTab === 'routes'" class="routes-grid">
+                            <div v-for="route in routes" :key="route.id" class="route-card">
+                                <img :src="route.image" :alt="route.title">
+                                <div class="route-info">
+                                    <h5>{{ route.title }}</h5>
+                                    <p>{{ route.distance }} • {{ route.duration }}</p>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title mb-0">Recent Badges</h5>
-                                <a href="#" class="text-primary">See All</a>
+                        <!-- Badges Tab -->
+                        <div v-if="currentTab === 'badges'" class="badges-container">
+                            <div v-for="badge in badges" :key="badge.id" class="badge-card">
+                                <img :src="badge.icon" :alt="badge.name">
+                                <h5>{{ badge.name }}</h5>
+                                <p>{{ badge.description }}</p>
+                                <small class="text-muted">Earned {{ badge.earnedDate }}</small>
                             </div>
-                            <div class="badges-grid">
-                                <div v-for="badge in recentBadges" :key="badge.id" class="badge-item">
-                                    <img :src="badge.icon" :alt="badge.name">
-                                    <span>{{ badge.name }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Main Content Area -->
-                <div class="col-lg-8">
-                    <!-- Profile Navigation -->
-                    <div class="profile-nav mb-4">
-                        <div class="nav nav-tabs">
-                            <button class="nav-link" 
-                                    :class="{ 'active': currentTab === 'activities' }"
-                                    @click="currentTab = 'activities'">Activities</button>
-                            <button class="nav-link" 
-                                    :class="{ 'active': currentTab === 'routes' }"
-                                    @click="currentTab = 'routes'">Routes</button>
-                            <button class="nav-link" 
-                                    :class="{ 'active': currentTab === 'badges' }"
-                                    @click="currentTab = 'badges'">Badges</button>
-                        </div>
-                    </div>
-
-                    <!-- Activities Tab -->
-                    <div v-if="currentTab === 'activities'" id="activity-feed">
-                        <activity-card
-                            v-for="activity in activities"
-                            :key="activity.id"
-                            :activity="activity"
-                            :current-user="currentUser"
-                            @like="likeActivity"
-                            @open-modal="openActivityModal"
-                            @edit="handleActivityEdit">
-                        </activity-card>
-                    </div>
-
-                    <!-- Routes Tab -->
-                    <div v-if="currentTab === 'routes'" class="routes-grid">
-                        <div v-for="route in routes" :key="route.id" class="route-card">
-                            <img :src="route.image" :alt="route.title">
-                            <div class="route-info">
-                                <h5>{{ route.title }}</h5>
-                                <p>{{ route.distance }} • {{ route.duration }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Badges Tab -->
-                    <div v-if="currentTab === 'badges'" class="badges-container">
-                        <div v-for="badge in badges" :key="badge.id" class="badge-card">
-                            <img :src="badge.icon" :alt="badge.name">
-                            <h5>{{ badge.name }}</h5>
-                            <p>{{ badge.description }}</p>
-                            <small class="text-muted">Earned {{ badge.earnedDate }}</small>
                         </div>
                     </div>
                 </div>
