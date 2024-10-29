@@ -52,22 +52,42 @@ app.get('/hello-world', (req, res) => {
 // Create a post with auto-generated ID
 app.post('/api/create', async (req, res) => {
   try {
+    // Create a new document reference with an auto-generated ID
+    const docRef = db.collection('routes').doc();
+    const mapID = docRef.id; // Get the auto-generated ID to use as mapID
+
     const postData = {
       title: req.body.title,
       description: req.body.description,
       waypoints: req.body.waypoints,
       userID: req.body.userID, 
-      color:req.body.color,
+      color: req.body.color,
       likeCount: 0,
       shareCount: 0,
       commentCount: 0,
-      image:req.body.image,
-      createdAt: FieldValue.serverTimestamp(), // Correct usage of serverTimestamp()
+      image: req.body.image,
+      mapID: mapID,
+      createdAt: FieldValue.serverTimestamp(),
+      region: req.body.region,      // New attribute for region
+      distance: req.body.distance   // New attribute for distance
     };
 
-    // Create a new document with an auto-generated ID
-    const docRef = await db.collection('routes').add(postData);
-    return res.status(201).json({ id: docRef.id, message: 'Post created successfully!' });
+    // Set the document data in the routes collection using the auto-generated mapID
+    await docRef.set(postData);
+
+    // Also, add the mapID to the user's 'mapsCreated' subcollection
+    const userMapData = {
+      title: postData.title,
+      description: postData.description,
+      mapID: postData.mapID,
+      createdAt: postData.createdAt,
+      region: postData.region,      // Include region in user's map data
+      distance: postData.distance   // Include distance in user's map data
+    };
+
+    await db.collection('users').doc(req.body.userID).collection('mapsCreated').doc(mapID).set(userMapData);
+
+    return res.status(201).json({ id: mapID, message: 'Post created successfully!' });
   } catch (error) {
     console.error('Error creating post:', error);
     return res.status(500).send(error);
@@ -442,6 +462,75 @@ app.delete('/api/unfollow', async (req, res) => {
     return res.status(500).send(error.message);
   }
 });
+
+// Get all user IDs that a specific userID is following
+app.get('/api/users/:userID/following', async (req, res) => {
+  const { userID } = req.params;
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    const followingRef = db.collection('users').doc(userID).collection('following');
+    const followingSnap = await followingRef.get();
+
+    if (followingSnap.empty) {
+      return res.status(404).json({ message: 'No following records found for this user.' });
+    }
+
+    // Map the documents to an array of followed user IDs
+    const followingIDs = followingSnap.docs.map(doc => doc.id);
+
+    return res.status(200).json({ following: followingIDs });
+  } catch (error) {
+    console.error('Error fetching following data:', error);
+    return res.status(500).send(error.message);
+  }
+});
+
+// Get all mapIDs related to a specific userID
+app.get('/api/users/:userID/maps', async (req, res) => {
+  const { userID } = req.params;
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    // Access the mapsCreated subcollection under the specified user document
+    const mapsCreatedRef = db.collection('users').doc(userID).collection('mapsCreated');
+    const mapsSnap = await mapsCreatedRef.get();
+
+    if (mapsSnap.empty) {
+      return res.status(404).json({ message: 'No maps created found for this user.' });
+    }
+
+    // Map the documents to an array of map data, such as mapID, title, and createdAt
+    const maps = mapsSnap.docs.map(doc => ({
+      mapID: doc.id,
+      ...doc.data()
+    }));
+
+    return res.status(200).json({ maps });
+  } catch (error) {
+    console.error('Error fetching maps for user:', error);
+    return res.status(500).send(error.message);
+  }
+});
+
+// Get all mapIds within the collection "routes"
+app.get('/api/mapIDs', async (req, res) => {
+  try {
+    const mapIDsSnap = await db.collection('routes').select('mapID').get();
+    const mapIDs = mapIDsSnap.docs.map(doc => doc.data().mapID);
+    return res.status(200).json(mapIDs);
+  } catch (error) {
+    console.error('Error fetching map IDs:', error);
+    return res.status(500).json({ message: 'Error fetching map IDs' });
+  }
+});
+
 
 // TODO APIs
 // List of APIs that is needed.
