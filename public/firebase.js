@@ -9,7 +9,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyAk51zep9W7jmO3zC6-lQJy6jeE6zMreis",
     authDomain: "mappalette-9e0bd.firebaseapp.com",
     projectId: "mappalette-9e0bd",
-    storageBucket: "mappalette-9e0bd.appspot.com",
+    storageBucket: "gs://mappalette-9e0bd.appspot.com",
     messagingSenderId: "907670644284",
     appId: "1:907670644284:web:e1dc720f9ae0644cd2c539"
 };

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MapPalette - Route Drawing</title>
   <!-- BOOTSTRAP CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
   <!-- VUE CDN -->
   <script src='https://unpkg.com/vue@3/dist/vue.global.js'></script>
@@ -15,61 +15,19 @@
 
   <!-- Axios -->
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <!-- Driver js -->\
+  <link rel="stylesheet" href="../node_modules/driver.js/dist/driver.css">
 </head>
 <body>
   <div id="app" class="container-fluid">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">
-            <img src="resources/mappalettelogo.png" alt="MapPalette Logo">MapPalette
-        </a>
-        <button class="navbar-toggler" 
-                type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav"
-                aria-controls="navbarNav" 
-                aria-expanded="false" 
-                aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="homepage.html">Feed</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="routes.html">Routes</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="addMaps.html">Draw</a>
-            </li>
-            <!--Profile picture with dropdown-->
-            <li class="nav-item dropdown d-flex align-items-center ms-3">
-              <a class="nav-link dropdown-toggle p-0" 
-              href="#" 
-              id="profileDropdown" 
-              role="button" 
-              data-bs-toggle="dropdown" 
-              aria-expanded="false">
-                <img
-                    alt="Profile" 
-                    class="rounded-circle" 
-                    width="32" 
-                    height="32">
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end" 
-                aria-labelledby="profileDropdown">
-                <li><a class="dropdown-item" href="#">Your Profile</a></li>
-                <li><a class="dropdown-item" href="#">Settings</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#">Log Out</a></li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <!-- Full-screen loading overlay -->
+    <div v-if="submitting" class="loading-overlay active">
+      <div class="loading-spinner"></div>
+    </div>
+ 
+    <!-- Footer Section -->
+    <nav-bar :user_profile="userProfile"></nav-bar>
 
     <!-- Alert Bar -->
     <div class="alert alert-dismissible fade" 
@@ -91,11 +49,20 @@
     </div>
 
     <!-- Main Content -->
-    <div class='row'>
-      <div class='col-md-9 my-2'>
+    <div class="row">
+      <div class="col-md-12 my-2 d-flex justify-content-between align-items-center">
         <h1>Draw your map!</h1>
+        <!-- Help Button -->
+        <button class="btn btn-secondary d-flex align-items-center" @click="startTour">
+          <!-- SVG Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle me-1" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+          </svg>
+          Help
+        </button>
       </div>
-    </div>
+    </div>    
 
     <!-- Row 1: Map and Controls -->
     <div class="row">
@@ -185,114 +152,71 @@
       </div>
     </div>
     
-  <!-- Form Start -->
-  <form @submit.prevent novalidate :class="{ 'was-validated': formValidated }">
+    <!-- Form Start -->
+    <form @submit.prevent novalidate :class="{ 'was-validated': formValidated }">
 
-    <!-- Row 2: Title Input -->
-    <div class="row mt-3">
-      <div class="col">
-        <label for="title" class="form-label">Title</label>
-        <input type="text" class="form-control" id="title" placeholder="Enter title here" v-model="postTitle" required>
-        <div class="invalid-feedback">
-          Please provide a title.
+      <!-- Row 2: Title Input -->
+      <div class="row mt-3">
+        <div class="col">
+          <label for="title" class="form-label">Title</label>
+          <input type="text" class="form-control" id="title" placeholder="Enter title here" v-model="postTitle" required>
+          <div class="invalid-feedback">
+            Please provide a title.
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Row 3: Description Input -->
-    <div class="row mt-3">
-      <div class="col">
-        <label for="description" class="form-label">Description</label>
-        <textarea class="form-control" id="description" rows="4" placeholder="Enter description here" v-model="postDescription" required></textarea>
-        <div class="invalid-feedback">
-          Please provide a description.
+      <!-- Row 3: Description Input -->
+      <div class="row mt-3">
+        <div class="col">
+          <label for="description" class="form-label">Description</label>
+          <textarea class="form-control" id="description" rows="4" placeholder="Enter description here" v-model="postDescription" required></textarea>
+          <div class="invalid-feedback">
+            Please provide a description.
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Row 5: Buttons -->
-    <div class="row mt-3">
-      <div class="col-6">
-        <button v-if="isEditing" type="button" class="btn btn-secondary w-100" @click="retBack()">Return home</button>
-        <button v-else type="button" class="btn btn-danger w-100" @click="clearPost()">Clear Post</button>
-      </div>
-      <div class="col-6">
-        <button v-if="isEditing" class="btn btn-primary w-100" @click="editPost()">Save Changes</button>
-        <button v-else class="btn btn-primary w-100" @click="validateAndSubmit()">Create Post</button>
+      <!-- Row 5: Buttons -->
+      <div class="row mt-3 mb-5">
+        <div class="col-6">
+          <button v-if="isEditing" type="button" class="btn btn-secondary w-100" @click="retBack()">Return home</button>
+          <button v-else type="button" class="btn btn-danger w-100" @click="clearPost()">Clear Post</button>
+        </div>
+        <div class="col-6">
+          <button v-if="isEditing" class="btn btn-primary w-100" @click="editPost()">Save Changes</button>
+          <button v-else class="btn btn-primary w-100" @click="validateAndSubmit()">Create Post</button>
 
-        <!-- Modal -->
-        <div class="modal fade" id="editPost" tabindex="-1" aria-labelledby="editPostLabel">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h1 class="modal-title fs-5" id="editPostLabel">Post edited!</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                Your post has been successfully edited!
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Editing</button>
-                <button type="button" class="btn btn-primary" @click="retBack()">Return Home</button>
+          <!-- Modal -->
+          <div class="modal fade" id="editPost" tabindex="-1" aria-labelledby="editPostLabel">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="editPostLabel">Post edited!</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  Your post has been successfully edited!
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Editing</button>
+                  <button type="button" class="btn btn-primary" @click="retBack()">Return Home</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </form>
 
-  </form>
-  <!-- Form End -->
+    <!-- Footer Section -->
+    <site-footer></site-footer>
+  </div>
 
-
-  <!-- Footer Section -->
-  <footer class="bg-light text-center text-lg-start mt-5">
-    <div class="container p-4">
-        <!-- Grid row -->
-        <div class="row align-items-center">
-            <!-- Column 1: Brand Name -->
-            <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
-                <h5 class="text-uppercase fw-bold">MapPalette</h5>
-            </div>
-
-            <!-- Column 2: Contact Information -->
-            <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
-                <h6 class="fw-bold">Contact us</h6>
-                <p class="mb-1">mappalette@gmail.com</p>
-                <p class="mb-1">+65-687654321</p>
-                <p>81 Victoria St, Singapore 188065</p>
-            </div>
-
-            <!-- Column 3: Social Media Icons -->
-            <div class="col-lg-4 col-md-12 text-md-end">
-                <a href="#" class="me-3 text-dark"><img
-                        src="https://img.icons8.com/ios-filled/24/000000/facebook-new.png" alt="Facebook" /></a>
-                <a href="#" class="me-3 text-dark"><img
-                        src="https://img.icons8.com/ios-filled/24/000000/linkedin.png" alt="LinkedIn" /></a>
-                <a href="#" class="me-3 text-dark"><img
-                        src="https://img.icons8.com/ios-filled/24/000000/twitter.png" alt="Twitter" /></a>
-                <a href="#" class="text-dark"><img
-                        src="https://img.icons8.com/ios-filled/24/000000/instagram-new.png"
-                        alt="Instagram" /></a>
-            </div>
-        </div>
-        <!-- Grid row -->
-
-        <hr class="my-4">
-
-        <!-- Copyright -->
-        <div class="text-center">
-            <p class="mb-0">&copy; 2024. All rights reserved.</p>
-        </div>
-    </div>
-</footer> 
   <!-- <script src='https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap' async defer></script> -->
-   
-
   <script type="module" src="firebase.js"></script>
-  <!-- <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.9/dist/html-to-image.min.js"></script> -->
   <script type="module" src='addMaps.js'></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>

@@ -3,12 +3,24 @@ const endPointURL = "https://app-907670644284.us-central1.run.app";
 
 // Import Firebase functions (ensure this is at the top of your addMaps.js file)
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import * as htmlToImage from 'https://cdn.jsdelivr.net/npm/html-to-image@1.8.0/dist/index.min.js';
 import { auth } from "./firebase.js"; // Ensure this path matches where firebase.js is located
+import { getStorage, ref, uploadString, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+import { driver } from "../node_modules/driver.js/dist/driver.js.mjs";
 
 const app = Vue.createApp({
     data() {
       return {
+        userProfile: {
+            name: 'John Doe',
+            username: '@johndoe',
+            avatar: 'resources/download.jpeg',
+            stats: {
+                routes: 24,
+                following: 156,
+                followers: 198
+            }
+        },
+        
         // Map related
         map: null,
         directionsService: null,
@@ -43,10 +55,15 @@ const app = Vue.createApp({
         deleteCountdown: 0,
         deleteTimeout: null,
         deleteModalTitle: "Delete post?",
+        storage: null,
+        image: '',
         
         // Existing post related
         mapId: null,
         isEditing: false,
+
+        // Tour
+        tourStarted: false,
       };
 
     },
@@ -74,101 +91,7 @@ const app = Vue.createApp({
                 console.error('Error fetching API key:', error);
             }
         },
-
-        async createPost() {
-            
-            if (typeof htmlToImage === 'undefined') {
-                console.error('htmlToImage library not loaded.');
-                this.setAlert('error', 'Map image capture failed. Please reload and try again.');
-                return;
-            }
-
-            if (this.postTitle.trim() === '') {
-              this.setAlert('error', 'Post must include a title.');
-              return;
-            }
-          
-            if (this.waypoints.length < 2) {
-              this.setAlert('error', 'You need at least two points to submit the route!');
-              return;
-            }
-          
-            if (this.postDescription.trim() === '') {
-              this.postDescription = "No description.";
-            }
-          
-            this.submitting = true;
-          
-            const auth = getAuth();
-            onAuthStateChanged(auth, async (user) => {
-              if (user) {
-                const userId = user.uid;
-                const username = user.username || "Anonymous";
-          
-                const mapElement = document.getElementById('map');
-                try {
-                  const blob = await htmlToImage.toBlob(mapElement); // Use htmlToImage globally
-                  if (blob) {
-                    const formData = new FormData();
-                    formData.append('routeData', JSON.stringify({
-                      title: this.postTitle,
-                      description: this.postDescription,
-                      distance: "0km",
-                      location: this.waypoints[0].name || "Unknown Location",
-                      image: "", 
-                      date: new Date().toISOString(),
-                      likes: 0,
-                      comments: 0,
-                      modalId: `${this.postDescription}-modal`,
-                      author: username,
-                      commentsList: [],
-                      waypoints: this.waypoints
-                    }));
-                    formData.append('userID', userId);
-                    formData.append('imageFile', blob, 'map-screenshot.png'); 
-          
-                    try {
-                      const response = await axios.post(`${endPointURL}/api/create`, formData, {
-                        headers: {
-                          'Content-Type': 'multipart/form-data'
-                        }
-                      });
-                      if (response.data.id) {
-                        this.setAlert('success', 'Your post has been successfully created.');
-                        this.clearMap();
-                        this.postTitle = '';
-                        this.postDescription = '';
-                      } else {
-                        this.setAlert('error', 'Failed to create the post. Please try again.');
-                      }
-                    } catch (error) {
-                      console.error('Error creating post:', error);
-                      this.setAlert('error', 'An error occurred while creating the post.');
-                    } finally {
-                      this.submitting = false;
-                    }
-                  } else {
-                    this.setAlert('error', 'Could not capture map image. Please try again.');
-                    this.submitting = false;
-                  }
-                } catch (error) {
-                  console.error('Error capturing map image:', error);
-                  this.setAlert('error', 'An error occurred while capturing the map image.');
-                  this.submitting = false;
-                }
-              } else {
-                this.setAlert('error', 'You must be logged in to create a post.');
-                window.location.href = 'login.html';
-              }
-            });
-          },
-        clearPost(){
-            this.postTitle = '';
-            this.postDescription = '';
-            this.postAnonymously = false;
-            this.clearMap();
-            this.setAlert('success', 'Post cleared successfully.');
-        },      
+     
         initMap() {
             // Initialize the map and its settings
             this.map = new google.maps.Map(document.getElementById("map"), {
@@ -177,6 +100,7 @@ const app = Vue.createApp({
               mapTypeId: "roadmap",
               streetViewControl: false,
               mapTypeControl: false,
+              gestureHandling: 'greedy',
               styles: [
                 {
                   "featureType": "road.highway",
@@ -207,7 +131,7 @@ const app = Vue.createApp({
             this.routePolyline = new google.maps.Polyline({
               strokeColor: this.currentColor,
               strokeOpacity: 1.0,
-              strokeWeight: 4,
+              strokeWeight: 8,
               map: this.map
             });
           
@@ -246,7 +170,6 @@ const app = Vue.createApp({
           
             // Listen for clicks on the map to add waypoints
             this.map.addListener("click", (event) => {
-                console.log(event.latLng);
                 this.addWaypoint(event.latLng);
             });
           
@@ -559,6 +482,53 @@ const app = Vue.createApp({
                 this.setAlert('error', 'Please fill out all required fields.');
             }
         },
+
+        async createPost() {
+            if (this.waypoints.length < 2) {
+                this.setAlert('error', 'You need at least two points to submit the route!');
+                return;
+            }
+        
+            try {
+                this.submitting = true; // Show loading overlay
+
+                const mapId = Date.now();
+                await this.captureMapAsImage(mapId);
+
+                const response = await axios.post(`${this.API_ENDPOINT}/api/create/`, {
+                    title: this.postTitle,
+                    description: this.postDescription,
+                    waypoints: this.waypoints,
+                    userID: this.userID,
+                    color: this.currentColor,
+                    image: this.image
+                });
+                if (response.data.id) {
+                    this.setAlert('success', 'Your copy has been saved successfully.');
+        
+                    // Clear mapId to continue in create mode if further edits are made
+                    this.mapId = null;
+                    this.clearMap(false);
+                    this.postTitle ='';
+                    this.postDescription = '';
+                    this.formValidated = false;
+                } else {
+                    this.setAlert('error', 'Failed to create the post. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error creating post:', error);
+                this.setAlert('error', 'An error occurred while creating the post.');
+            } finally {
+                this.submitting = false; // Hide loading overlay
+              }
+        },
+
+        clearPost(){
+            this.postTitle = '';
+            this.postDescription = '';
+            this.clearMap();
+            this.setAlert('success', 'Post cleared successfully.');
+        },
         
         getMapIdFromUrl() {
             const params = new URLSearchParams(window.location.search);
@@ -580,7 +550,8 @@ const app = Vue.createApp({
                 this.postTitle = response.data.title;
                 this.postDescription = response.data.description;
                 this.mapIdUserID = response.data.userID;
-        
+                this.currentColor = response.data.color;
+
                 // Check if the current user owns the map
                 if (this.mapIdUserID === this.userID) {
                     // User is the owner, allow editing
@@ -597,6 +568,8 @@ const app = Vue.createApp({
                     const latLng = new google.maps.LatLng(waypoint.location.lat, waypoint.location.lng);
                     await this.addWaypoint(latLng, index); 
                 }
+
+                this.fitMapToBounds();
             } catch (error) {
                 console.error("Error fetching map data:", error);
                 this.setAlert('error', 'This post has been deleted or does not exist.');
@@ -628,10 +601,16 @@ const app = Vue.createApp({
             if (form.checkValidity()) {
                 // Form is valid, proceed to create the post
                 try {
+                    this.submitting = true; // Show loading overlay
+                    const mapId = Date.now();
+                    await this.captureMapAsImage(mapId);
+
                     const response = await axios.put(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`, {
                         title: this.postTitle,
                         description: this.postDescription,
                         waypoints: this.waypoints,
+                        color: this.currentColor,
+                        image: this.image
                     });
                     if (response.data) {
                         this.setAlert('success', 'Your post has been successfully updated.');
@@ -642,6 +621,8 @@ const app = Vue.createApp({
                 } catch (error) {
                     console.error('Error updating post:', error);
                     this.setAlert('error', 'Failed to update the post. Please try again.');
+                } finally {
+                    this.submitting = false; // Hide loading overlay
                 }
             } else {
                 // Form is invalid, display validation errors
@@ -667,6 +648,12 @@ const app = Vue.createApp({
         async performDelete() {
         // Only perform delete if countdown completes without interruption
         try {
+            // Check if an image path is associated with the post
+            if (this.image) {
+            const imageRef = ref(getStorage(), this.image);
+            await deleteObject(imageRef);
+            };
+
             await axios.delete(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`);
             this.setAlert("success", "Your post has been successfully deleted.");
             window.location.href = "homepage.html"; // Redirect to homepage
@@ -701,13 +688,150 @@ const app = Vue.createApp({
             this.deleteCountdown = 0;
             this.deleteModalTitle = "Delete post?";
         },
-   
 
+        // Capture map as image and upload to Firebase Storage
+        async captureMapAsImage(mapId) {
+            try {
+                this.markers.forEach(marker => marker.setVisible(false));
+
+                // Ensure the map fits all waypoints within bounds
+                this.fitMapToBounds();
+                
+                // Add a slight delay to allow for the map to re-render with new bounds before capture
+                await new Promise(resolve => setTimeout(resolve, 1000));
+        
+                const mapContainer = document.getElementById("map");
+        
+                // Capture the entire map view as an image using html2canvas
+                const canvas = await html2canvas(mapContainer, {
+                    useCORS: true, // Enables cross-origin loading
+                    allowTaint: false, // Prevents errors related to cross-origin
+                    scale: 2, // Enhances resolution for Firebase storage
+                    backgroundColor: "#ffffff" // Ensures a non-transparent background
+                });
+        
+                const imageData = canvas.toDataURL("image/png");
+        
+                // Firebase storage reference for the image
+                const storageRef = ref(this.storage, `maps_created/${mapId}.png`);
+                await uploadString(storageRef, imageData, 'data_url');
+        
+                // Retrieve and store the public URL
+                const publicUrl = await getDownloadURL(storageRef);
+                this.image = publicUrl;
+        
+                // console.log("Image successfully uploaded:", publicUrl);
+            } catch (error) {
+                console.error("Error capturing map as image:", error);
+            } finally{
+                if(this.isEditing){
+                    this.markers.forEach(marker => marker.setVisible(true));
+                }
+            }
+        },
+
+        fitMapToBounds() {
+            const bounds = new google.maps.LatLngBounds();
+            this.waypoints.forEach(point => {
+                bounds.extend(new google.maps.LatLng(point.location.lat, point.location.lng));
+            });
+        
+            // Apply padding and fit map to bounds
+            this.map.fitBounds(bounds, 250); 
+            this.map.panToBounds(bounds);
+        },        
+
+        startTour() {
+            const driverObj = driver({
+                showProgress: true,
+                steps: [
+                    {
+                        element: '#map',
+                        popover: {
+                            title: 'Map Interaction',
+                            description: 'Use scroll to zoom in and out of the map.',
+                            position: 'top',
+                        },
+                    },
+                    {
+                        element: '#pac-input',
+                        popover: {
+                            title: 'Search Location',
+                            description: 'Enter a location in the search bar, then press Enter or click a suggestion.',
+                            position: 'bottom',
+                        },
+                    },
+                    {
+                        element: '#map',
+                        popover: {
+                            title: 'Plot a Waypoint',
+                            description: 'Click on the map to plot a waypoint. Each click adds a new point.',
+                            position: 'top',
+                        },
+                        onNext: () => {
+                            const mapCenter = this.map.getCenter();
+                            this.addWaypoint(mapCenter);
+                        },
+                    },
+                    {
+                        element: '#colorPalette',
+                        popover: {
+                            title: 'Change Route Color',
+                            description: 'Click on a color to change the route color.',
+                            position: 'top',
+                        },
+                    },
+                    {
+                        element: '.btn.btn-danger.m-1',
+                        popover: {
+                            title: 'Clear Route',
+                            description: 'Click here to clear all waypoints instantly.',
+                            position: 'left',
+                        },
+                    },
+                    {
+                        element: '#export-button',
+                        popover: {
+                            title: 'Export Route',
+                            description: 'Click here to export your route to Google Maps.',
+                            position: 'left',
+                        },
+                    },
+                    {
+                        element: 'form',
+                        popover: {
+                            title: 'Add Post Details',
+                            description: 'Provide a title and description for your route. These fields are required.',
+                            position: 'top',
+                        },
+                    },
+                    {
+                        element: '.btn.btn-danger.w-100',
+                        popover: {
+                            title: 'Delete Post',
+                            description: 'Click here to delete this post if needed.',
+                            position: 'left',
+                        },
+                    },
+                    {
+                        element: '.btn.btn-primary.w-100',
+                        popover: {
+                            title: 'Create Post',
+                            description: 'Click here to create a post for your route.',
+                            position: 'top',
+                        },
+                    },
+                ],
+            });
+        
+            driverObj.drive();
+        },
     },
     created() {
         // Assign initMap as a global function to initialize the map once the API loads
         window.initMap = () => this.initMap();
-        
+        this.storage = getStorage();
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 // User is authenticated
@@ -737,5 +861,154 @@ const app = Vue.createApp({
                 window.location.href = "index.html";
             }
         });
-    }    
-}).mount('#app');
+    }
+});
+
+app.component('nav-bar', {
+    // get user profile from parent
+    props: ['user_profile'], 
+    
+    data() {
+        return {
+            currentPage: '',
+            defaultAvatar: 'resources/download.jpeg'
+        }
+    },
+
+    mounted() {
+        this.currentPage = window.location.pathname.split('/').pop() || 'homepage.html';
+    },
+
+    methods: {
+        isCurrentPage(pageName) {
+            return this.currentPage === pageName;
+        },
+        isSearchRelatedPage() {
+            return ['routes.html', 'friends.html'].includes(this.currentPage);
+        },
+        isProfileRelatedPage() {
+            return ['profile_page.html', 'settings_page.html'].includes(this.currentPage);
+        }
+    },
+
+    template: `
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="homepage.html">
+                    <img src="resources/mappalettelogo.png" alt="MapPalette Logo" style="width: 40px; height: 40px" >MapPalette
+                </a>
+                <button class="navbar-toggler" 
+                        type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" 
+                        aria-expanded="false" 
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" 
+                               :class="{ 'active': isCurrentPage('homepage.html') }" 
+                               href="homepage.html">Feed</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" 
+                               :class="{ 'active': isSearchRelatedPage() }"
+                               href="#" 
+                               id="searchDropdown" 
+                               role="button" 
+                               data-bs-toggle="dropdown" 
+                               aria-expanded="false">
+                                Search
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="searchDropdown">
+                                <li>
+                                    <a class="dropdown-item" 
+                                       :class="{ 'active': isCurrentPage('routes.html') }"
+                                       href="routes.html">Routes</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" 
+                                       :class="{ 'active': isCurrentPage('friends.html') }"
+                                       href="friends.html">Friends</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" 
+                               :class="{ 'active': isCurrentPage('addMaps.html') }"
+                               href="addMaps.html">Draw</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center profile-link"
+                               :class="{ 'active': isProfileRelatedPage() }"
+                               href="#" 
+                               id="profileDropdown" 
+                               role="button" 
+                               data-bs-toggle="dropdown" 
+                               aria-expanded="false">
+                                <img :src="user_profile?.avatar || defaultAvatar" 
+                                     alt="Profile" 
+                                     class="rounded-circle" 
+                                     width="50" 
+                                     height="50">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" 
+                                aria-labelledby="profileDropdown">
+                                <li>
+                                    <a class="dropdown-item" 
+                                       :class="{ 'active': isCurrentPage('profile_page.html') }"
+                                       href="profile_page.html">Your Profile</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" 
+                                       :class="{ 'active': isCurrentPage('settings_page.html') }"
+                                       href="settings_page.html">Settings</a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Log Out</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    `
+});
+
+app.component('site-footer', {
+    template: `
+    <footer class="footer-wrapper text-center">
+        <div class="container p-5">
+            <!-- Grid row -->
+            <div class="row align-items-center">
+                <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                    <h5 class="text-uppercase fw-bold">MapPalette</h5>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                    <h6 class="fw-bold">Contact us</h6>
+                    <p class="mb-1">mappalette@gmail.com</p>
+                    <p class="mb-1">+65-687654321</p>
+                    <p>81 Victoria St, Singapore 188065</p>
+                </div>
+
+                <div class="col-lg-4 col-md-12 text-md-end">
+                    <a href="#" class="me-3"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="me-3"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="me-3"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2024. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    `
+});
+
+app.mount("#app");
