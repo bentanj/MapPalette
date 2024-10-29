@@ -1,3 +1,7 @@
+@import 'footer/footer_style.css';
+
+@import 'navbar/navbar_style.css';
+
 /* General Styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -58,65 +62,6 @@ body {
 .sample-section {
     width: 100%;
     padding: 40px 20px;
-}
-
-/* Navbar */
-.navbar {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    background: linear-gradient(90deg, #ff7e5f, #feb47b);
-}
-
-.navbar-brand {
-    font-size: 1.5rem;
-    color: #fff;
-}
-
-.navbar-brand img {
-    width: 30px;
-    height: 30px;
-    margin-right: 8px;
-}
-
-.nav-link {
-    font-size: 1.2rem;
-    margin-left: 20px;
-    color: #fff !important;
-}
-
-.dropdown-toggle::after {
-    color: #fff;
-}
-
-.profile-pic {
-    width: 30px;
-    height: 30px;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-/* Stroke effect only for main nav items */
-.navbar-nav>li.nav-item:not(.dropdown)>a.nav-link {
-    position: relative;
-    overflow: hidden;
-}
-
-.navbar-nav>li.nav-item:not(.dropdown)>a.nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 0;
-    height: 2px;
-    background-color: #fff;
-    transition: width 0.5s ease, left 0.5s ease;
-    transform: translateX(-50%);
-}
-
-.navbar-nav>li.nav-item:not(.dropdown)>a.nav-link:hover::after {
-    width: 100%;
-    left: 50%;
 }
 
 /* Filter Button */
@@ -302,29 +247,6 @@ body {
     color: #fff;
 }
 
-/* Footer */
-footer {
-    background: #185a9d;
-    color: #fff;
-}
-
-footer h5,
-footer h6 {
-    color: #fff;
-}
-
-footer a {
-    color: #fff;
-}
-
-footer a:hover {
-    color: #ff7e5f;
-}
-
-footer hr {
-    border-top: 1px solid #fff;
-}
-
 /* Comments Section */
 .list-unstyled li {
     padding: 10px 0;
@@ -375,3 +297,4 @@ footer hr {
 .action-button:active i {
     transform: scale(0.9);
 }
+
