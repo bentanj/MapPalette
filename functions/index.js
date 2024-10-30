@@ -383,81 +383,127 @@ app.put('/api/posts/share', async (req, res) => {
 // Follow or unfollow users
 // 
 
-// Follow user and increment follower count
+// Follow user and increment follower/following counts
 app.post('/api/follow', async (req, res) => {
+  // Extract userID (current user) and followUserID (target user) from the request body
   const { userID, followUserID } = req.body;
 
+  // Validate that both userID and followUserID are provided
   if (!userID || !followUserID) {
     return res.status(400).json({ message: 'Both userID and followUserID are required.' });
   }
 
+  // Prevent users from following themselves
   if (userID === followUserID) {
     return res.status(400).json({ message: 'You cannot follow yourself.' });
   }
 
   try {
+    // Define references for Firestore documents:
+    // 1. Following subcollection for current user
     const followingRef = db.collection('users').doc(userID).collection('following').doc(followUserID);
+    
+    // 2. Followers subcollection for target user
     const followerRef = db.collection('users').doc(followUserID).collection('followers').doc(userID);
+    
+    // 3. Target user document to update follower count
     const followedUserDoc = db.collection('users').doc(followUserID);
+    
+    // 4. Current user document to update following count
+    const followingUserDoc = db.collection('users').doc(userID);
 
+    // Use Firestore transaction to ensure atomicity of the follow action
     await db.runTransaction(async (transaction) => {
+      // Check if the current user is already following the target user
       const followingSnap = await transaction.get(followingRef);
       if (followingSnap.exists) {
-        throw new Error('Already following this user.');
+        throw new Error('Already following this user.'); // Prevent duplicate following
       }
 
-      // Add to following/followers and increment follower count
+      // Add the follow relationship in both users' subcollections with a timestamp
       transaction.set(followingRef, { followedAt: FieldValue.serverTimestamp() });
       transaction.set(followerRef, { followedAt: FieldValue.serverTimestamp() });
+
+      // Increment numFollowers for the target user
       transaction.update(followedUserDoc, {
-        followerCount: FieldValue.increment(1),
+        numFollowers: FieldValue.increment(1),
+      });
+
+      // Increment numFollowed for the current user
+      transaction.update(followingUserDoc, {
+        numFollowed: FieldValue.increment(1),
       });
     });
 
+    // Return a success message if the transaction completes without errors
     return res.status(200).json({ message: 'User followed successfully!' });
   } catch (error) {
     console.error('Error following user:', error);
-    return res.status(500).send(error.message);
+    return res.status(500).send(error.message); // Handle any errors during the follow process
   }
 });
 
-// Unfollow user and decrement follower count
+
+// Unfollow user and decrement follower/following counts
 app.delete('/api/unfollow', async (req, res) => {
+  // Extract userID (current user) and followUserID (target user) from the request body
   const { userID, followUserID } = req.body;
 
+  // Validate that both userID and followUserID are provided
   if (!userID || !followUserID) {
     return res.status(400).json({ message: 'Both userID and followUserID are required.' });
   }
 
+  // Prevent users from unfollowing themselves
   if (userID === followUserID) {
     return res.status(400).json({ message: 'You cannot unfollow yourself.' });
   }
 
   try {
+    // Define references for Firestore documents:
+    // 1. Following subcollection for current user
     const followingRef = db.collection('users').doc(userID).collection('following').doc(followUserID);
+    
+    // 2. Followers subcollection for target user
     const followerRef = db.collection('users').doc(followUserID).collection('followers').doc(userID);
+    
+    // 3. Target user document to update follower count
     const followedUserDoc = db.collection('users').doc(followUserID);
+    
+    // 4. Current user document to update following count
+    const followingUserDoc = db.collection('users').doc(userID);
 
+    // Use Firestore transaction to ensure atomicity of the unfollow action
     await db.runTransaction(async (transaction) => {
+      // Check if the current user is actually following the target user
       const followingSnap = await transaction.get(followingRef);
       if (!followingSnap.exists) {
-        throw new Error('Not following this user.');
+        throw new Error('Not following this user.'); // Prevent errors if already unfollowed
       }
 
-      // Remove from following/followers and decrement follower count
+      // Remove the follow relationship in both users' subcollections
       transaction.delete(followingRef);
       transaction.delete(followerRef);
+
+      // Decrement numFollowers for the target user
       transaction.update(followedUserDoc, {
-        followerCount: FieldValue.increment(-1),
+        numFollowers: FieldValue.increment(-1),
+      });
+
+      // Decrement numFollowed for the current user
+      transaction.update(followingUserDoc, {
+        numFollowed: FieldValue.increment(-1),
       });
     });
 
+    // Return a success message if the transaction completes without errors
     return res.status(200).json({ message: 'User unfollowed successfully!' });
   } catch (error) {
     console.error('Error unfollowing user:', error);
-    return res.status(500).send(error.message);
+    return res.status(500).send(error.message); // Handle any errors during the unfollow process
   }
 });
+
 
 // Get all user IDs that a specific userID is following
 app.get('/api/users/:userID/following', async (req, res) => {
