@@ -12,6 +12,10 @@ export const users = [
         // profile pic is a link to our cloud storage 
         profilePicture: 'gs://mappalette-9e0bd.appspot.com/profile_pictures/LJvFmX3tc762Uk8M3wRw/user1.png',
 
+        // follower/following counts
+        numFollowers: 2,
+        numFollowed: 2,
+
         // Array of posts created
         postsCreated: [
             { postID: 'E7fHyD4K92jP4hU6cZ1L', createdAt: new Date('2024-10-25T14:48:32+08:00') },
@@ -38,6 +42,9 @@ export const users = [
         gender: 'Female',
         profilePicture: 'gs://mappalette-9e0bd.appspot.com/profile_pictures/xL9FmK3nc762Uk9M4wQw/user2.png',
         
+        numFollowers: 2,
+        numFollowed: 2,
+
         postsCreated: [
             { postID: 'G6jJrQ3m4nP2tU7cM3L', createdAt: new Date('2024-10-23T20:18:45+08:00') },
             { postID: 'A1kFyT5n7jQ3VuM8oL9K', createdAt: new Date('2024-10-21T17:20:32+08:00') },
@@ -62,6 +69,9 @@ export const users = [
         gender: 'Prefer not to say',
         profilePicture: 'gs://mappalette-9e0bd.appspot.com/profile_pictures/bD2LmX3td562Vk8N6wPw/user3.png',
         
+        numFollowers: 2,
+        numFollowed: 2,
+
         postsCreated: [
             { postID: 'B9cHyD5j7uK1TnQ9cY5M', createdAt: new Date('2024-10-21T18:40:52+08:00') },
             { postID: 'F6rLpY3o8pQ4WvN2kY6L', createdAt: new Date('2024-10-19T20:05:28+08:00') },
@@ -86,6 +96,9 @@ export const users = [
         gender: 'Female',
         profilePicture: 'gs://mappalette-9e0bd.appspot.com/profile_pictures/qW9KmY3ac792Ul7N7wRr/user4.png',
         
+        numFollowers: 2,
+        numFollowed: 2,
+
         postsCreated: [
             { postID: 'D8rLkX4v7nT6QjM9oW4L', createdAt: new Date('2024-10-19T23:02:15+08:00') },
             { postID: 'K2jHrY5t8qL6WpO4nL7P', createdAt: new Date('2024-10-17T18:45:38+08:00') },
@@ -110,6 +123,9 @@ export const users = [
         gender: 'Male',
         profilePicture: 'gs://mappalette-9e0bd.appspot.com/profile_pictures/mX2VmH3tc792Jk8O5rPw/user5.png',
         
+        numFollowers: 2,
+        numFollowed: 2,
+
         postsCreated: [
             { postID: 'H7fHyT2k8rP9QuX3tK2M', createdAt: new Date('2024-10-17T22:18:32+08:00') },
             { postID: 'B5sNpJ4t6pL9WvM3oN8K', createdAt: new Date('2024-10-15T20:42:19+08:00') },
