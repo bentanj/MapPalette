@@ -504,6 +504,30 @@ app.delete('/api/unfollow', async (req, res) => {
   }
 });
 
+//
+// USER API
+// Getting all users based on certain parameters
+//
+
+// Retrieve all users from the "users" collection
+app.get('/users/getallusers', async (req, res) => {
+  try {
+    // Fetch all documents from the users collection
+    const usersSnap = await db.collection('users').get();
+
+    // Map each document to an object containing its data
+    const users = usersSnap.docs.map(doc => ({
+      id: doc.id, // Include the user ID if needed
+      ...doc.data()
+    }));
+
+    // Respond with an array of all users
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return res.status(500).json({ message: 'Error fetching users' });
+  }
+});
 
 // Get all user IDs that a specific userID is following
 app.get('/api/users/:userID/following', async (req, res) => {
@@ -531,8 +555,13 @@ app.get('/api/users/:userID/following', async (req, res) => {
   }
 });
 
-// Get all posts and their IDs from a specific userID
-app.get('/api/users/:userID/posts', async (req, res) => {
+// 
+// POSTS API
+// To retrieve posts
+// 
+
+// Get all maps and their IDs from a specific userID
+app.get('/api/users/:userID/maps', async (req, res) => {
   const { userID } = req.params;
 
   if (!userID) {
