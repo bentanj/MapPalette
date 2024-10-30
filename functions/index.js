@@ -94,10 +94,6 @@ app.post('/api/create', async (req, res) => {
   }
 });
 
-
-
-
-
 // Get a specific post by ID
 app.get('/api/posts', async (req, res) => {
   const postID = req.query.id; // Retrieve ID from query parameter
@@ -489,7 +485,7 @@ app.get('/api/users/:userID/following', async (req, res) => {
   }
 });
 
-// Get all mapIDs related to a specific userID
+// Get all maps and their IDs from a specific userID
 app.get('/api/users/:userID/maps', async (req, res) => {
   const { userID } = req.params;
 
