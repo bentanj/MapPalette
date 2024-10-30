@@ -90,7 +90,7 @@ signupForm?.addEventListener('submit', async (e) => {
     await setDoc(doc(db, `users/${user.uid}/postsCreated`), {});
     await setDoc(doc(db, `users/${user.uid}/postsLiked`), {});
     await setDoc(doc(db, `users/${user.uid}/followers`), {});
-    await setDoc(doc(db, `users/${user.uid}/following`), {});
+    await setDoc(doc(db, `users/${user.uid}/followed`), {});
 
     startSessionTimeout(); // Start session timeout on signup
     alert("You've signed up successfully! Welcome to MapPalette :)");
