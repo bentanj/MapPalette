@@ -1,6 +1,4 @@
 <!-- TODO:
-1. fix the grid system for small screens
-3. Color theme? (grp)
 4. trending route -> when map clicked goes to route page with modal of map opened?
 -->
 
@@ -26,6 +24,9 @@
 
     <!-- Vue.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- axios-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 </head>
     
@@ -146,14 +147,6 @@
                         @close="selectedActivity = null"
                         @like="likeActivity"
                     ></comment-modal>
-
-                    <!-- edit modal-->
-                    <edit-modal
-                        v-if="editingActivity"
-                        :activity="editingActivity"
-                        @close="editingActivity = null"
-                        @save="saveActivityEdit"
-                    ></edit-modal>
                 </div>
             </div>
         </div>
@@ -189,7 +182,7 @@
         },
         methods: {
             handleEdit() {
-                this.$emit('edit', this.activity);
+                window.location.href = `addMaps.html?id=${this.activity.id}`;
             }
         },
         template: `
@@ -210,8 +203,7 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <button class="dropdown-item" 
-                                                @click.stop="handleEdit">
+                                        <button class="dropdown-item" @click.stop="handleEdit">
                                             <i class="fas fa-edit me-2"></i>Edit Post
                                         </button>
                                     </li>
@@ -312,7 +304,6 @@
                         newComment: '',
                         modal: null,
                         showAllComments: false,
-                        showCommentInput: false,
                         disabledActions: {},
                         lastApiCallTime: 0
                     }
@@ -333,6 +324,11 @@
                 },
 
                 methods: {
+
+                    useRoute() {
+                        window.location.href = `addMaps.html?id=${this.activity.id}`;
+                    },
+
                     submitComment() {
                         if (!this.newComment.trim()) return;
 
@@ -372,10 +368,7 @@
                         return this.activity.comments ? this.activity.comments.slice(0, 4) : [];
                     }
                 },
-
-                toggleCommentInput() {
-                    this.showCommentInput = !this.showCommentInput;
-                }
+                
             },
 
             template: `
@@ -412,7 +405,7 @@
                             <!-- Action Buttons -->
                             <div class="d-flex border-top border-bottom py-3">
                                 <!-- Container for buttons with even spacing -->
-                                <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 15% !important; padding-right: 15% !important;">
+                                <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
                                     <!-- Like Button -->
                                     <button class="btn btn-link p-0 action-button" 
                                             @click="$emit('like', activity)"
@@ -422,16 +415,9 @@
                                         <span>Like</span>
                                     </button>
 
-                                    <!-- Comment Button -->
-                                    <button class="btn btn-link p-0 action-button"
-                                            @click="toggleCommentInput"
-                                            :disabled="disabledActions.comment">
-                                        <i class="far fa-comment me-1"></i>
-                                        <span>Comment</span>
-                                    </button>
-
                                     <!-- Use Button -->
                                     <button class="btn btn-link p-0 action-button"
+                                            @click='useRoute'
                                             :disabled="disabledActions.use">
                                         <i class="far fa-map me-1"></i>
                                         <span>Use</span>
@@ -449,7 +435,7 @@
                             <!-- Comments Section -->
                             <br>
                             <h6>Comments</h6>
-                            <div v-if="showCommentInput" class="mb-3">
+                            <div class="mb-3">
                                 <textarea class="form-control mb-2"
                                         placeholder="Add a comment..."
                                         rows="2"
@@ -479,164 +465,27 @@
             </div>`
         }
 
-        // EditModal Component
-        const EditModal = {
-            props: {
-                activity: {
-                    type: Object,
-                    required: true
-                }
-            },
-
-            data() {
-                return {
-                    editedActivity: {
-                        title: '',
-                        description: '',
-                        location: '',
-                        distance: '',
-                        time: ''
-                    },
-                    modal: null
-                }
-            },
-
-            mounted() {
-                // Initialize modal and form data
-                this.modal = new bootstrap.Modal(this.$el)
-                this.initializeFormData()
-                this.modal.show()
-                
-                // Handle modal close
-                this.$el.addEventListener('hidden.bs.modal', () => {
-                    this.$emit('close')
-                })
-            },
-
-            methods: {
-                initializeFormData() {
-                    // Copy activity data to editable form
-                    this.editedActivity = {
-                        title: this.activity.title,
-                        description: this.activity.description,
-                        location: this.activity.location,
-                        distance: this.activity.distance,
-                        time: this.activity.time
-                    }
-                },
-
-                saveChanges() {
-                    // Emit save event with edited data
-                    this.$emit('save', {
-                        ...this.activity,
-                        ...this.editedActivity
-                    })
-                    this.modal.hide()
-                }
-            },
-
-            template: `
-                <div class="modal fade" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editModalLabel">Edit Activity</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form @submit.prevent="saveChanges">
-                                    <!-- Title -->
-                                    <div class="mb-3">
-                                        <label for="editTitle" class="form-label">Title</label>
-                                        <input type="text" 
-                                            class="form-control" 
-                                            id="editTitle" 
-                                            v-model="editedActivity.title" 
-                                            required>
-                                    </div>
-                                    
-                                    <!-- Description -->
-                                    <div class="mb-3">
-                                        <label for="editDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" 
-                                                id="editDescription" 
-                                                v-model="editedActivity.description" 
-                                                rows="3"></textarea>
-                                    </div>
-                                    
-                                    <!-- Location -->
-                                    <div class="mb-3">
-                                        <label for="editLocation" class="form-label">Location</label>
-                                        <input type="text" 
-                                            class="form-control" 
-                                            id="editLocation" 
-                                            v-model="editedActivity.location" 
-                                            required>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <!-- Distance -->
-                                        <div class="col-md-6 mb-3">
-                                            <label for="editDistance" class="form-label">Distance</label>
-                                            <input type="text" 
-                                                class="form-control" 
-                                                id="editDistance" 
-                                                v-model="editedActivity.distance" 
-                                                required>
-                                        </div>
-                                        
-                                        <!-- Time -->
-                                        <div class="col-md-6 mb-3">
-                                            <label for="editTime" class="form-label">Time</label>
-                                            <input type="text" 
-                                                class="form-control" 
-                                                id="editTime" 
-                                                v-model="editedActivity.time" 
-                                                required>
-                                        </div>
-                                    </div>
-
-                                    <div class="modal-footer px-0 pb-0">
-                                        <button type="button" 
-                                                class="btn btn-secondary" 
-                                                data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" 
-                                                class="btn btn-primary">Save Changes</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `
-        }
-
+        // vue app with axios data fetching
         const app = createApp({
-            components:{
+            components: {
                 ActivityCard,
-                CommentModal,
-                EditModal 
+                CommentModal, 
             },
-
             data() {
                 return {
-                    // test for implementation of 'Edit' activity feature in cards.
-                    currentUser: "Wei Shen",
-                    editingActivity: null,  
-
+                    currentUser: '',
                     selectedActivity: null,
                     lastApiCallTime: 0,
                     userProfile: {
-                        name: 'John Doe',
-                        username: '@johndoe',
-                        avatar: 'resources/download.jpeg',
+                        name: '',
+                        username: '',
+                        avatar: '',
                         stats: {
-                            routes: 24,
-                            following: 156,
-                            followers: 198
+                            routes: 0,
+                            following: 0,
+                            followers: 0
                         }
                     },
-
                     heroStats: [
                         { 
                             id: 1, 
@@ -654,7 +503,6 @@
                             text: 'Daily Achievements' 
                         }
                     ],
-
                     menuItems: [
                         { 
                             id: 1, 
@@ -675,111 +523,95 @@
                             route: 'challenges' 
                         }
                     ],
-
-                    trendingRoutes: [
-                        {
-                            id: 1,
-                            title: 'Marina Bay Loop',
-                            distance: '5.2km',
-                            saves: '42 saves this week',
-                            image: 'resources/map1.png'
-                        },
-                        {
-                            id: 2,
-                            title: 'East Coast Park Trail',
-                            distance: '8.1km',
-                            saves: '38 saves this week',
-                            image: 'resources/map2.png'
-                        }
-                    ],
-
-                    activities: [
-                        {
-                            id: 1,
-                            user: "Wei Shen",
-                            userImg: 'resources/download.jpeg',
-                            date: "30 September 2024 at 21:33",
-                            location: "Central",
-                            title: "Night Run",
-                            distance: "6.05 km",
-                            description: "I challenge zhongyan to run this route!!",
-                            time: "30m 3s",
-                            mapImg: "resources/map1.png",
-                            likes: 0,
-                            comments: []
-                        },
-                        {
-                            id: 2,
-                            user: "Potato",
-                            userImg: 'resources/download.jpeg',
-                            date: "29 September 2024 at 21:33",
-                            location: "Central",
-                            title: "Evening Run",
-                            description: "blablablabla",
-                            distance: "2.40 km",
-                            time: "10m 15s",
-                            mapImg: "resources/map2.png",
-                            likes: 0,
-                            comments: []
-                        }
-                    ],
-
-                    brandInfo: {
-                        name: 'MapPalette'
-                    },
-
-                    contactInfo: [
-                        'mappalette@gmail.com',
-                        '+65-687654321',
-                        '81 Victoria St, Singapore 188065'
-                    ],
-
-                    socialLinks: [
-                        {
-                            name: 'Facebook',
-                            url: '#',
-                            icon: 'https://img.icons8.com/ios-filled/24/000000/facebook-new.png'
-                        },
-                        {
-                            name: 'LinkedIn',
-                            url: '#',
-                            icon: 'https://img.icons8.com/ios-filled/24/000000/linkedin.png'
-                        },
-                        {
-                            name: 'Twitter',
-                            url: '#',
-                            icon: 'https://img.icons8.com/ios-filled/24/000000/twitter.png'
-                        },
-                        {
-                            name: 'Instagram',
-                            url: '#',
-                            icon: 'https://img.icons8.com/ios-filled/24/000000/instagram-new.png'
-                        }
-                    ],
-
-                    copyrightInfo: '© 2024. All rights reserved.',
-
+                    trendingRoutes: [],
+                    activities: []
                 }
-                
+            },
+
+            created() {
+                // axios user and post data
+                const postsPromise = axios.get('databaseTemplateFolder/postTemplate.json');
+                const usersPromise = axios.get('databaseTemplateFolder/userTemplate.json');
+
+                Promise.all([postsPromise, usersPromise])
+                    .then(([postsResponse, usersResponse]) => {
+                        const posts = postsResponse.data.posts;
+                        const users = usersResponse.data.users;
+
+                        // assume user1 nw
+                        const user1 = users[0];  
+                        this.currentUser = user1.username;
+
+                        // user profile
+                        this.userProfile = {
+                            name: user1.username,
+                            username: `@${user1.username}`,
+                            avatar: user1.profilePicture,
+                            stats: {
+                                routes: user1.postsCreated.length,
+                                following: user1.numFollowed || user1.followed.length,
+                                followers: user1.numFollowers || user1.followers.length
+                            }
+                        };
+
+                        // user1
+                        this.activities = posts.map(post => {
+                            const runTitles = "Morning Run";
+
+                            return {
+                                id: post.postID,
+                                user: user1.username,
+                                userImg: user1.profilePicture,
+                                date: new Date(post.createdAt).toLocaleString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }),
+                                location: post.waypoints[0].address,
+
+                                // hard code
+                                title: runTitles,
+                                routeTitle: post.title,
+                                description: post.description,
+                                distance: `${post.distance} km`,
+                                time: "N/A",
+                                mapImg: post.image,
+                                likes: post.likeCount,
+                                comments: [],
+                                isLiked: user1.postsLiked.some(liked => liked.postID === post.postID)
+                            };
+                        });
+
+                        // Sort posts by date for feed
+                        this.activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                        // Set trending routes (most liked posts)
+                        this.trendingRoutes = posts
+                            .sort((a, b) => b.likeCount - a.likeCount)
+                            .slice(0, 2)
+                            .map(post => ({
+                                id: post.postID,
+                                title: post.title,
+                                distance: `${post.distance} km`,
+                                saves: `${post.shareCount} saves this week`,
+                                image: post.image
+                            }));
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data:', error);
+                    }
+                );
             },
 
             methods: {
                 openActivityModal(activity) {
-                    this.selectedActivity = activity
+                    this.selectedActivity = activity;
                 },
-            
+                
                 likeActivity(activity) {
-
-                    // not needed
-                    // const currentTime = Date.now();
-                    // if (currentTime - this.lastApiCallTime < 1000) {
-                    //     alert('Please wait a moment before performing another action.');
-                    //     return;
-                    // }
-
-                    // this.lastApiCallTime = currentTime;
                     activity.likeDisabled = true;
-
                     if (!activity.isLiked) {
                         if (!activity.likes) activity.likes = 0;
                         activity.likes++;
@@ -788,35 +620,12 @@
                         activity.likes--;
                         activity.isLiked = false;
                     }
-
                     setTimeout(() => {
                         activity.likeDisabled = false;
                     }, 1000);
-
-                    
-                },
-
-                handleActivityEdit(activity) {
-                    this.editingActivity = activity;
-                },
-
-                // just temp code waiting for api integration!!
-                saveActivityEdit(editedActivity) {
-                    const index = this.activities.findIndex(a => a.id === editedActivity.id);
-                    if (index !== -1) {
-                        this.activities[index] = {
-                            ...this.activities[index],
-                            title: editedActivity.title,
-                            description: editedActivity.description,
-                            location: editedActivity.location,
-                            distance: editedActivity.distance,
-                            time: editedActivity.time
-                        };
-                    }
-                    this.editingActivity = null;
                 }
-            },
-        })
+            }
+        });
     </script>
 
     <!-- import navbar from navbar.js -->

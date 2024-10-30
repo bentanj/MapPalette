@@ -1,20 +1,22 @@
 /* Profile Header Styles */
 .main-content-wrapper {
     flex: 1;
-    padding-bottom: 3rem; /* Add spacing before footer */
+    padding-bottom: 3rem;
 }
 
 .profile-header {
-    margin-top: 0;
     background: white;
     margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    padding-top: 76px; 
+    position: relative;
 }
 
 .cover-photo {
     position: relative;
     height: 350px;
     overflow: hidden;
+    margin-top: -76px;
 }
 
 .cover-photo img {
@@ -29,6 +31,7 @@
     right: 20px;
     background: rgba(255, 255, 255, 0.9);
     transition: all 0.2s ease;
+    z-index: 1;
 }
 
 .edit-cover-photo:hover {
@@ -37,16 +40,21 @@
 }
 
 .profile-info {
-    padding: 20px 0;
-    margin-top: -80px;
+    position: relative;
+    padding: 0 20px 20px;
+    margin-top: 0;
     display: flex;
     align-items: flex-end;
     gap: 20px;
+    background: white;
+    min-height: 100px;
 }
 
 .profile-picture-container {
     position: relative;
-    margin-bottom: -20px;
+    margin-top: -84px;
+    margin-bottom: 0;
+    z-index: 2;
 }
 
 .profile-picture {
@@ -84,8 +92,9 @@
 }
 
 .profile-details {
+    padding: 20px 0;
+    margin-left: 20px;
     flex-grow: 1;
-    padding-bottom: 20px;
 }
 
 .profile-details h1 {
@@ -101,7 +110,8 @@
 }
 
 .profile-actions {
-    padding-bottom: 20px;
+    align-self: center;
+    margin-left: auto;
 }
 
 .profile-actions .btn-primary {
@@ -309,24 +319,21 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-        margin-top: -60px;
+        padding-top: 20px;
     }
 
     .profile-picture-container {
-        margin-bottom: 20px;
+        margin-top: -104px;
     }
 
-    .profile-picture {
-        width: 140px;
-        height: 140px;
+    .profile-details {
+        margin-left: 0;
+        padding: 10px 0;
     }
 
-    .routes-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .badges-container {
-        grid-template-columns: repeat(2, 1fr);
+    .profile-actions {
+        margin-left: 0;
+        margin-top: 10px;
     }
 }
 
