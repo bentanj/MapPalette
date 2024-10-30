@@ -512,11 +512,35 @@ app.delete('/api/unfollow', async (req, res) => {
 });
 
 //
-// USER API
+// RETREIEVE USER API
 // Getting all users based on certain parameters
 //
 
-// Retrieve all users from the "users" collection
+// Get user object by userID
+app.get('/api/users/:userID', async (req, res) => {
+  const { userID } = req.params;
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    // Reference the user document in Firestore
+    const userRef = db.collection('users').doc(userID);
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Return the user document data
+    return res.status(200).json(userSnap.data());
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    return res.status(500).json({ message: 'Error fetching user data.' });
+  }
+});
+
 // Retrieve all users from the "users" collection along with their subcollections
 app.get('/api/users/getallusers', async (req, res) => {
   try {
@@ -552,6 +576,8 @@ app.get('/api/users/getallusers', async (req, res) => {
     return res.status(500).json({ message: 'Error fetching users' });
   }
 });
+
+
 
 // Get all posts made by a specific user
 app.get('/api/users/:userID/posts', async (req, res) => {
