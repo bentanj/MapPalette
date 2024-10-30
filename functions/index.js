@@ -517,7 +517,7 @@ app.delete('/api/unfollow', async (req, res) => {
 //
 
 // Get user object by userID
-app.get('/api/users/:userID', async (req, res) => {
+app.get('/api/:userID', async (req, res) => {
   const { userID } = req.params;
 
   if (!userID) {
