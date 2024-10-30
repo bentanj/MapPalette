@@ -109,7 +109,7 @@ const app = Vue.createApp({
                 },
                 {
                   "featureType": "poi",
-                  "elementType": "labels.text",
+                  "elementType": "labels",
                   "stylers": [{ "visibility": "off" }]
                 },
                 {
@@ -491,9 +491,14 @@ const app = Vue.createApp({
         
             try {
                 this.submitting = true; // Show loading overlay
-
+        
+                // Get the town name for the first waypoint
+                const firstWaypoint = this.waypoints[0].location;
+                this.region = await this.getTownName(firstWaypoint.lat, firstWaypoint.lng);
+        
                 const mapId = Date.now();
                 await this.captureMapAsImage(mapId);
+                console.log(this.postTitle, this.postDescription, this.waypoints, this.userID, this.currentColor, this.totalDistance, this.region, this.image);
 
                 const response = await axios.post(`${this.API_ENDPOINT}/api/create/`, {
                     title: this.postTitle,
@@ -501,15 +506,15 @@ const app = Vue.createApp({
                     waypoints: this.waypoints,
                     userID: this.userID,
                     color: this.currentColor,
+                    distance: this.totalDistance,
+                    region: this.region,
                     image: this.image
                 });
+
                 if (response.data.id) {
                     this.setAlert('success', 'Your copy has been saved successfully.');
-        
-                    // Clear mapId to continue in create mode if further edits are made
-                    this.mapId = null;
                     this.clearMap(false);
-                    this.postTitle ='';
+                    this.postTitle = '';
                     this.postDescription = '';
                     this.formValidated = false;
                 } else {
@@ -520,8 +525,8 @@ const app = Vue.createApp({
                 this.setAlert('error', 'An error occurred while creating the post.');
             } finally {
                 this.submitting = false; // Hide loading overlay
-              }
-        },
+            }
+        },        
 
         clearPost(){
             this.postTitle = '';
@@ -691,40 +696,83 @@ const app = Vue.createApp({
 
         // Capture map as image and upload to Firebase Storage
         async captureMapAsImage(mapId) {
+            // Define originalControls at the start so it’s accessible throughout the function
+            let originalControls;
+        
             try {
+                // Hide markers temporarily for a clean capture
                 this.markers.forEach(marker => marker.setVisible(false));
-
-                // Ensure the map fits all waypoints within bounds
-                this.fitMapToBounds();
-                
-                // Add a slight delay to allow for the map to re-render with new bounds before capture
-                await new Promise(resolve => setTimeout(resolve, 1000));
         
                 const mapContainer = document.getElementById("map");
+                
+                // Save original dimensions
+                const originalHeight = mapContainer.style.height;
+                const originalWidth = mapContainer.style.width;
+                
+                // Calculate height for 4:3 aspect ratio based on current width
+                const containerWidth = mapContainer.clientWidth;
+                const targetHeight = containerWidth * (3 / 4);
         
-                // Capture the entire map view as an image using html2canvas
+                // Set the map to the 4:3 aspect ratio
+                mapContainer.style.height = `${targetHeight}px`;
+        
+                // Define bounds based on waypoints
+                const bounds = new google.maps.LatLngBounds();
+                this.waypoints.forEach(point => bounds.extend(new google.maps.LatLng(point.location.lat, point.location.lng)));
+        
+                // Apply bounds with extra padding
+                this.map.fitBounds(bounds, { top: 80, right: 80, bottom: 80, left: 80 });
+        
+                // Temporarily disable controls and store original settings
+                originalControls = {
+                    zoomControl: this.map.get('zoomControl'),
+                    fullscreenControl: this.map.get('fullscreenControl'),
+                    streetViewControl: this.map.get('streetViewControl'),
+                    mapTypeControl: this.map.get('mapTypeControl')
+                };
+                this.map.setOptions({
+                    zoomControl: false,
+                    fullscreenControl: false,
+                    streetViewControl: false,
+                    mapTypeControl: false
+                });
+        
+                // Allow the map to adjust before capture
+                await new Promise(resolve => setTimeout(resolve, 500));
+        
+                // Adjust zoom level if necessary
+                const currentZoom = this.map.getZoom();
+                this.map.setZoom(currentZoom - 1);
+                await new Promise(resolve => setTimeout(resolve, 300));
+        
+                // Capture the map view as an image with html2canvas
                 const canvas = await html2canvas(mapContainer, {
-                    useCORS: true, // Enables cross-origin loading
-                    allowTaint: false, // Prevents errors related to cross-origin
-                    scale: 2, // Enhances resolution for Firebase storage
-                    backgroundColor: "#ffffff" // Ensures a non-transparent background
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: "#ffffff"
                 });
         
                 const imageData = canvas.toDataURL("image/png");
         
-                // Firebase storage reference for the image
+                // Upload the captured image to Firebase
                 const storageRef = ref(this.storage, `maps_created/${mapId}.png`);
                 await uploadString(storageRef, imageData, 'data_url');
+                this.image = await getDownloadURL(storageRef);
         
-                // Retrieve and store the public URL
-                const publicUrl = await getDownloadURL(storageRef);
-                this.image = publicUrl;
+                // Reset the map container to its original dimensions
+                mapContainer.style.height = originalHeight;
+                mapContainer.style.width = originalWidth;
         
-                // console.log("Image successfully uploaded:", publicUrl);
             } catch (error) {
                 console.error("Error capturing map as image:", error);
-            } finally{
-                if(this.isEditing){
+            } finally {
+                // Restore original controls
+                if (originalControls) {
+                    this.map.setOptions(originalControls);
+                }
+        
+                // Show markers again after capture
+                if (this.isEditing) {
                     this.markers.forEach(marker => marker.setVisible(true));
                 }
             }
@@ -826,6 +874,33 @@ const app = Vue.createApp({
         
             driverObj.drive();
         },
+
+        async getTownName(lat, lng) {
+            try {
+                const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+                    params: {
+                        latlng: `${lat},${lng}`,
+                        key: this.mapsApiKey,
+                    }
+                });
+        
+                // Check if results are available and find town/locality
+                if (response.data.results && response.data.results.length > 0) {
+                    const addressComponents = response.data.results[0].address_components;
+                    const town = addressComponents.find(component => 
+                        component.types.includes("locality") || component.types.includes("sublocality")
+                    );
+                    return town ? town.long_name : "Unknown Town";
+                } else {
+                    console.warn('No results found for the given coordinates.');
+                    return "Unknown Town";
+                }
+            } catch (error) {
+                console.error('Error fetching town name:', error);
+                return "Error Fetching Town";
+            }
+        },        
+        
     },
     created() {
         // Assign initMap as a global function to initialize the map once the API loads
