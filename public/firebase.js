@@ -74,14 +74,23 @@ signupForm?.addEventListener('submit', async (e) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     const profilePicURL = profilePicture ? await uploadProfilePicture(user, profilePicture) : '';
-    
+
+    // Create user document with attributes and initialize subcollections
     await setDoc(doc(db, `users/${user.uid}`), {
       email,
       username,
       birthday,
       gender,
-      profilePicture: profilePicURL
+      profilePicture: profilePicURL,
+      numFollowers: 0,  // Initialize numFollowers to 0
+      numFollowing: 0   // Initialize numFollowing to 0
     });
+
+    // Initialize empty subcollections
+    await setDoc(doc(db, `users/${user.uid}/postsCreated`), {});
+    await setDoc(doc(db, `users/${user.uid}/postsLiked`), {});
+    await setDoc(doc(db, `users/${user.uid}/followers`), {});
+    await setDoc(doc(db, `users/${user.uid}/followed`), {});
 
     startSessionTimeout(); // Start session timeout on signup
     alert("You've signed up successfully! Welcome to MapPalette :)");
@@ -91,6 +100,7 @@ signupForm?.addEventListener('submit', async (e) => {
     alert("Signup failed: " + error.message);
   }
 });
+
 
 // Login
 const loginForm = document.getElementById('login-form');

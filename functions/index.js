@@ -53,8 +53,8 @@ app.get('/hello-world', (req, res) => {
 app.post('/api/create', async (req, res) => {
   try {
     // Create a new document reference with an auto-generated ID
-    const docRef = db.collection('routes').doc();
-    const mapID = docRef.id; // Get the auto-generated ID to use as mapID
+    const docRef = db.collection('posts').doc();
+    const postID = docRef.id; // Get the auto-generated ID to use as postID
 
     const postData = {
       title: req.body.title,
@@ -66,28 +66,28 @@ app.post('/api/create', async (req, res) => {
       shareCount: 0,
       commentCount: 0,
       image: req.body.image,
-      mapID: mapID,
+      postID: postID,
       createdAt: FieldValue.serverTimestamp(),
       region: req.body.region,      // New attribute for region
       distance: req.body.distance   // New attribute for distance
     };
 
-    // Set the document data in the routes collection using the auto-generated mapID
+    // Set the document data in the posts collection using the auto-generated postID
     await docRef.set(postData);
 
-    // Also, add the mapID to the user's 'mapsCreated' subcollection
+    // Also, add the postID to the user's 'postsCreated' subcollection
     const userMapData = {
       title: postData.title,
       description: postData.description,
-      mapID: postData.mapID,
+      postID: postData.postID,
       createdAt: postData.createdAt,
       region: postData.region,      // Include region in user's map data
       distance: postData.distance   // Include distance in user's map data
     };
 
-    await db.collection('users').doc(req.body.userID).collection('mapsCreated').doc(mapID).set(userMapData);
+    await db.collection('users').doc(req.body.userID).collection('postsCreated').doc(postID).set(userMapData);
 
-    return res.status(201).json({ id: mapID, message: 'Post created successfully!' });
+    return res.status(201).json({ id: postID, message: 'Post created successfully!' });
   } catch (error) {
     console.error('Error creating post:', error);
     return res.status(500).send(error);
@@ -103,7 +103,7 @@ app.get('/api/posts', async (req, res) => {
   }
 
   try {
-    const postRef = db.collection('routes').doc(postID);
+    const postRef = db.collection('posts').doc(postID);
     const postSnap = await postRef.get();
 
     if (!postSnap.exists) {
@@ -126,7 +126,7 @@ app.put('/api/posts', async (req, res) => {
   }
 
   try {
-    const postRef = db.collection('routes').doc(postID);
+    const postRef = db.collection('posts').doc(postID);
     await postRef.update(req.body); // Update with new data
 
     return res.status(200).json({ message: 'Post updated successfully!' });
@@ -145,7 +145,7 @@ app.delete('/api/posts', async (req, res) => {
   }
 
   try {
-    const postRef = db.collection('routes').doc(postID);
+    const postRef = db.collection('posts').doc(postID);
     await postRef.delete();
 
     return res.status(200).json({ message: 'Post deleted successfully!' });
@@ -171,7 +171,7 @@ app.put('/api/posts/like', async (req, res) => {
   }
 
   try {
-    const postRef = db.collection('routes').doc(postID);
+    const postRef = db.collection('posts').doc(postID);
     const likeRef = postRef.collection('likes').doc(userID); // Track individual user's like
 
     await db.runTransaction(async (transaction) => {
@@ -205,7 +205,7 @@ app.put('/api/posts/unlike', async (req, res) => {
   }
 
   try {
-    const postRef = db.collection('routes').doc(postID);
+    const postRef = db.collection('posts').doc(postID);
     const likeRef = postRef.collection('likes').doc(userID); // Track individual user's like
 
     await db.runTransaction(async (transaction) => {
@@ -252,10 +252,10 @@ app.post('/api/posts/:postId/comments', async (req, res) => {
     };
 
     // Add the comment to the comments sub-collection
-    const commentRef = await db.collection('routes').doc(postID).collection('comments').add(commentData);
+    const commentRef = await db.collection('posts').doc(postID).collection('comments').add(commentData);
 
     // Increment the commentCount field in the post document
-    await db.collection('routes').doc(postID).update({
+    await db.collection('posts').doc(postID).update({
       commentCount: FieldValue.increment(1),
     });
 
@@ -271,7 +271,7 @@ app.get('/api/posts/:postId/comments', async (req, res) => {
   const postID = req.params.postId;
 
   try {
-    const commentsSnap = await db.collection('routes').doc(postID).collection('comments').orderBy('createdAt').get();
+    const commentsSnap = await db.collection('posts').doc(postID).collection('comments').orderBy('createdAt').get();
 
     if (commentsSnap.empty) {
       return res.status(404).json({ message: 'No comments found for this post.' });
@@ -299,7 +299,7 @@ app.put('/api/posts/:postId/comments/:commentId', async (req, res) => {
   }
 
   try {
-    const commentRef = db.collection('routes').doc(postId).collection('comments').doc(commentId);
+    const commentRef = db.collection('posts').doc(postId).collection('comments').doc(commentId);
     await commentRef.update({ text });
 
     return res.status(200).json({ message: 'Comment updated successfully!' });
@@ -314,7 +314,7 @@ app.delete('/api/posts/:postId/comments/:commentId', async (req, res) => {
   const { postId, commentId } = req.params;
 
   try {
-    const commentRef = db.collection('routes').doc(postId).collection('comments').doc(commentId);
+    const commentRef = db.collection('posts').doc(postId).collection('comments').doc(commentId);
 
     // Check if the comment exists before deleting
     const commentSnap = await commentRef.get();
@@ -326,7 +326,7 @@ app.delete('/api/posts/:postId/comments/:commentId', async (req, res) => {
     await commentRef.delete();
 
     // Decrement the commentCount field in the post document
-    await db.collection('routes').doc(postId).update({
+    await db.collection('posts').doc(postId).update({
       commentCount: FieldValue.increment(-1),
     });
 
@@ -354,7 +354,7 @@ app.put('/api/posts/share', async (req, res) => {
   }
 
   try {
-    const postRef = db.collection('routes').doc(postID);
+    const postRef = db.collection('posts').doc(postID);
     const shareRef = postRef.collection('shares').doc(userID); // Track each user's share
 
     await db.runTransaction(async (transaction) => {
@@ -383,81 +383,127 @@ app.put('/api/posts/share', async (req, res) => {
 // Follow or unfollow users
 // 
 
-// Follow user and increment follower count
+// Follow user and increment follower/following counts
 app.post('/api/follow', async (req, res) => {
+  // Extract userID (current user) and followUserID (target user) from the request body
   const { userID, followUserID } = req.body;
 
+  // Validate that both userID and followUserID are provided
   if (!userID || !followUserID) {
     return res.status(400).json({ message: 'Both userID and followUserID are required.' });
   }
 
+  // Prevent users from following themselves
   if (userID === followUserID) {
     return res.status(400).json({ message: 'You cannot follow yourself.' });
   }
 
   try {
+    // Define references for Firestore documents:
+    // 1. Following subcollection for current user
     const followingRef = db.collection('users').doc(userID).collection('following').doc(followUserID);
+    
+    // 2. Followers subcollection for target user
     const followerRef = db.collection('users').doc(followUserID).collection('followers').doc(userID);
+    
+    // 3. Target user document to update follower count
     const followedUserDoc = db.collection('users').doc(followUserID);
+    
+    // 4. Current user document to update following count
+    const followingUserDoc = db.collection('users').doc(userID);
 
+    // Use Firestore transaction to ensure atomicity of the follow action
     await db.runTransaction(async (transaction) => {
+      // Check if the current user is already following the target user
       const followingSnap = await transaction.get(followingRef);
       if (followingSnap.exists) {
-        throw new Error('Already following this user.');
+        throw new Error('Already following this user.'); // Prevent duplicate following
       }
 
-      // Add to following/followers and increment follower count
+      // Add the follow relationship in both users' subcollections with a timestamp
       transaction.set(followingRef, { followedAt: FieldValue.serverTimestamp() });
       transaction.set(followerRef, { followedAt: FieldValue.serverTimestamp() });
+
+      // Increment numFollowers for the target user
       transaction.update(followedUserDoc, {
-        followerCount: FieldValue.increment(1),
+        numFollowers: FieldValue.increment(1),
+      });
+
+      // Increment numFollowed for the current user
+      transaction.update(followingUserDoc, {
+        numFollowed: FieldValue.increment(1),
       });
     });
 
+    // Return a success message if the transaction completes without errors
     return res.status(200).json({ message: 'User followed successfully!' });
   } catch (error) {
     console.error('Error following user:', error);
-    return res.status(500).send(error.message);
+    return res.status(500).send(error.message); // Handle any errors during the follow process
   }
 });
 
-// Unfollow user and decrement follower count
+
+// Unfollow user and decrement follower/following counts
 app.delete('/api/unfollow', async (req, res) => {
+  // Extract userID (current user) and followUserID (target user) from the request body
   const { userID, followUserID } = req.body;
 
+  // Validate that both userID and followUserID are provided
   if (!userID || !followUserID) {
     return res.status(400).json({ message: 'Both userID and followUserID are required.' });
   }
 
+  // Prevent users from unfollowing themselves
   if (userID === followUserID) {
     return res.status(400).json({ message: 'You cannot unfollow yourself.' });
   }
 
   try {
+    // Define references for Firestore documents:
+    // 1. Following subcollection for current user
     const followingRef = db.collection('users').doc(userID).collection('following').doc(followUserID);
+    
+    // 2. Followers subcollection for target user
     const followerRef = db.collection('users').doc(followUserID).collection('followers').doc(userID);
+    
+    // 3. Target user document to update follower count
     const followedUserDoc = db.collection('users').doc(followUserID);
+    
+    // 4. Current user document to update following count
+    const followingUserDoc = db.collection('users').doc(userID);
 
+    // Use Firestore transaction to ensure atomicity of the unfollow action
     await db.runTransaction(async (transaction) => {
+      // Check if the current user is actually following the target user
       const followingSnap = await transaction.get(followingRef);
       if (!followingSnap.exists) {
-        throw new Error('Not following this user.');
+        throw new Error('Not following this user.'); // Prevent errors if already unfollowed
       }
 
-      // Remove from following/followers and decrement follower count
+      // Remove the follow relationship in both users' subcollections
       transaction.delete(followingRef);
       transaction.delete(followerRef);
+
+      // Decrement numFollowers for the target user
       transaction.update(followedUserDoc, {
-        followerCount: FieldValue.increment(-1),
+        numFollowers: FieldValue.increment(-1),
+      });
+
+      // Decrement numFollowed for the current user
+      transaction.update(followingUserDoc, {
+        numFollowed: FieldValue.increment(-1),
       });
     });
 
+    // Return a success message if the transaction completes without errors
     return res.status(200).json({ message: 'User unfollowed successfully!' });
   } catch (error) {
     console.error('Error unfollowing user:', error);
-    return res.status(500).send(error.message);
+    return res.status(500).send(error.message); // Handle any errors during the unfollow process
   }
 });
+
 
 // Get all user IDs that a specific userID is following
 app.get('/api/users/:userID/following', async (req, res) => {
@@ -485,8 +531,8 @@ app.get('/api/users/:userID/following', async (req, res) => {
   }
 });
 
-// Get all maps and their IDs from a specific userID
-app.get('/api/users/:userID/maps', async (req, res) => {
+// Get all posts and their IDs from a specific userID
+app.get('/api/users/:userID/posts', async (req, res) => {
   const { userID } = req.params;
 
   if (!userID) {
@@ -494,33 +540,33 @@ app.get('/api/users/:userID/maps', async (req, res) => {
   }
 
   try {
-    // Access the mapsCreated subcollection under the specified user document
-    const mapsCreatedRef = db.collection('users').doc(userID).collection('mapsCreated');
-    const mapsSnap = await mapsCreatedRef.get();
+    // Access the postsCreated subcollection under the specified user document
+    const postsCreatedRef = db.collection('users').doc(userID).collection('postsCreated');
+    const postsSnap = await postsCreatedRef.get();
 
-    if (mapsSnap.empty) {
-      return res.status(404).json({ message: 'No maps created found for this user.' });
+    if (postsSnap.empty) {
+      return res.status(404).json({ message: 'No posts created found for this user.' });
     }
 
-    // Map the documents to an array of map data, such as mapID, title, and createdAt
-    const maps = mapsSnap.docs.map(doc => ({
-      mapID: doc.id,
+    // Map the documents to an array of map data, such as postID, title, and createdAt
+    const posts = postsSnap.docs.map(doc => ({
+      postID: doc.id,
       ...doc.data()
     }));
 
-    return res.status(200).json({ maps });
+    return res.status(200).json({ posts });
   } catch (error) {
-    console.error('Error fetching maps for user:', error);
+    console.error('Error fetching posts for user:', error);
     return res.status(500).send(error.message);
   }
 });
 
-// Get all mapIds within the collection "routes"
-app.get('/api/mapIDs', async (req, res) => {
+// Get all postIDs within the collection "posts"
+app.get('/api/postIDs', async (req, res) => {
   try {
-    const mapIDsSnap = await db.collection('routes').select('mapID').get();
-    const mapIDs = mapIDsSnap.docs.map(doc => doc.data().mapID);
-    return res.status(200).json(mapIDs);
+    const postIDsSnap = await db.collection('posts').select('postID').get();
+    const postIDs = postIDsSnap.docs.map(doc => doc.data().postID);
+    return res.status(200).json(postIDs);
   } catch (error) {
     console.error('Error fetching map IDs:', error);
     return res.status(500).json({ message: 'Error fetching map IDs' });
@@ -532,9 +578,9 @@ app.get('/api/mapIDs', async (req, res) => {
 // List of APIs that is needed.
 
 // Search for user - Find a user's profile and posts using a query.
-// Leaderboard and statistics - Find the top performing users (most created routes, liked, commented, shared) for a given q=duration. Duration can be day, week, month, year, all-time.
+// Leaderboard and statistics - Find the top performing users (most created posts, liked, commented, shared) for a given q=duration. Duration can be day, week, month, year, all-time.
 // Notifications - Send notifications to users for various events like new followers, post like, and comment.
-// Social feed API - Fetch paginated posts for the user's feed, containing routes shared by followed users.
+// Social feed API - Fetch paginated posts for the user's feed, containing posts shared by followed users.
 
 // APIS FOR CONSIDERATION
 // List of APIs that might be helpful but might be too much for the scope of the project
