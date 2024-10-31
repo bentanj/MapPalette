@@ -45,7 +45,7 @@ app.get('/hello-world', (req, res) => {
 });
 
 // 
-// ROUTE POSTS API
+// POSTS API
 // CRUD operations for route posts
 // 
 
@@ -159,6 +159,18 @@ app.delete('/api/posts', async (req, res) => {
   } catch (error) {
     console.error('Error deleting post:', error);
     return res.status(500).send(error);
+  }
+});
+
+// Get all postIDs within the collection "posts"
+app.get('/api/postIDs', async (req, res) => {
+  try {
+    const postIDsSnap = await db.collection('posts').select('postID').get();
+    const postIDs = postIDsSnap.docs.map(doc => doc.data().postID);
+    return res.status(200).json(postIDs);
+  } catch (error) {
+    console.error('Error fetching map IDs:', error);
+    return res.status(500).json({ message: 'Error fetching map IDs' });
   }
 });
 
@@ -616,17 +628,7 @@ app.get('/api/users/:userID/posts', async (req, res) => {
   }
 });
 
-// Get all postIDs within the collection "posts"
-app.get('/api/postIDs', async (req, res) => {
-  try {
-    const postIDsSnap = await db.collection('posts').select('postID').get();
-    const postIDs = postIDsSnap.docs.map(doc => doc.data().postID);
-    return res.status(200).json(postIDs);
-  } catch (error) {
-    console.error('Error fetching map IDs:', error);
-    return res.status(500).json({ message: 'Error fetching map IDs' });
-  }
-});
+
 
 
 // TODO APIs
