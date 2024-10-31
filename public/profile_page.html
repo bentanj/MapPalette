@@ -1,5 +1,7 @@
 <!-- A LOT OF CODE HERE IS ADAPTED FROM HOMEPAGE.HTML (esp the activity cards part)-->
 
+<!--Profile page when press share do what?-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -213,6 +215,12 @@
             methods: {
                 handleEdit() {
                     window.location.href = `addMaps.html?id=${this.activity.id}`;
+                },
+                handleUse() {
+                    window.location.href = `addMaps.html?id=${this.activity.id}`;
+                },
+                handleShare() {
+                    window.location.href = `homepage.html?id=${this.activity.id}`;
                 }
             },
             template: `
@@ -239,7 +247,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <p>{{ activity.location }}</p>
+                            <p>{{ activity.user }}</p>
                         </div>
                         <div class="meta">
                             <time class="published">{{ activity.date }}</time>
@@ -302,12 +310,14 @@
                                     <span>Comment</span>
                                 </button>
                                 <button
-                                    class="btn btn-link p-0 action-button">
+                                    class="btn btn-link p-0 action-button"
+                                    @click.stop="handleUse">
                                     <i class="far fa-map me-1"></i>
                                     <span>Use</span>
                                 </button>
                                 <button
-                                    class="btn btn-link p-0 action-button">
+                                    class="btn btn-link p-0 action-button"
+                                    @click.stop="handleShare">
                                     <i class="far fa-share-square me-1"></i>
                                     <span>Share</span>
                                 </button>
@@ -351,6 +361,14 @@
                 },
 
                 methods: {
+                    useRoute() {
+                        window.location.href = `addMaps.html?id=${this.activity.id}`;
+                    },
+
+                    shareRoute() {
+                        window.location.href = `homepage.html?id=${this.activity.id}`;
+                    },
+
                     submitComment() {
                         if (!this.newComment.trim()) return;
 
@@ -387,8 +405,8 @@
                     }
                 },
 
-                toggleCommentInput() {
-                    this.showCommentInput = !this.showCommentInput;
+                toggleShowAllComments() {
+                    this.showAllComments = !this.showAllComments;
                 }
             },
 
@@ -446,6 +464,7 @@
 
                                     <!-- Share Button -->
                                     <button class="btn btn-link p-0 action-button"
+                                            @click="shareRoute"
                                             :disabled="disabledActions.share">
                                         <i class="far fa-share-square me-1"></i>
                                         <span>Share</span>

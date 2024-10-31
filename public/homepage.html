@@ -183,6 +183,12 @@
         methods: {
             handleEdit() {
                 window.location.href = `addMaps.html?id=${this.activity.id}`;
+            },
+            useRoute() {
+                window.location.href = `addMaps.html?id=${this.activity.id}`;
+            },
+            handleShare() {
+                window.location.href = `homepage.html?id=${this.activity.id}`;
             }
         },
         template: `
@@ -210,7 +216,7 @@
                                 </ul>
                             </div>
                         </div>
-                        <p>{{ activity.location }}</p>
+                        <p>{{ activity.user }}</p>
                     </div>
                     <div class="meta">
                         <time class="published">{{ activity.date }}</time>
@@ -275,12 +281,14 @@
                                 <span>Comment</span>
                             </button>
                             <button
-                                class="btn btn-link p-0 action-button">
+                                class="btn btn-link p-0 action-button"
+                                @click.stop="useRoute">
                                 <i class="far fa-map me-1"></i>
                                 <span>Use</span>
                             </button>
                             <button
-                                class="btn btn-link p-0 action-button">
+                                class="btn btn-link p-0 action-button"
+                                @click.stop="handleShare">
                                 <i class="far fa-share-square me-1"></i>
                                 <span>Share</span>
                             </button>
@@ -327,6 +335,9 @@
 
                     useRoute() {
                         window.location.href = `addMaps.html?id=${this.activity.id}`;
+                    },
+                    handleShare() {
+                        window.location.href = `homepage.html?id=${this.activity.id}`;
                     },
 
                     submitComment() {
@@ -404,9 +415,7 @@
 
                             <!-- Action Buttons -->
                             <div class="d-flex border-top border-bottom py-3">
-                                <!-- Container for buttons with even spacing -->
                                 <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
-                                    <!-- Like Button -->
                                     <button class="btn btn-link p-0 action-button" 
                                             @click="$emit('like', activity)"
                                             :class="{ 'liked': isLiked }"
@@ -415,16 +424,15 @@
                                         <span>Like</span>
                                     </button>
 
-                                    <!-- Use Button -->
                                     <button class="btn btn-link p-0 action-button"
-                                            @click='useRoute'
+                                            @click="useRoute"
                                             :disabled="disabledActions.use">
                                         <i class="far fa-map me-1"></i>
                                         <span>Use</span>
                                     </button>
 
-                                    <!-- Share Button -->
                                     <button class="btn btn-link p-0 action-button"
+                                            @click="handleShare"
                                             :disabled="disabledActions.share">
                                         <i class="far fa-share-square me-1"></i>
                                         <span>Share</span>
