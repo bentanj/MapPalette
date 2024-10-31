@@ -28,6 +28,25 @@
     <!-- axios-->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
+    
+    <script>
+        // Use the global `currentUser` after Firebase initializes
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if currentUser is already available
+            if (window.currentUser) {
+                console.log("Current user data:", window.currentUser);
+            } else {
+                // Set up a listener for auth state changes in case user data loads later
+                const checkAuthInterval = setInterval(() => {
+                    if (window.currentUser !== null) {
+                        console.log("Current user data:", window.currentUser);
+                        clearInterval(checkAuthInterval);  // Stop checking once data is available
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+
 </head>
     
 <body>
@@ -155,9 +174,11 @@
         <site-footer></site-footer>
 
     </div>
+    
 
         <!-- Initial Vue app setup -->
     <script>
+
         const { createApp } = Vue
 
         // ActivityCard Component
