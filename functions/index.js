@@ -7,6 +7,12 @@ require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const cors = require('cors');
 
+// These are used to store images in our backend later
+const multer = require('multer');
+const storage = multer.memoryStorage(); // Store file in memory before uploading to Cloud Storage
+const upload = multer({ storage });
+
+
 // Initialize Firebase Admin SDK
 const serviceAccount = require('./serviceAccountKey.json');
 initializeApp({
@@ -628,6 +634,78 @@ app.get('/api/users/:userID/posts', async (req, res) => {
   }
 });
 
+
+//
+// UPDATE USER PROFILE API
+//
+
+// Update username for a specific user
+app.put('/api/update/user/username/:userID', async (req, res) => {
+  const { userID } = req.params; // Extract userID from the URL
+  const { username } = req.body; // Extract new username from the request body
+
+  if (!username) {
+    return res.status(400).json({ message: 'Username is required.' });
+  }
+
+  try {
+    // Reference the user document in Firestore
+    const userRef = db.collection('users').doc(userID);
+    
+    // Update the username field
+    await userRef.update({ username });
+
+    return res.status(200).json({ message: 'Username updated successfully!' });
+  } catch (error) {
+    console.error('Error updating username:', error);
+    return res.status(500).json({ message: 'Error updating username.' });
+  }
+});
+
+// THESE IMPORTS ARE ALREADY PRESENT AT THE START OF INDEX.JS, JUST PUTTING HERE SO YOU KNOW THESE IMPORTS ARE FOR UPDATING USER PROFILE PICTURE
+// const multer = require('multer');
+// const storage = multer.memoryStorage(); // Store file in memory before uploading to Cloud Storage
+// const upload = multer({ storage });
+
+
+// Update user's profile picture with a URL that includes a token
+app.put('/api/update/user/profilePicture/:userID', upload.single('profilePicture'), async (req, res) => {
+  const { userID } = req.params;
+  const { username } = req.body; // Retrieve the username from the request body
+
+  if (!req.file || !username) {
+    return res.status(400).json({ message: 'Profile picture file and username are required.' });
+  }
+
+  try {
+    const fileType = req.file.mimetype.split('/')[1]; // Get file extension (e.g., jpg or png)
+    const fileName = `profile_pictures/${userID}/${username}.${fileType}`; // Define the file path in Cloud Storage
+
+    // Define the file reference in Firebase Storage
+    const fileRef = bucket.file(fileName);
+
+    // Upload the new profile picture file
+    await fileRef.save(req.file.buffer, {
+      contentType: req.file.mimetype,
+      metadata: { cacheControl: 'public, max-age=31536000' },
+    });
+
+    // Get the URL of the uploaded file with a token
+    const newProfilePictureUrl = await fileRef.getSignedUrl({
+      action: 'read',
+      expires: '03-09-2491'  // Arbitrary far future date
+    });
+
+    // Update the user's profilePicture field in Firestore with the URL containing the token
+    const userRef = db.collection('users').doc(userID);
+    await userRef.update({ profilePicture: newProfilePictureUrl[0] });
+
+    return res.status(200).json({ message: 'Profile picture updated successfully!', profilePictureUrl: newProfilePictureUrl[0] });
+  } catch (error) {
+    console.error('Error updating profile picture:', error);
+    return res.status(500).json({ message: 'Error updating profile picture.' });
+  }
+});
 
 
 
