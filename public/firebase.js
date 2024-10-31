@@ -174,7 +174,7 @@ document.getElementById('logout')?.addEventListener('click', async () => {
   try {
     await signOut(auth); // Log out the user
     window.currentUser = null; // Clear global user data
-    alert("You have been logged out.");
+    alert("Sad to see you leave, but love to watch you go (and run)! See you soon!");
     window.location.href = "index.html"; // Redirect to login page
   } catch (error) {
     console.error("Logout failed:", error);
