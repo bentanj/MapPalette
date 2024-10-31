@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
 // Your web app's Firebase configuration
@@ -149,8 +149,8 @@ onAuthStateChanged(auth, async (user) => {
                   followers: followers || [],
                   followed: followed || []
               };
-
-              console.log("User data loaded globally with subcollections:", window.currentUser);
+              // Check if user collection is imported correctly
+              // console.log("User data loaded globally with subcollections:", window.currentUser);
           } else {
               console.error("User document does not exist!");
           }
