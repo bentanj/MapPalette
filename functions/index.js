@@ -45,22 +45,29 @@ app.get('/hello-world', (req, res) => {
 });
 
 // 
-// ROUTE POSTS API
+// POSTS API
 // CRUD operations for route posts
 // 
 
 // Create a post with auto-generated ID
-app.post('/api/create', async (req, res) => {
+app.post('/api/create/:userID', async (req, res) => {
+  const { userID } = req.params; // Get userID from the URL parameters
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required to create a post.' });
+  }
+
   try {
     // Create a new document reference with an auto-generated ID
     const docRef = db.collection('posts').doc();
     const postID = docRef.id; // Get the auto-generated ID to use as postID
 
+    // Construct postData with userID as the first attribute
     const postData = {
+      userID: userID,  // Place userID as the first attribute
       title: req.body.title,
       description: req.body.description,
       waypoints: req.body.waypoints,
-      userID: req.body.userID, 
       color: req.body.color,
       likeCount: 0,
       shareCount: 0,
@@ -85,7 +92,7 @@ app.post('/api/create', async (req, res) => {
       distance: postData.distance   // Include distance in user's map data
     };
 
-    await db.collection('users').doc(req.body.userID).collection('postsCreated').doc(postID).set(userMapData);
+    await db.collection('users').doc(userID).collection('postsCreated').doc(postID).set(userMapData);
 
     return res.status(201).json({ id: postID, message: 'Post created successfully!' });
   } catch (error) {
@@ -152,6 +159,18 @@ app.delete('/api/posts', async (req, res) => {
   } catch (error) {
     console.error('Error deleting post:', error);
     return res.status(500).send(error);
+  }
+});
+
+// Get all postIDs within the collection "posts"
+app.get('/api/postIDs', async (req, res) => {
+  try {
+    const postIDsSnap = await db.collection('posts').select('postID').get();
+    const postIDs = postIDsSnap.docs.map(doc => doc.data().postID);
+    return res.status(200).json(postIDs);
+  } catch (error) {
+    console.error('Error fetching map IDs:', error);
+    return res.status(500).json({ message: 'Error fetching map IDs' });
   }
 });
 
@@ -504,9 +523,13 @@ app.delete('/api/unfollow', async (req, res) => {
   }
 });
 
+//
+// RETREIEVE USER API
+// Getting all users based on certain parameters
+//
 
-// Get all user IDs that a specific userID is following
-app.get('/api/users/:userID/following', async (req, res) => {
+// Get user object by userID
+app.get('/api/:userID', async (req, res) => {
   const { userID } = req.params;
 
   if (!userID) {
@@ -514,24 +537,61 @@ app.get('/api/users/:userID/following', async (req, res) => {
   }
 
   try {
-    const followingRef = db.collection('users').doc(userID).collection('following');
-    const followingSnap = await followingRef.get();
+    // Reference the user document in Firestore
+    const userRef = db.collection('users').doc(userID);
+    const userSnap = await userRef.get();
 
-    if (followingSnap.empty) {
-      return res.status(404).json({ message: 'No following records found for this user.' });
+    if (!userSnap.exists) {
+      return res.status(404).json({ message: 'User not found.' });
     }
 
-    // Map the documents to an array of followed user IDs
-    const followingIDs = followingSnap.docs.map(doc => doc.id);
-
-    return res.status(200).json({ following: followingIDs });
+    // Return the user document data
+    return res.status(200).json(userSnap.data());
   } catch (error) {
-    console.error('Error fetching following data:', error);
-    return res.status(500).send(error.message);
+    console.error('Error fetching user:', error);
+    return res.status(500).json({ message: 'Error fetching user data.' });
   }
 });
 
-// Get all posts and their IDs from a specific userID
+// Retrieve all users from the "users" collection along with their subcollections
+app.get('/api/users/getallusers', async (req, res) => {
+  try {
+    // Fetch all documents from the users collection
+    const usersSnap = await db.collection('users').get();
+
+    // Map each document to an object containing its data and subcollections
+    const users = await Promise.all(usersSnap.docs.map(async (doc) => {
+      // Base user data
+      const userData = { id: doc.id, ...doc.data() };
+
+      // Fetch all subcollections for the current user
+      const subcollections = {};
+      const subcollectionRefs = await db.collection('users').doc(doc.id).listCollections();
+
+      // Iterate over each subcollection, retrieving its data
+      for (const subcollectionRef of subcollectionRefs) {
+        const subcollectionDocs = await subcollectionRef.get();
+        subcollections[subcollectionRef.id] = subcollectionDocs.docs.map(subDoc => ({
+          id: subDoc.id,
+          ...subDoc.data()
+        }));
+      }
+
+      // Merge subcollections with the main user data
+      return { ...userData, subcollections };
+    }));
+
+    // Respond with an array of all users, including their subcollections
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return res.status(500).json({ message: 'Error fetching users' });
+  }
+});
+
+
+
+// Get all posts made by a specific user
 app.get('/api/users/:userID/posts', async (req, res) => {
   const { userID } = req.params;
 
@@ -542,36 +602,33 @@ app.get('/api/users/:userID/posts', async (req, res) => {
   try {
     // Access the postsCreated subcollection under the specified user document
     const postsCreatedRef = db.collection('users').doc(userID).collection('postsCreated');
-    const postsSnap = await postsCreatedRef.get();
+    const postsCreatedSnap = await postsCreatedRef.get();
 
-    if (postsSnap.empty) {
-      return res.status(404).json({ message: 'No posts created found for this user.' });
+    if (postsCreatedSnap.empty) {
+      return res.status(404).json({ message: 'No posts found for this user.' });
     }
 
-    // Map the documents to an array of map data, such as postID, title, and createdAt
-    const posts = postsSnap.docs.map(doc => ({
-      postID: doc.id,
-      ...doc.data()
-    }));
+    // Collect all postIDs from the user's postsCreated subcollection
+    const postIDs = postsCreatedSnap.docs.map(doc => doc.id);
 
-    return res.status(200).json({ posts });
+    // Retrieve each post's details from the main posts collection
+    const postsPromises = postIDs.map(async (postID) => {
+      const postRef = db.collection('posts').doc(postID);
+      const postSnap = await postRef.get();
+      return postSnap.exists ? { postID, ...postSnap.data() } : null;
+    });
+
+    // Wait for all post data to be fetched
+    const posts = (await Promise.all(postsPromises)).filter(post => post !== null);
+
+    return res.status(200).json(posts);
   } catch (error) {
-    console.error('Error fetching posts for user:', error);
-    return res.status(500).send(error.message);
+    console.error('Error fetching user posts:', error);
+    return res.status(500).json({ message: 'Error fetching posts for this user.' });
   }
 });
 
-// Get all postIDs within the collection "posts"
-app.get('/api/postIDs', async (req, res) => {
-  try {
-    const postIDsSnap = await db.collection('posts').select('postID').get();
-    const postIDs = postIDsSnap.docs.map(doc => doc.data().postID);
-    return res.status(200).json(postIDs);
-  } catch (error) {
-    console.error('Error fetching map IDs:', error);
-    return res.status(500).json({ message: 'Error fetching map IDs' });
-  }
-});
+
 
 
 // TODO APIs

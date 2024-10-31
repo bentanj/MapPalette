@@ -86,11 +86,11 @@ signupForm?.addEventListener('submit', async (e) => {
       numFollowing: 0   // Initialize numFollowing to 0
     });
 
-    // Initialize empty subcollections
-    await setDoc(doc(db, `users/${user.uid}/postsCreated`), {});
-    await setDoc(doc(db, `users/${user.uid}/postsLiked`), {});
-    await setDoc(doc(db, `users/${user.uid}/followers`), {});
-    await setDoc(doc(db, `users/${user.uid}/followed`), {});
+    // Initialize empty documents in subcollections
+    await setDoc(doc(db, `users/${user.uid}`, 'postsCreated', 'init'), {});
+    await setDoc(doc(db, `users/${user.uid}`, 'postsLiked', 'init'), {});
+    await setDoc(doc(db, `users/${user.uid}`, 'followers', 'init'), {});
+    await setDoc(doc(db, `users/${user.uid}`, 'followed', 'init'), {});
 
     startSessionTimeout(); // Start session timeout on signup
     alert("You've signed up successfully! Welcome to MapPalette :)");

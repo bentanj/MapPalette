@@ -42,10 +42,16 @@
         <!-- Friends and Other Users Section -->
         <div class="container-fluid sample-section">
             <div class="row">
+                <div class="col-md-4">
+                    <p>Search for friends or users:</p>
+                    <input type="text" v-model="searchQuery" placeholder="Name"
+                        class="form-control mb-3">
+                        
+                </div>
+            </div>
+            <div class="row">
+                <hr>
                 <h1>Your Friends ({{friends.length}})</h1>
-                <p>Search:</p>
-                <input type="text" v-model="searchQuery" placeholder="Search for friends or users"
-                    class="form-control mb-3">
 
                 <!-- Friends Section with Load More -->
                 <div v-if="filteredFriends.length > 0" class="col-md-4 mb-4"
@@ -249,7 +255,6 @@
         }
     });
 
-    // Friend Cards
     app.component("friend-card", {
         props: ['friend', 'disabled'],
         template: `
@@ -260,7 +265,7 @@
           <h5 class="card-title mb-1">{{ friend.username }}
             <span v-if="friend.newFriend" class="text-danger ms-2" style="font-weight: bold;">New!</span>
           </h5>
-          <p class="card-text text-muted mb-0">Runs {{ friend.routesCreated.length }} route(s)</p>
+          <p class="card-text text-muted mb-0">Runs {{ friend.postsCreated.length }} route(s)</p>
         </div>
         <div class="d-flex flex-column">
           <button class="btn mb-2" :class="{'btn-outline-danger': hovering, 'btn-success': !hovering}"
@@ -290,7 +295,7 @@
         }
     });
 
-    // Other Users Card
+
     app.component('other-user-card', {
         props: ['user', 'disabled'],
         template: `
@@ -299,7 +304,7 @@
         <img :src="user.profilePicture" alt="User Profile" class="profile-pic me-3">
         <div class="flex-grow-1">
           <h5 class="card-title mb-1">{{ user.username }}</h5>
-          <p class="card-text text-muted mb-0">Runs {{ user.routesCreated.length }} route(s)</p>
+          <p class="card-text text-muted mb-0">Runs {{ user.postsCreated.length }} route(s)</p>
         </div>
         <div class="d-flex flex-column">
           <button class="btn follow-btn mb-2"
@@ -348,6 +353,7 @@
             }
         }
     });
+
 </script>
 
 <script src="navbar/navbar.js"></script>
