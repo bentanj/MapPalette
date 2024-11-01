@@ -703,7 +703,7 @@ app.get('/api/users/getallusers', async (req, res) => {
 // Get all user objects followed by the current user
 app.get('/api/users/getfollowed/:userID', async (req, res) => {
   const { userID } = req.params;
-
+  
   if (!userID) {
     return res.status(400).json({ message: 'User ID is required.' });
   }
