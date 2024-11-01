@@ -1,5 +1,6 @@
 // Import function triggers from their respective submodules
 const { onRequest } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { initializeApp, cert, applicationDefault} = require('firebase-admin/app');
 const { getStorage } = require('firebase-admin/storage');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore'); // Modular import for Firestore
@@ -35,6 +36,23 @@ app.use(express.json()); // Parse incoming JSON requests
 //   res.json({ apiKey });
 // });
 
+//
+// HELPER FUNCTIONS
+//
+
+async function addPointsToCreator(userID, points) {
+  try {
+    const userRef = db.collection('leaderboard').doc(userID);
+    await userRef.set(
+      { points: FieldValue.increment(points) },
+      { merge: true }
+    );
+  } catch (error) {
+    console.error('Error adding points to creator:', error);
+  }
+}
+
+
 // Define route to return Google Maps API key with CORS enabled
 app.get('/getGoogleMapsApiKey', (req, res) => {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -51,7 +69,7 @@ app.get('/hello-world', (req, res) => {
 });
 
 // 
-// POSTS API
+// POSTS CRUD API
 // CRUD operations for route posts
 // 
 
@@ -100,6 +118,8 @@ app.post('/api/create/:userID', async (req, res) => {
 
     await db.collection('users').doc(userID).collection('postsCreated').doc(postID).set(userMapData);
 
+    // Add points to user for creating the post
+    await addPointsToCreator(userID, 10); // Adjust points as desired
     return res.status(201).json({ id: postID, message: 'Post created successfully!' });
   } catch (error) {
     console.error('Error creating post:', error);
@@ -168,6 +188,32 @@ app.delete('/api/posts', async (req, res) => {
   }
 });
 
+//
+// POST RETRIEVAL API
+//
+
+// Retrieve all posts from the posts collection
+app.get('/api/allposts', async (req, res) => {
+  try {
+    const postsSnap = await db.collection('posts').get();
+
+    if (postsSnap.empty) {
+      return res.status(404).json({ message: 'No posts found.' });
+    }
+
+    // Map through each document and return post data
+    const posts = postsSnap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    return res.status(200).json(posts);
+  } catch (error) {
+    console.error('Error fetching all posts:', error);
+    return res.status(500).json({ message: 'Error fetching posts.' });
+  }
+});
+
 // Get all postIDs within the collection "posts"
 app.get('/api/postIDs', async (req, res) => {
   try {
@@ -208,6 +254,14 @@ app.put('/api/posts/like', async (req, res) => {
 
       // Add user's like and increment likeCount atomically
       transaction.set(likeRef, { likedAt: FieldValue.serverTimestamp() });
+
+      // Add points to user for liking a post
+      const postDoc = await postRef.get();
+      if (postDoc.exists) {
+        const creatorID = postDoc.data().userID;
+        await addPointsToCreator(creatorID, 3); // Adjust points as desired
+      }
+
       transaction.update(postRef, {
         likeCount: FieldValue.increment(1),
       });
@@ -283,6 +337,15 @@ app.post('/api/posts/:postId/comments', async (req, res) => {
     await db.collection('posts').doc(postID).update({
       commentCount: FieldValue.increment(1),
     });
+
+    // Add points to user IF it's their FIRST comment
+    const commentCheckRef = db.collection('posts').doc(postID).collection('commentPoints').doc(userID);
+    const commentCheckDoc = await commentCheckRef.get();
+    
+    if (!commentCheckDoc.exists) {
+      await addPointsToCreator(postData.userID, 2); // Adjust points as desired
+      await commentCheckRef.set({ createdAt: FieldValue.serverTimestamp() }); // Record that points were awarded
+    }
 
     return res.status(201).json({ id: commentRef.id, message: 'Comment created successfully!' });
   } catch (error) {
@@ -394,6 +457,14 @@ app.put('/api/posts/share', async (req, res) => {
       transaction.update(postRef, {
         shareCount: FieldValue.increment(1),
       });
+
+      // Add points for sharing a post
+      const postDoc = await postRef.get();
+      if (postDoc.exists) {
+        const creatorID = postDoc.data().userID;
+        await addPointsToCreator(creatorID, 2); // Adjust points as desired
+      }
+
     });
 
     return res.status(200).json({ message: 'Post shared successfully!' });
@@ -410,8 +481,9 @@ app.put('/api/posts/share', async (req, res) => {
 
 // Follow user and increment follower/following counts
 app.post('/api/follow', async (req, res) => {
-  // Extract userID (current user) and followUserID (target user) from the request body
-  const { userID, followUserID } = req.body;
+  // Extract userID (current user) from the request body and followUserID from the query parameter
+  const { userID } = req.body; // Current user ID from the request body
+  const followUserID = req.query.id; // Target user ID from the query parameter
 
   // Validate that both userID and followUserID are provided
   if (!userID || !followUserID) {
@@ -454,11 +526,16 @@ app.post('/api/follow', async (req, res) => {
         numFollowers: FieldValue.increment(1),
       });
 
-      // Increment numFollowed for the current user
+      // Add points to user for following someone else
+      await addPointsToCreator(followUserID, 5); // Adjust points as desired
+
+      // Increment numFollowing for the current user
       transaction.update(followingUserDoc, {
-        numFollowed: FieldValue.increment(1),
+        numFollowing: FieldValue.increment(1),
       });
     });
+
+
 
     // Return a success message if the transaction completes without errors
     return res.status(200).json({ message: 'User followed successfully!' });
@@ -469,10 +546,12 @@ app.post('/api/follow', async (req, res) => {
 });
 
 
+
 // Unfollow user and decrement follower/following counts
 app.delete('/api/unfollow', async (req, res) => {
-  // Extract userID (current user) and followUserID (target user) from the request body
-  const { userID, followUserID } = req.body;
+  // Extract userID (current user) from the request body and followUserID (target user) from the query parameter
+  const { userID } = req.body; // Current user ID from the request body
+  const followUserID = req.query.id; // Target user ID from the query parameter
 
   // Validate that both userID and followUserID are provided
   if (!userID || !followUserID) {
@@ -515,9 +594,9 @@ app.delete('/api/unfollow', async (req, res) => {
         numFollowers: FieldValue.increment(-1),
       });
 
-      // Decrement numFollowed for the current user
+      // Decrement numFollowing for the current user
       transaction.update(followingUserDoc, {
-        numFollowed: FieldValue.increment(-1),
+        numFollowing: FieldValue.increment(-1),
       });
     });
 
@@ -528,6 +607,7 @@ app.delete('/api/unfollow', async (req, res) => {
     return res.status(500).send(error.message); // Handle any errors during the unfollow process
   }
 });
+
 
 //
 // RETREIEVE USER API
@@ -707,7 +787,66 @@ app.put('/api/update/user/profilePicture/:userID', upload.single('profilePicture
   }
 });
 
+//
+// LEADERBOARD API
+//
 
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const leaderboardRef = db.collection('leaderboard').orderBy('points', 'desc');
+    const snapshot = await leaderboardRef.get();
+
+    if (snapshot.empty) {
+      return res.status(404).json({ message: 'No leaderboard data found.' });
+    }
+
+    // Fetch leaderboard data along with `username` and `profilePicture`
+    const leaderboard = await Promise.all(snapshot.docs.map(async (doc) => {
+      const userID = doc.id;
+      const userDoc = await db.collection('users').doc(userID).get();
+
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        return {
+          userID,
+          points: doc.data().points,
+          username: userData.username || null,
+          profilePicture: userData.profilePicture || null
+        };
+      } else {
+        return {
+          userID,
+          points: doc.data().points,
+          username: null,
+          profilePicture: null
+        };
+      }
+    }));
+    
+    return res.status(200).json(leaderboard);
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    return res.status(500).json({ message: 'Error fetching leaderboard data.' });
+  }
+});
+
+// FUNCTION TO RESET LEADERBOARD
+exports.resetLeaderboard = onSchedule('59 23 * * 0', async (context) => {
+  try {
+    const leaderboardRef = db.collection('leaderboard');
+    const snapshot = await leaderboardRef.get();
+
+    const batch = db.batch();
+    snapshot.forEach((doc) => {
+      batch.update(doc.ref, { points: 0 });
+    });
+
+    await batch.commit();
+    console.log('Leaderboard reset successfully');
+  } catch (error) {
+    console.error('Error resetting leaderboard:', error);
+  }
+});
 
 // TODO APIs
 // List of APIs that is needed.
