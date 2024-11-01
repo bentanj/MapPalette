@@ -1,5 +1,6 @@
 // Import function triggers from their respective submodules
 const { onRequest } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { initializeApp, cert, applicationDefault} = require('firebase-admin/app');
 const { getStorage } = require('firebase-admin/storage');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore'); // Modular import for Firestore
@@ -68,7 +69,7 @@ app.get('/hello-world', (req, res) => {
 });
 
 // 
-// POSTS API
+// POSTS CRUD API
 // CRUD operations for route posts
 // 
 
@@ -184,6 +185,32 @@ app.delete('/api/posts', async (req, res) => {
   } catch (error) {
     console.error('Error deleting post:', error);
     return res.status(500).send(error);
+  }
+});
+
+//
+// POST RETRIEVAL API
+//
+
+// Retrieve all posts from the posts collection
+app.get('/api/allposts', async (req, res) => {
+  try {
+    const postsSnap = await db.collection('posts').get();
+
+    if (postsSnap.empty) {
+      return res.status(404).json({ message: 'No posts found.' });
+    }
+
+    // Map through each document and return post data
+    const posts = postsSnap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    return res.status(200).json(posts);
+  } catch (error) {
+    console.error('Error fetching all posts:', error);
+    return res.status(500).json({ message: 'Error fetching posts.' });
   }
 });
 
@@ -501,7 +528,7 @@ app.post('/api/follow', async (req, res) => {
 
       // Add points to user for following someone else
       await addPointsToCreator(followUserID, 5); // Adjust points as desired
-      
+
       // Increment numFollowing for the current user
       transaction.update(followingUserDoc, {
         numFollowing: FieldValue.increment(1),
@@ -803,7 +830,8 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
-exports.resetLeaderboard = pubsub.schedule('59 23 * * 0').onRun(async (context) => {
+// FUNCTION TO RESET LEADERBOARD
+exports.resetLeaderboard = onSchedule('59 23 * * 0', async (context) => {
   try {
     const leaderboardRef = db.collection('leaderboard');
     const snapshot = await leaderboardRef.get();
@@ -819,7 +847,6 @@ exports.resetLeaderboard = pubsub.schedule('59 23 * * 0').onRun(async (context) 
     console.error('Error resetting leaderboard:', error);
   }
 });
-
 
 // TODO APIs
 // List of APIs that is needed.
