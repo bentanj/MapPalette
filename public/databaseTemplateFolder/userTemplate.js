@@ -31,7 +31,7 @@ export const users = [
         ],
         
         followers: ['xL9FmK3nc762Uk9M4wQw', 'bD2LmX3td562Vk8N6wPw'],
-        followed: ['qW9KmY3ac792Ul7N7wRr', 'bD2LmX3td562Vk8N6wPw'] // Overlap with followers
+        following: ['qW9KmY3ac792Ul7N7wRr', 'bD2LmX3td562Vk8N6wPw'] // Overlap with followers
     },
     {
         id: 'xL9FmK3nc762Uk9M4wQw',
@@ -58,7 +58,7 @@ export const users = [
         ],
         
         followers: ['LJvFmX3tc762Uk8M3wRw', 'bD2LmX3td562Vk8N6wPw'],
-        followed: ['LJvFmX3tc762Uk8M3wRw', 'fS9LpX2nb512Uk7O4zPw'] // Overlap with followers
+        following: ['LJvFmX3tc762Uk8M3wRw', 'fS9LpX2nb512Uk7O4zPw'] // Overlap with followers
     },
     {
         id: 'bD2LmX3td562Vk8N6wPw',
@@ -85,7 +85,7 @@ export const users = [
         ],
         
         followers: ['xL9FmK3nc762Uk9M4wQw', 'LJvFmX3tc762Uk8M3wRw'],
-        followed: ['mX2VmH3tc792Jk8O5rPw', 'xL9FmK3nc762Uk9M4wQw'] // Overlap with followers
+        following: ['mX2VmH3tc792Jk8O5rPw', 'xL9FmK3nc762Uk9M4wQw'] // Overlap with followers
     },
     {
         id: 'qW9KmY3ac792Ul7N7wRr',
@@ -112,7 +112,7 @@ export const users = [
         ],
         
         followers: ['mX2VmH3tc792Jk8O5rPw', 'fS9LpX2nb512Uk7O4zPw'],
-        followed: ['bD2LmX3td562Vk8N6wPw', 'mX2VmH3tc792Jk8O5rPw'] // Overlap with followers
+        following: ['bD2LmX3td562Vk8N6wPw', 'mX2VmH3tc792Jk8O5rPw'] // Overlap with followers
     },
     {
         id: 'mX2VmH3tc792Jk8O5rPw',
@@ -139,7 +139,7 @@ export const users = [
         ],
         
         followers: ['qW9KmY3ac792Ul7N7wRr', 'LJvFmX3tc762Uk8M3wRw'],
-        followed: ['fS9LpX2nb512Uk7O4zPw', 'qW9KmY3ac792Ul7N7wRr'] // Overlap with followers
+        following: ['fS9LpX2nb512Uk7O4zPw', 'qW9KmY3ac792Ul7N7wRr'] // Overlap with followers
     }
 ];
 
