@@ -19,6 +19,9 @@
     
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Firebase -->
+    <script type="module" src="firebase.js"></script>
     
     <!-- Vue.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -34,143 +37,150 @@
 
         <!-- Profile Header Section -->
         <div class="main-content-wrapper">
-            <div class="profile-header">
-                <div class="cover-photo">
-                    <img :src="userProfile.coverPhoto" alt="Cover Photo">
-                    <button class="btn btn-light btn-sm edit-cover-photo">
-                        <i class="bi bi-camera"></i> Edit Cover Photo
-                    </button>
-                </div>
-                <div class="container position-relative">
-                    <div class="profile-info">
-                        <div class="profile-picture-container">
-                            <img :src="userProfile.avatar" alt="Profile Picture" class="profile-picture">
-                            <button class="btn btn-light btn-sm edit-profile-photo">
-                                <i class="bi bi-camera"></i>
-                            </button>
-                        </div>
-                        <div class="profile-details">
-                            <h1>{{ userProfile.name }}</h1>
-                            <p class="text-muted">{{ userProfile.bio || 'No bio yet' }}</p>
-                        </div>
-                        <div class="profile-actions">
-                            <button class="btn btn-primary">
-                                <i class="bi bi-pencil"></i> Edit Profile
-                            </button>
-                        </div>
-                    </div>
+            <div v-if="isLoading" class="loading-overlay">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
-
-            <!-- Main Content -->
-            <div class="container mt-4">
-                <div class="row">
-                    <!-- Left Sidebar -->
-                    <div class="col-lg-4">
-                        <div class="card mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title mb-3">About</h5>
-                                <div class="about-items">
-                                    <div class="about-item">
-                                        <i class="bi bi-geo-alt"></i>
-                                        <span>Lives in {{ userProfile.location }}</span>
-                                    </div>
-                                    <div class="about-item">
-                                        <i class="bi bi-calendar3"></i>
-                                        <span>Joined {{ userProfile.joinDate }}</span>
-                                    </div>
-                                </div>
+            <div v-else>
+                <div class="profile-header">
+                    <div class="cover-photo">
+                        <img :src="userProfile.coverPhoto" alt="Cover Photo">
+                        <button class="btn btn-light btn-sm edit-cover-photo">
+                            <i class="bi bi-camera"></i> Edit Cover Photo
+                        </button>
+                    </div>
+                    <div class="container position-relative">
+                        <div class="profile-info">
+                            <div class="profile-picture-container">
+                                <img :src="userProfile.avatar" alt="Profile Picture" class="profile-picture">
+                                <button class="btn btn-light btn-sm edit-profile-photo">
+                                    <i class="bi bi-camera"></i>
+                                </button>
                             </div>
-                        </div>
-
-                        <div class="card mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title mb-3">Stats</h5>
-                                <div class="stats-grid">
-                                    <div class="stat-item">
-                                        <h3>{{ userProfile.stats.routes }}</h3>
-                                        <span>Routes</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <h3>{{ userProfile.stats.following }}</h3>
-                                        <span>Following</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <h3>{{ userProfile.stats.followers }}</h3>
-                                        <span>Followers</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <h3>{{ userProfile.stats.totalDistance }}km</h3>
-                                        <span>Total Distance</span>
-                                    </div>
-                                </div>
+                            <div class="profile-details">
+                                <h1>{{ userProfile.name }}</h1>
+                                <p class="text-muted">{{ userProfile.bio || 'No bio yet' }}</p>
                             </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="card-title mb-0">Recent Badges</h5>
-                                    <a href="#" class="text-primary">See All</a>
-                                </div>
-                                <div class="badges-grid">
-                                    <div v-for="badge in recentBadges" :key="badge.id" class="badge-item">
-                                        <img :src="badge.icon" :alt="badge.name">
-                                        <span>{{ badge.name }}</span>
-                                    </div>
-                                </div>
+                            <div class="profile-actions">
+                                <button class="btn btn-primary">
+                                    <i class="bi bi-pencil"></i> Edit Profile
+                                </button>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Main Content Area -->
-                    <div class="col-lg-8">
-                        <!-- Profile Navigation -->
-                        <div class="profile-nav mb-4">
-                            <div class="nav nav-tabs">
-                                <button class="nav-link" 
-                                        :class="{ 'active': currentTab === 'activities' }"
-                                        @click="currentTab = 'activities'">Activities</button>
-                                <button class="nav-link" 
-                                        :class="{ 'active': currentTab === 'routes' }"
-                                        @click="currentTab = 'routes'">Routes</button>
-                                <button class="nav-link" 
-                                        :class="{ 'active': currentTab === 'badges' }"
-                                        @click="currentTab = 'badges'">Badges</button>
+                <!-- Main Content -->
+                <div class="container mt-4">
+                    <div class="row">
+                        <!-- Left Sidebar -->
+                        <div class="col-lg-4">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3">About</h5>
+                                    <div class="about-items">
+                                        <div class="about-item">
+                                            <i class="bi bi-geo-alt"></i>
+                                            <span>Lives in {{ userProfile.location }}</span>
+                                        </div>
+                                        <div class="about-item">
+                                            <i class="bi bi-calendar3"></i>
+                                            <span>Joined {{ userProfile.joinDate }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Activities Tab -->
-                        <div v-if="currentTab === 'activities'" id="activity-feed">
-                            <activity-card
-                                v-for="activity in activities"
-                                :key="activity.id"
-                                :activity="activity"
-                                :current-user="currentUser"
-                                @like="likeActivity"
-                                @open-modal="openActivityModal"
-                                @edit="handleActivityEdit">
-                            </activity-card>
-                        </div>
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3">Stats</h5>
+                                    <div class="stats-grid">
+                                        <div class="stat-item">
+                                            <h3>{{ userProfile.stats.routes }}</h3>
+                                            <span>Routes</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <h3>{{ userProfile.stats.following }}</h3>
+                                            <span>Following</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <h3>{{ userProfile.stats.followers }}</h3>
+                                            <span>Followers</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <h3>{{ userProfile.stats.totalDistance }}km</h3>
+                                            <span>Total Distance</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <!-- Routes Tab -->
-                        <div v-if="currentTab === 'routes'" class="routes-grid">
-                            <div v-for="route in routes" :key="route.id" class="route-card">
-                                <img :src="route.image" :alt="route.title">
-                                <div class="route-info">
-                                    <h5>{{ route.title }}</h5>
-                                    <p>{{ route.distance }} • {{ route.duration }}</p>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="card-title mb-0">Recent Badges</h5>
+                                        <a href="#" class="text-primary">See All</a>
+                                    </div>
+                                    <div class="badges-grid">
+                                        <div v-for="badge in recentBadges" :key="badge.id" class="badge-item">
+                                            <img :src="badge.icon" :alt="badge.name">
+                                            <span>{{ badge.name }}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Badges Tab -->
-                        <div v-if="currentTab === 'badges'" class="badges-container">
-                            <div v-for="badge in badges" :key="badge.id" class="badge-card">
-                                <img :src="badge.icon" :alt="badge.name">
-                                <h5>{{ badge.name }}</h5>
-                                <p>{{ badge.description }}</p>
-                                <small class="text-muted">Earned {{ badge.earnedDate }}</small>
+                        <!-- Main Content Area -->
+                        <div class="col-lg-8">
+                            <!-- Profile Navigation -->
+                            <div class="profile-nav mb-4">
+                                <div class="nav nav-tabs">
+                                    <button class="nav-link" 
+                                            :class="{ 'active': currentTab === 'activities' }"
+                                            @click="currentTab = 'activities'">Activities</button>
+                                    <button class="nav-link" 
+                                            :class="{ 'active': currentTab === 'routes' }"
+                                            @click="currentTab = 'routes'">Routes</button>
+                                    <button class="nav-link" 
+                                            :class="{ 'active': currentTab === 'badges' }"
+                                            @click="currentTab = 'badges'">Badges</button>
+                                </div>
+                            </div>
+
+                            <!-- Activities Tab -->
+                            <div v-if="currentTab === 'activities'" id="activity-feed">
+                                <activity-card
+                                    v-for="activity in activities"
+                                    :key="activity.id"
+                                    :activity="activity"
+                                    :current-user="currentUser"
+                                    @like="likeActivity"
+                                    @open-modal="openActivityModal"
+                                    @edit="handleActivityEdit">
+                                </activity-card>
+                            </div>
+
+                            <!-- Routes Tab -->
+                            <div v-if="currentTab === 'routes'" class="routes-grid">
+                                <div v-for="route in routes" :key="route.id" class="route-card">
+                                    <img :src="route.image" :alt="route.title">
+                                    <div class="route-info">
+                                        <h5>{{ route.title }}</h5>
+                                        <p>{{ route.distance }} • {{ route.duration }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Badges Tab -->
+                            <div v-if="currentTab === 'badges'" class="badges-container">
+                                <div v-for="badge in badges" :key="badge.id" class="badge-card">
+                                    <img :src="badge.icon" :alt="badge.name">
+                                    <h5>{{ badge.name }}</h5>
+                                    <p>{{ badge.description }}</p>
+                                    <small class="text-muted">Earned {{ badge.earnedDate }}</small>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -200,7 +210,7 @@
                     required: true
                 },
                 currentUser: {  
-                    type: String,
+                    type: Object,  
                     required: true
                 }
             },
@@ -209,7 +219,7 @@
                     return this.activity.isLiked || false;
                 },
                 isOwnPost() {  
-                    return this.currentUser === this.activity.user;
+                    return this.currentUser.username === this.activity.user; // Compare usernames
                 }
             },
             methods: {
@@ -513,9 +523,13 @@
             },
             data() {
                 return {
+                    isLoading: true,
+
                     currentTab: 'activities',
-                    currentUser: null,
-                    currentUserId: null, 
+                    // api
+                    API_ENDPOINT: 'https://app-907670644284.us-central1.run.app',
+                    currentUser: window.currentUser || null, // Initialize with window.currentUser
+                    currentUserId: window.currentUser?.id || null,
                     selectedActivity: null,
                     lastApiCallTime: 0,
                     userProfile: {
@@ -557,94 +571,84 @@
                 }
             },
             created() {
-                const postsPromise = axios.get('./databaseTemplateFolder/postTemplate.json');
-                const usersPromise = axios.get('./databaseTemplateFolder/userTemplate.json');
+                this.isLoading = true; 
+                const checkUser = setInterval(() => {
+                    if (window.currentUser) {
+                        clearInterval(checkUser);
+                        console.log('User data found:', window.currentUser);
+                        
+                        this.currentUser = window.currentUser;
+                        this.currentUserId = window.currentUser.id;
+                        this.updateUserProfile(window.currentUser);
+                        
+                        // Fetch posts
+                        axios.get(`${this.API_ENDPOINT}/api/users/${window.currentUser.id}/posts`)
+                            .then(response => {
+                                console.log('Posts Data:', response.data);
+                                this.posts = response.data;
+                                
+                                // Update total distance
+                                const totalDistance = this.posts.reduce((sum, post) => 
+                                    sum + (parseFloat(post.distance) || 0), 0);
+                                this.userProfile.stats.totalDistance = parseFloat(totalDistance.toFixed(1));
 
-                Promise.all([postsPromise, usersPromise])
-                    .then(([postsResponse, usersResponse]) => {
-                        console.log('Posts Data:', postsResponse.data);
-                        console.log('Users Data:', usersResponse.data);
-
-                        this.users = usersResponse.data.users;
-                        this.posts = postsResponse.data.posts;
-
-                        // user1 for now
-                        const currentUserData = this.users[0]; 
-                        this.currentUser = currentUserData.username;
-                        this.currentUserId = currentUserData.id;
-
-                        // Update user profile
-                        this.updateUserProfile(currentUserData);
-
-                        // only show the current user's posts
-                        this.processUserPosts(currentUserData);
-                    })
-                    .catch(error => {
-                        console.error("Error fetching data:", error);
-                    });
+                                // Process posts for activities and routes
+                                this.processActivitiesAndRoutes();
+                            })
+                            .catch(error => {
+                                console.error("Error fetching posts:", error);
+                            })
+                            .finally(() => {
+                                this.isLoading = false;
+                            });
+                    }
+                }, 100);
             },
             methods: {
-                updateUserProfile(userData) {
-                    this.userProfile = {
-                        name: userData.username,
-                        // hardcoded
-                        avatar: userData.profilePicture || 'resources/download.jpeg', // Use actual profile picture if available
-                        coverPhoto: 'resources/coverphoto_profile.jpg', // Should come from userData when available
-                        bio: '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
-                        location: 'Singapore',
-                        joinDate: this.formatJoinDate(userData.createdAt || new Date()),
-                        stats: {
-                            routes: userData.postsCreated.length,
-                            following: userData.numFollowed || userData.followed.length,
-                            followers: userData.numFollowers || userData.followers.length,
-                            totalDistance: this.calculateTotalDistance(userData.postsCreated)
-                        }
-                    };
-                },
+                processActivitiesAndRoutes() {
+                    // Process activities
+                    this.activities = this.posts.map(post => ({
+                        id: post.postID,
+                        user: this.currentUser.username,
+                        userImg: this.userProfile.avatar,
+                        date: this.formatDate(post.createdAt),
+                        location: post.waypoints[0].address,
+                        title: this.generateRunTitle(post.createdAt),
+                        distance: `${post.distance} km`,
+                        description: post.description,
+                        time: this.generatePlaceholderTime(),
+                        mapImg: post.image,
+                        likes: post.likeCount,
+                        comments: [],
+                        isLiked: this.currentUser.postsLiked.includes(post.postID)
+                    }));
 
-                calculateTotalDistance(postsCreated) {
-                    let totalDistance = 0;
-                    postsCreated.forEach(post => {
-                        const fullPost = this.posts.find(p => p.postID === post.postID);
-                        if (fullPost) {
-                            totalDistance += fullPost.distance || 0;
-                        }
-                    });
-                    return parseFloat(totalDistance.toFixed(1));
-                },
-
-                processUserPosts(userData) {
-                    // only logged in user posts
-                    const userPostIds = new Set(userData.postsCreated.map(post => post.postID));
-                    const userPosts = this.posts.filter(post => userPostIds.has(post.postID));
-
-                    // format user's posts to activities 
-                    this.activities = userPosts.map(post => {
-                        return {
-                            id: post.postID,
-                            user: userData.username,
-                            userImg: userData.profilePicture || 'resources/download.jpeg',
-                            date: this.formatDate(post.createdAt),
-                            location: post.waypoints[0].address,
-                            title: this.generateRunTitle(post.createdAt),
-                            distance: `${post.distance} km`,
-                            description: post.description,
-                            time: this.generatePlaceholderTime(),
-                            mapImg: post.image,
-                            likes: post.likeCount,
-                            comments: [],
-                            isLiked: false
-                        };
-                    });
-
-                    // format user's posts to routes 
-                    this.routes = userPosts.map(post => ({
+                    // Process routes
+                    this.routes = this.posts.map(post => ({
                         id: post.postID,
                         title: post.title,
                         distance: `${post.distance}km`,
                         duration: this.generatePlaceholderTime(),
                         image: post.image
                     }));
+                },
+                updateUserProfile(userData) {
+                    this.userProfile = {
+                        name: userData.username,
+                        avatar: userData.profilePicture || 'resources/download.jpeg',
+                        // Hardcoded elements
+                        coverPhoto: 'resources/coverphoto_profile.jpg',
+                        bio: '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
+                        location: 'Singapore',
+                        // Use actual user data
+                        joinDate: this.formatJoinDate(userData.birthday),
+                        stats: {
+                            routes: userData.postsCreated.length,
+                            following: userData.numFollowing,
+                            followers: userData.numFollowers,
+                            totalDistance: 0 // Will be updated when posts are fetched
+                        }
+                    };
                 },
 
                 formatJoinDate(dateString) {
@@ -673,8 +677,12 @@
                     return "30m 00s";
                 },
 
-                formatDate(dateString) {
-                    const date = new Date(dateString);
+                formatDate(dateObj) {
+                    // Handle the Firestore timestamp format
+                    const date = dateObj._seconds ? 
+                        new Date(dateObj._seconds * 1000) : // Convert seconds to milliseconds
+                        new Date(dateObj);
+                        
                     return date.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
