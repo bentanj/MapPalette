@@ -28,6 +28,22 @@
     <!-- axios-->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const appContainer = document.getElementById('app-container');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            // Check if currentUser is available and ready
+            const checkUserLoaded = setInterval(() => {
+                if (window.currentUser) {
+                    clearInterval(checkUserLoaded);  // Stop checking
+                    loadingSpinner.style.display = 'none'; // Hide loading spinner
+                    appContainer.style.display = 'block';  // Show main content
+                    console.log("User data is ready:", window.currentUser);
+                }
+            }, 100);
+        });
+    </script> -->
 </head>
     
 <body>
@@ -553,7 +569,6 @@
                 // Check every 100ms if `window.currentUser` is populated
                 const userCheckInterval = setInterval(() => {
                     if (window.currentUser) {
-                        console.log(window.currentUser)
                         this.updateUserProfile(window.currentUser);
                         loadingSpinner.style.display = 'none';
                         appContainer.style.display = 'block';
