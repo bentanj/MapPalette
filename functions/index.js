@@ -127,9 +127,9 @@ app.post('/api/create/:userID', async (req, res) => {
   }
 });
 
-// Get a specific post by ID
+// Get specific post by id
 app.get('/api/posts', async (req, res) => {
-  const postID = req.query.id; // Retrieve ID from query parameter
+  const postID = req.query.id;
 
   if (!postID) {
     return res.status(400).json({ message: 'Post ID is required.' });
@@ -143,10 +143,31 @@ app.get('/api/posts', async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    return res.status(200).json(postSnap.data());
+    // Get post data
+    const postData = postSnap.data();
+    
+    // Fetch user details
+    const userRef = db.collection('users').doc(postData.userID);
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      console.log(`User not found for userID: ${postData.userID}`);
+      return res.status(404).json({ message: 'User not available' });
+    }
+
+    const userData = userSnap.data();
+    
+    // Add username and profile picture to the post data
+    const postWithUserData = {
+      ...postData,
+      username: userData.username || 'Unknown User',
+      profilePicture: userData.profilePicture || 'default-profile-picture-url'
+    };
+
+    return res.status(200).json(postWithUserData);
   } catch (error) {
     console.error('Error fetching post:', error);
-    return res.status(500).send(error);
+    return res.status(500).json({ message: 'Error fetching post data.' });
   }
 });
 
@@ -777,42 +798,50 @@ app.get('/api/users/getcondensed/:currentUserID', async (req, res) => {
   }
 });
 
-// Get all posts made by a specific user
-app.get('/api/users/:userID/posts', async (req, res) => {
-  const { userID } = req.params;
-
-  if (!userID) {
-    return res.status(400).json({ message: 'User ID is required.' });
-  }
-
-  try {
-    // Access the postsCreated subcollection under the specified user document
-    const postsCreatedRef = db.collection('users').doc(userID).collection('postsCreated');
-    const postsCreatedSnap = await postsCreatedRef.get();
-
-    if (postsCreatedSnap.empty) {
-      return res.status(404).json({ message: 'No posts found for this user.' });
+// Get all post made by specific user
+app.get('firebas', async (req, res) => {
+    const { userID } = req.params;
+  
+    if (!userID) {
+      return res.status(400).json({ message: 'User ID is required.' });
     }
-
-    // Collect all postIDs from the user's postsCreated subcollection
-    const postIDs = postsCreatedSnap.docs.map(doc => doc.id);
-
-    // Retrieve each post's details from the main posts collection
-    const postsPromises = postIDs.map(async (postID) => {
-      const postRef = db.collection('posts').doc(postID);
-      const postSnap = await postRef.get();
-      return postSnap.exists ? { postID, ...postSnap.data() } : null;
-    });
-
-    // Wait for all post data to be fetched
-    const posts = (await Promise.all(postsPromises)).filter(post => post !== null);
-
-    return res.status(200).json(posts);
-  } catch (error) {
-    console.error('Error fetching user posts:', error);
-    return res.status(500).json({ message: 'Error fetching posts for this user.' });
-  }
-});
+  
+    try {
+      // Fetch user's username and profile picture
+      const userRef = db.collection('users').doc(userID);
+      const userSnap = await userRef.get();
+      if (!userSnap.exists) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      const { username, profilePicture } = userSnap.data();
+  
+      // Fetch user's posts
+      const postsCreatedSnap = await db.collection('users').doc(userID).collection('postsCreated').get();
+      if (postsCreatedSnap.empty) {
+        return res.status(404).json({ message: 'No posts found for this user.' });
+      }
+  
+      const posts = await Promise.all(
+        postsCreatedSnap.docs.map(async (doc) => {
+          const postRef = db.collection('posts').doc(doc.id);
+          const postSnap = await postRef.get();
+          return postSnap.exists
+            ? {
+                ...postSnap.data(),
+                username,
+                profilePicture
+              }
+            : null;
+        })
+      );
+  
+      return res.status(200).json(posts.filter((post) => post !== null));
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+      return res.status(500).json({ message: 'Error fetching posts for this user.' });
+    }
+  });
 
 
 //
