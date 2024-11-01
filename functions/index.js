@@ -35,6 +35,23 @@ app.use(express.json()); // Parse incoming JSON requests
 //   res.json({ apiKey });
 // });
 
+//
+// HELPER FUNCTIONS
+//
+
+async function addPointsToCreator(userID, points) {
+  try {
+    const userRef = db.collection('leaderboard').doc(userID);
+    await userRef.set(
+      { points: FieldValue.increment(points) },
+      { merge: true }
+    );
+  } catch (error) {
+    console.error('Error adding points to creator:', error);
+  }
+}
+
+
 // Define route to return Google Maps API key with CORS enabled
 app.get('/getGoogleMapsApiKey', (req, res) => {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -100,6 +117,8 @@ app.post('/api/create/:userID', async (req, res) => {
 
     await db.collection('users').doc(userID).collection('postsCreated').doc(postID).set(userMapData);
 
+    // Add points to user for creating the post
+    await addPointsToCreator(userID, 10); // Adjust points as desired
     return res.status(201).json({ id: postID, message: 'Post created successfully!' });
   } catch (error) {
     console.error('Error creating post:', error);
@@ -208,6 +227,14 @@ app.put('/api/posts/like', async (req, res) => {
 
       // Add user's like and increment likeCount atomically
       transaction.set(likeRef, { likedAt: FieldValue.serverTimestamp() });
+
+      // Add points to user for liking a post
+      const postDoc = await postRef.get();
+      if (postDoc.exists) {
+        const creatorID = postDoc.data().userID;
+        await addPointsToCreator(creatorID, 3); // Adjust points as desired
+      }
+
       transaction.update(postRef, {
         likeCount: FieldValue.increment(1),
       });
@@ -283,6 +310,15 @@ app.post('/api/posts/:postId/comments', async (req, res) => {
     await db.collection('posts').doc(postID).update({
       commentCount: FieldValue.increment(1),
     });
+
+    // Add points to user IF it's their FIRST comment
+    const commentCheckRef = db.collection('posts').doc(postID).collection('commentPoints').doc(userID);
+    const commentCheckDoc = await commentCheckRef.get();
+    
+    if (!commentCheckDoc.exists) {
+      await addPointsToCreator(postData.userID, 2); // Adjust points as desired
+      await commentCheckRef.set({ createdAt: FieldValue.serverTimestamp() }); // Record that points were awarded
+    }
 
     return res.status(201).json({ id: commentRef.id, message: 'Comment created successfully!' });
   } catch (error) {
@@ -394,6 +430,14 @@ app.put('/api/posts/share', async (req, res) => {
       transaction.update(postRef, {
         shareCount: FieldValue.increment(1),
       });
+
+      // Add points for sharing a post
+      const postDoc = await postRef.get();
+      if (postDoc.exists) {
+        const creatorID = postDoc.data().userID;
+        await addPointsToCreator(creatorID, 2); // Adjust points as desired
+      }
+
     });
 
     return res.status(200).json({ message: 'Post shared successfully!' });
@@ -410,6 +454,9 @@ app.put('/api/posts/share', async (req, res) => {
 
 // Follow user and increment follower/following counts
 app.post('/api/follow', async (req, res) => {
+  // Extract userID (current user) from the request body and followUserID from the query parameter
+  const { userID } = req.body; // Current user ID from the request body
+  const followUserID = req.query.id; // Target user ID from the query parameter
 
   // Validate that both userID and followUserID are provided
   if (!userID || !followUserID) {
@@ -454,11 +501,14 @@ app.post('/api/follow', async (req, res) => {
 
       // Add points to user for following someone else
       await addPointsToCreator(followUserID, 5); // Adjust points as desired
-
-      // Increment numFollowed for the current user
+      
+      // Increment numFollowing for the current user
       transaction.update(followingUserDoc, {
+        numFollowing: FieldValue.increment(1),
       });
     });
+
+
 
     // Return a success message if the transaction completes without errors
     return res.status(200).json({ message: 'User followed successfully!' });
@@ -472,6 +522,9 @@ app.post('/api/follow', async (req, res) => {
 
 // Unfollow user and decrement follower/following counts
 app.delete('/api/unfollow', async (req, res) => {
+  // Extract userID (current user) from the request body and followUserID (target user) from the query parameter
+  const { userID } = req.body; // Current user ID from the request body
+  const followUserID = req.query.id; // Target user ID from the query parameter
 
   // Validate that both userID and followUserID are provided
   if (!userID || !followUserID) {
@@ -514,7 +567,9 @@ app.delete('/api/unfollow', async (req, res) => {
         numFollowers: FieldValue.increment(-1),
       });
 
+      // Decrement numFollowing for the current user
       transaction.update(followingUserDoc, {
+        numFollowing: FieldValue.increment(-1),
       });
     });
 
