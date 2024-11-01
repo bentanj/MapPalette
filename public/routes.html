@@ -169,27 +169,50 @@
             };
         },
         mounted() {
-            const loadingSpinner = document.getElementById('loading-spinner');
-            const appContainer = document.getElementById('app-container');
+                const loadingSpinner = document.getElementById('loading-spinner');
+                const appContainer = document.getElementById('app-container');
 
-            // Check every 100ms if window.currentUser is populated
-            const userCheckInterval = setInterval(() => {
-                if (window.currentUser) {
-                    console.log(window.currentUser)
-                    loadingSpinner.style.display = 'none';
-                    appContainer.style.display = 'block';
-                    clearInterval(userCheckInterval); // Stop checking once loaded
-                }
-            }, 100);
-        },
+                // Check every 100ms if window.currentUser is populated
+                const userCheckInterval = setInterval(() => {
+                    if (window.currentUser) {
+                        loadingSpinner.style.display = 'none';
+                        appContainer.style.display = 'block';
+                        clearInterval(userCheckInterval); // Stop checking once loaded
+                    }
+                }, 100);
+            },
 
         created() {
-            // if window.currentUser is populated, call api to retrieve all routes https://app-6kmdo5luna-uc.a.run.app/users/getallusers
-            // refer to canva slide 6 for response
-            
+            const routesPromise = axios.get('https://app-907670644284.us-central1.run.app/api/allposts');
+            const usersPromise = axios.get('https://app-907670644284.us-central1.run.app/api/api/users/getallusers');
 
+            Promise.all([routesPromise, usersPromise])
+                .then(([routesResponse, usersResponse]) => {
+                    console.log('Users Data:', usersResponse.data);
+                    console.log('Routes Data:', routesResponse.data);
+
+                    this.users = usersResponse.data.users;
+                    this.routes = routesResponse.data.posts.map(route => {
+                        const user = this.users.find(user => user.id === route.userID);
+
+                        if (!user) {
+                            console.warn(`User not found for route ${route.postID} with userID ${route.userID}`);
+                        }
+
+                        return {
+                            ...route,
+                            modalId: 'modal-' + route.postID,
+                            timeSince: this.calculateTimeSince(route.createdAt),
+                            commentsList: route.commentsList || [],
+                            username: user ? user.username : 'Unknown User',
+                        };  
+                    });
+                    this.applyFilters();
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                });
         },
-
 
 
         computed: {
@@ -331,7 +354,7 @@
         },
         methods: {
             likeRoute(route) {
-                const apiEndpoint = `https://app-6kmdo5luna-uc.a.run.app/api/posts/like?id=${route.postID}`;
+                const apiEndpoint = `https://app-6kmdo5luna-uc.a.run.app/api/posts/like?id=${route.postID}`; // Dynamic endpoint
                 const currentTime = Date.now();
 
                 // Throttle to avoid rapid calls
@@ -342,59 +365,26 @@
 
                 this.lastApiCallTime = currentTime;
 
-                // Update local like state
-                this.likedRoutes[route.postID] = true;
-                route.likeCount += 1;
+                // Toggle local like state for immediate feedback
+                const isLiked = this.likedRoutes[route.postID];
+                this.likedRoutes[route.postID] = !isLiked;
+                route.likeCount += isLiked ? -1 : 1;
 
                 // Disable the button during the API call
                 this.disableAction(route, 'like');
 
-                // Send a POST request to like the route in the database
+                // Send a POST request to update the like count in the database
                 axios.post(apiEndpoint)
                     .then(response => {
-                        console.log("Route liked in the database:", response.data);
+                        console.log("Like updated in the database:", response.data);
                     })
                     .catch(error => {
-                        console.error("Error liking route:", error);
+                        console.error("Error updating like:", error);
 
                         // Revert like action on error
-                        this.likedRoutes[route.postID] = false;
-                        route.likeCount -= 1;
-                        alert("Failed to like route. Please try again.");
-                    });
-            },
-
-            unlikeRoute(route) {
-                const apiEndpoint = `https://app-6kmdo5luna-uc.a.run.app/api/posts/unlike?id=${route.postID}`;
-                const currentTime = Date.now();
-
-                // Throttle to avoid rapid calls
-                if (currentTime - this.lastApiCallTime < 1000) {
-                    alert('Please wait a moment before unliking again.');
-                    return;
-                }
-
-                this.lastApiCallTime = currentTime;
-
-                // Update local like state
-                this.likedRoutes[route.postID] = false;
-                route.likeCount -= 1;
-
-                // Disable the button during the API call
-                this.disableAction(route, 'like');
-
-                // Send a POST request to unlike the route in the database
-                axios.post(apiEndpoint)
-                    .then(response => {
-                        console.log("Route unliked in the database:", response.data);
-                    })
-                    .catch(error => {
-                        console.error("Error unliking route:", error);
-
-                        // Revert unlike action on error
-                        this.likedRoutes[route.postID] = true;
-                        route.likeCount += 1;
-                        alert("Failed to unlike route. Please try again.");
+                        this.likedRoutes[route.postID] = isLiked;
+                        route.likeCount += isLiked ? 1 : -1;
+                        alert("Failed to update like. Please try again.");
                     });
             },
             // submitComment(route) {
@@ -507,15 +497,15 @@
 <!-- Action Buttons -->
 <div class="d-flex justify-content-around border-top border-bottom py-3">
   <!-- Like Button -->
-<button
+  <button
     class="btn btn-link p-0 action-button"
-    @click="likedRoutes[route.postID] ? unlikeRoute(route) : likeRoute(route)"
+    @click="likeRoute(route)"
     :disabled="disabledActions[route.postID]?.like"
->
+    :class="{ liked: likedRoutes[route.postID] }"
+  >
     <i :class="likedRoutes[route.postID] ? 'fas fa-thumbs-up me-1' : 'far fa-thumbs-up me-1'"></i>
-    <span>{{ likedRoutes[route.postID] ? 'Unlike' : 'Like' }}</span>
-</button>
-
+    <span>Like</span>
+  </button>
   <!-- Use Button -->
   <button
     class="btn btn-link p-0 action-button"
