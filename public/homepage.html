@@ -18,7 +18,7 @@
 
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    
+
     <!-- Firebase -->
     <script type="module" src="firebase.js"></script>
 
@@ -28,10 +28,35 @@
     <!-- axios-->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const appContainer = document.getElementById('app-container');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            // Check if currentUser is available and ready
+            const checkUserLoaded = setInterval(() => {
+                if (window.currentUser) {
+                    clearInterval(checkUserLoaded);  // Stop checking
+                    loadingSpinner.style.display = 'none'; // Hide loading spinner
+                    appContainer.style.display = 'block';  // Show main content
+                    console.log("User data is ready:", window.currentUser);
+                }
+            }, 100);
+        });
+    </script> -->
 </head>
     
 <body>
-    <div id="app">
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="text-center" style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Main Content, Hidden Initially -->
+    <div id="app-container" style="display: none;">
+        <div id="app">
         <!-- Navbar -->
         <nav-bar :user_profile="userProfile"></nav-bar>
 
@@ -153,11 +178,13 @@
 
         <!-- Footer Section -->
         <site-footer></site-footer>
-
+        </div>
     </div>
+    
 
         <!-- Initial Vue app setup -->
     <script>
+
         const { createApp } = Vue
 
         // ActivityCard Component
@@ -535,11 +562,28 @@
                     activities: []
                 }
             },
+            mounted() {
+                const loadingSpinner = document.getElementById('loading-spinner');
+                const appContainer = document.getElementById('app-container');
+
+                // Check every 100ms if `window.currentUser` is populated
+                const userCheckInterval = setInterval(() => {
+                    if (window.currentUser) {
+                        this.updateUserProfile(window.currentUser);
+                        loadingSpinner.style.display = 'none';
+                        appContainer.style.display = 'block';
+                        clearInterval(userCheckInterval); // Stop checking once loaded
+                    }
+                }, 100);
+            },
 
             created() {
                 // axios user and post data
                 const postsPromise = axios.get('databaseTemplateFolder/postTemplate.json');
                 const usersPromise = axios.get('databaseTemplateFolder/userTemplate.json');
+                
+                const user1 = window.currentUser
+                // console.log("Hello, i am user1: " + user1)
 
                 Promise.all([postsPromise, usersPromise])
                     .then(([postsResponse, usersResponse]) => {
@@ -547,8 +591,11 @@
                         const users = usersResponse.data.users;
 
                         // assume user1 nw
-                        const user1 = users[0];  
-                        this.currentUser = user1.username;
+                        const user1 = users[0]
+                        // const user1 = window.currentUser
+
+                        console.log("Hello, i am user1: " + user1)
+                        // this.currentUser = user1.username;
 
                         // user profile
                         this.userProfile = {
@@ -631,7 +678,20 @@
                     setTimeout(() => {
                         activity.likeDisabled = false;
                     }, 1000);
+                },
+                updateUserProfile(user) {
+                    this.userProfile = {
+                        name: user.username,
+                        username: `@${user.username}`,
+                        avatar: user.profilePicture,
+                        stats: {
+                            routes: user.postsCreated?.length || 0,
+                            following: user.followed?.length || 0,
+                            followers: user.followers?.length || 0
+                        }
+                    };
                 }
+
             }
         });
     </script>
