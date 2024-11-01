@@ -410,9 +410,6 @@ app.put('/api/posts/share', async (req, res) => {
 
 // Follow user and increment follower/following counts
 app.post('/api/follow', async (req, res) => {
-  // Extract userID (current user) from the request body and followUserID from the query parameter
-  const { userID } = req.body; // Current user ID from the request body
-  const followUserID = req.query.id; // Target user ID from the query parameter
 
   // Validate that both userID and followUserID are provided
   if (!userID || !followUserID) {
@@ -455,9 +452,11 @@ app.post('/api/follow', async (req, res) => {
         numFollowers: FieldValue.increment(1),
       });
 
-      // Increment numFollowing for the current user
+      // Add points to user for following someone else
+      await addPointsToCreator(followUserID, 5); // Adjust points as desired
+
+      // Increment numFollowed for the current user
       transaction.update(followingUserDoc, {
-        numFollowing: FieldValue.increment(1),
       });
     });
 
@@ -473,9 +472,6 @@ app.post('/api/follow', async (req, res) => {
 
 // Unfollow user and decrement follower/following counts
 app.delete('/api/unfollow', async (req, res) => {
-  // Extract userID (current user) from the request body and followUserID (target user) from the query parameter
-  const { userID } = req.body; // Current user ID from the request body
-  const followUserID = req.query.id; // Target user ID from the query parameter
 
   // Validate that both userID and followUserID are provided
   if (!userID || !followUserID) {
@@ -518,9 +514,7 @@ app.delete('/api/unfollow', async (req, res) => {
         numFollowers: FieldValue.increment(-1),
       });
 
-      // Decrement numFollowing for the current user
       transaction.update(followingUserDoc, {
-        numFollowing: FieldValue.increment(-1),
       });
     });
 
@@ -711,6 +705,65 @@ app.put('/api/update/user/profilePicture/:userID', upload.single('profilePicture
   }
 });
 
+//
+// LEADERBOARD API
+//
+
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const leaderboardRef = db.collection('leaderboard').orderBy('points', 'desc');
+    const snapshot = await leaderboardRef.get();
+
+    if (snapshot.empty) {
+      return res.status(404).json({ message: 'No leaderboard data found.' });
+    }
+
+    // Fetch leaderboard data along with `username` and `profilePicture`
+    const leaderboard = await Promise.all(snapshot.docs.map(async (doc) => {
+      const userID = doc.id;
+      const userDoc = await db.collection('users').doc(userID).get();
+
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        return {
+          userID,
+          points: doc.data().points,
+          username: userData.username || null,
+          profilePicture: userData.profilePicture || null
+        };
+      } else {
+        return {
+          userID,
+          points: doc.data().points,
+          username: null,
+          profilePicture: null
+        };
+      }
+    }));
+    
+    return res.status(200).json(leaderboard);
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    return res.status(500).json({ message: 'Error fetching leaderboard data.' });
+  }
+});
+
+exports.resetLeaderboard = pubsub.schedule('59 23 * * 0').onRun(async (context) => {
+  try {
+    const leaderboardRef = db.collection('leaderboard');
+    const snapshot = await leaderboardRef.get();
+
+    const batch = db.batch();
+    snapshot.forEach((doc) => {
+      batch.update(doc.ref, { points: 0 });
+    });
+
+    await batch.commit();
+    console.log('Leaderboard reset successfully');
+  } catch (error) {
+    console.error('Error resetting leaderboard:', error);
+  }
+});
 
 
 // TODO APIs
