@@ -219,7 +219,6 @@ app.delete('/api/posts', async (req, res) => {
 // POST RETRIEVAL API
 //
 
-// Retrieve all posts from the posts collection
 // Retrieve all posts from the posts collection and include username and profile picture
 app.get('/api/allposts', async (req, res) => {
   try {
