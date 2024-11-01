@@ -14,7 +14,7 @@ export const users = [
 
         // follower/following counts
         numFollowers: 2,
-        numFollowed: 2,
+        numFollowing: 2,
 
         // Array of posts created
         postsCreated: [
@@ -43,7 +43,7 @@ export const users = [
         profilePicture: 'gs://mappalette-9e0bd.appspot.com/profile_pictures/xL9FmK3nc762Uk9M4wQw/user2.png',
         
         numFollowers: 2,
-        numFollowed: 2,
+        numFollowing: 2,
 
         postsCreated: [
             { postID: 'G6jJrQ3m4nP2tU7cM3L', createdAt: new Date('2024-10-23T20:18:45+08:00') },
@@ -70,7 +70,7 @@ export const users = [
         profilePicture: 'gs://mappalette-9e0bd.appspot.com/profile_pictures/bD2LmX3td562Vk8N6wPw/user3.png',
         
         numFollowers: 2,
-        numFollowed: 2,
+        numFollowing: 2,
 
         postsCreated: [
             { postID: 'B9cHyD5j7uK1TnQ9cY5M', createdAt: new Date('2024-10-21T18:40:52+08:00') },
@@ -97,7 +97,7 @@ export const users = [
         profilePicture: 'gs://mappalette-9e0bd.appspot.com/profile_pictures/qW9KmY3ac792Ul7N7wRr/user4.png',
         
         numFollowers: 2,
-        numFollowed: 2,
+        numFollowing: 2,
 
         postsCreated: [
             { postID: 'D8rLkX4v7nT6QjM9oW4L', createdAt: new Date('2024-10-19T23:02:15+08:00') },
@@ -124,7 +124,7 @@ export const users = [
         profilePicture: 'gs://mappalette-9e0bd.appspot.com/profile_pictures/mX2VmH3tc792Jk8O5rPw/user5.png',
         
         numFollowers: 2,
-        numFollowed: 2,
+        numFollowing: 2,
 
         postsCreated: [
             { postID: 'H7fHyT2k8rP9QuX3tK2M', createdAt: new Date('2024-10-17T22:18:32+08:00') },
