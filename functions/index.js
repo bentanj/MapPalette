@@ -133,7 +133,7 @@ app.post('/api/create/:userID', async (req, res) => {
   }
 });
 
-// Get a specific post by ID
+// Get specific post by id
 app.get('/api/posts', async (req, res) => {
   const postID = req.query.id;
 
@@ -668,35 +668,32 @@ app.get('/api/:userID', async (req, res) => {
   }
 });
 
-// Retrieve all users from the "users" collection along with their subcollections
+// Retrieve all users from the "users" collection with subcollections as separate attributes
 app.get('/api/users/getallusers', async (req, res) => {
   try {
     // Fetch all documents from the users collection
     const usersSnap = await db.collection('users').get();
 
-    // Map each document to an object containing its data and subcollections
+    // Map each document to an object containing its data and individual subcollections as separate attributes
     const users = await Promise.all(usersSnap.docs.map(async (doc) => {
       // Base user data
       const userData = { id: doc.id, ...doc.data() };
 
-      // Fetch all subcollections for the current user
-      const subcollections = {};
+      // Fetch all subcollections for the current user and add each as its own attribute in userData
       const subcollectionRefs = await db.collection('users').doc(doc.id).listCollections();
 
-      // Iterate over each subcollection, retrieving its data
       for (const subcollectionRef of subcollectionRefs) {
         const subcollectionDocs = await subcollectionRef.get();
-        subcollections[subcollectionRef.id] = subcollectionDocs.docs.map(subDoc => ({
+        userData[subcollectionRef.id] = subcollectionDocs.docs.map(subDoc => ({
           id: subDoc.id,
           ...subDoc.data()
         }));
       }
 
-      // Merge subcollections with the main user data
-      return { ...userData, subcollections };
+      return userData;
     }));
 
-    // Respond with an array of all users, including their subcollections
+    // Respond with an array of all users, including their individual subcollections
     return res.status(200).json(users);
   } catch (error) {
     console.error('Error fetching users:', error);
