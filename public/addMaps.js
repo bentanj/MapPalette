@@ -59,7 +59,7 @@ const app = Vue.createApp({
         image: '',
         
         // Existing post related
-        mapId: null,
+        postId: null,
         isEditing: false,
 
         // Tour
@@ -496,8 +496,8 @@ const app = Vue.createApp({
                 const firstWaypoint = this.waypoints[0].location;
                 this.region = await this.getTownName(firstWaypoint.lat, firstWaypoint.lng);
         
-                const mapId = Date.now();
-                await this.captureMapAsImage(mapId);
+                const postId = Date.now();
+                await this.captureMapAsImage(postId);
                 console.log(this.postTitle, this.postDescription, this.waypoints, this.userID, this.currentColor, this.totalDistance, this.region, this.image);
 
                 const response = await axios.post(`${this.API_ENDPOINT}/api/create/`, {
@@ -545,7 +545,7 @@ const app = Vue.createApp({
             this.isFetching = true;
         
             try {
-                const response = await axios.get(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`);
+                const response = await axios.get(`${this.API_ENDPOINT}/api/posts/?id=${this.postId}`);
         
                 if (!response.data || Object.keys(response.data).length === 0) {
                     throw new Error("Post not found or already deleted.");
@@ -554,16 +554,16 @@ const app = Vue.createApp({
                 // Load map data into form fields
                 this.postTitle = response.data.title;
                 this.postDescription = response.data.description;
-                this.mapIdUserID = response.data.userID;
+                this.postIdUserID = response.data.userID;
                 this.currentColor = response.data.color;
 
                 // Check if the current user owns the map
-                if (this.mapIdUserID === this.userID) {
+                if (this.postIdUserID === this.userID) {
                     // User is the owner, allow editing
                     this.isEditing = true;
                 } else {
                     // User is not the owner, set as new map
-                    this.mapId = null; // Clears mapId for new save
+                    this.postId = null; // Clears postId for new save
                     this.isEditing = false; // Switch to "create" mode
                     this.setAlert('error', 'You are viewing a copy of this map. Changes will save as a new post.');
                 }
@@ -589,7 +589,7 @@ const app = Vue.createApp({
         },
 
         async editPost() {
-            if (this.mapIdUserID !== this.userID) {
+            if (this.postIdUserID !== this.userID) {
                 this.setAlert('error', 'You are not authorised to edit this post.');
                 return;
             }
@@ -607,10 +607,10 @@ const app = Vue.createApp({
                 // Form is valid, proceed to create the post
                 try {
                     this.submitting = true; // Show loading overlay
-                    const mapId = Date.now();
-                    await this.captureMapAsImage(mapId);
+                    const postId = Date.now();
+                    await this.captureMapAsImage(postId);
 
-                    const response = await axios.put(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`, {
+                    const response = await axios.put(`${this.API_ENDPOINT}/api/posts/?id=${this.postId}`, {
                         title: this.postTitle,
                         description: this.postDescription,
                         waypoints: this.waypoints,
@@ -641,7 +641,7 @@ const app = Vue.createApp({
 
         deletePost() {
             // Start the countdown without deleting the post immediately
-            if (this.mapIdUserID !== this.userID) {
+            if (this.postIdUserID !== this.userID) {
                 this.setAlert('error', 'You are not authorised to edit this post.');
                 return;
             };
@@ -659,7 +659,7 @@ const app = Vue.createApp({
             await deleteObject(imageRef);
             };
 
-            await axios.delete(`${this.API_ENDPOINT}/api/posts/?id=${this.mapId}`);
+            await axios.delete(`${this.API_ENDPOINT}/api/posts/?id=${this.postId}`);
             this.setAlert("success", "Your post has been successfully deleted.");
             window.location.href = "homepage.html"; // Redirect to homepage
         } catch (error) {
@@ -695,7 +695,7 @@ const app = Vue.createApp({
         },
 
         // Capture map as image and upload to Firebase Storage
-        async captureMapAsImage(mapId) {
+        async captureMapAsImage(postId) {
             // Define originalControls at the start so it’s accessible throughout the function
             let originalControls;
         
@@ -755,7 +755,7 @@ const app = Vue.createApp({
                 const imageData = canvas.toDataURL("image/png");
         
                 // Upload the captured image to Firebase
-                const storageRef = ref(this.storage, `maps_created/${mapId}.png`);
+                const storageRef = ref(this.storage, `maps_created/${postId}.png`);
                 await uploadString(storageRef, imageData, 'data_url');
                 this.image = await getDownloadURL(storageRef);
         
@@ -914,8 +914,8 @@ const app = Vue.createApp({
                 this.username = user.email;
                 
                 // Determine if editing or creating a new post
-                this.mapId = this.getMapIdFromUrl();
-                this.isEditing = !!this.mapId;
+                this.postId = this.getMapIdFromUrl();
+                this.isEditing = !!this.postId;
     
                 try {
                     // Ensure Google Maps API is loaded before continuing
