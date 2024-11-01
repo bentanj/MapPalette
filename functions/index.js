@@ -639,35 +639,32 @@ app.get('/api/:userID', async (req, res) => {
   }
 });
 
-// Retrieve all users from the "users" collection along with their subcollections
+// Retrieve all users from the "users" collection with subcollections as separate attributes
 app.get('/api/users/getallusers', async (req, res) => {
   try {
     // Fetch all documents from the users collection
     const usersSnap = await db.collection('users').get();
 
-    // Map each document to an object containing its data and subcollections
+    // Map each document to an object containing its data and individual subcollections as separate attributes
     const users = await Promise.all(usersSnap.docs.map(async (doc) => {
       // Base user data
       const userData = { id: doc.id, ...doc.data() };
 
-      // Fetch all subcollections for the current user
-      const subcollections = {};
+      // Fetch all subcollections for the current user and add each as its own attribute in userData
       const subcollectionRefs = await db.collection('users').doc(doc.id).listCollections();
 
-      // Iterate over each subcollection, retrieving its data
       for (const subcollectionRef of subcollectionRefs) {
         const subcollectionDocs = await subcollectionRef.get();
-        subcollections[subcollectionRef.id] = subcollectionDocs.docs.map(subDoc => ({
+        userData[subcollectionRef.id] = subcollectionDocs.docs.map(subDoc => ({
           id: subDoc.id,
           ...subDoc.data()
         }));
       }
 
-      // Merge subcollections with the main user data
-      return { ...userData, subcollections };
+      return userData;
     }));
 
-    // Respond with an array of all users, including their subcollections
+    // Respond with an array of all users, including their individual subcollections
     return res.status(200).json(users);
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -676,6 +673,109 @@ app.get('/api/users/getallusers', async (req, res) => {
 });
 
 
+// Get all user objects followed by the current user
+app.get('/api/users/getfollowed/:userID', async (req, res) => {
+  const { userID } = req.params;
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    // Reference the 'followed' subcollection under the current user
+    const followedSnap = await db.collection('users').doc(userID).collection('followed').get();
+
+    if (followedSnap.empty) {
+      return res.status(404).json({ message: 'No followed users found for this user.' });
+    }
+
+    // Collect all followed user IDs
+    const followedUserIDs = followedSnap.docs.map(doc => doc.id);
+
+    // Fetch user data for each followed user ID from the main "users" collection
+    const followedUsersPromises = followedUserIDs.map(async (followedUserID) => {
+      const userDoc = await db.collection('users').doc(followedUserID).get();
+      return userDoc.exists ? { userID: followedUserID, ...userDoc.data() } : null;
+    });
+
+    // Wait for all followed user data to be fetched
+    const followedUsers = (await Promise.all(followedUsersPromises)).filter(user => user !== null);
+
+    return res.status(200).json(followedUsers);
+  } catch (error) {
+    console.error('Error fetching followed users:', error);
+    return res.status(500).json({ message: 'Error fetching followed users.' });
+  }
+});
+
+// Get all user objects that the current user is following
+app.get('/api/users/following/:userID', async (req, res) => {
+  const { userID } = req.params;
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    // Reference the 'following' subcollection under the current user
+    const followingSnap = await db.collection('users').doc(userID).collection('following').get();
+
+    if (followingSnap.empty) {
+      return res.status(404).json({ message: 'No following users found for this user.' });
+    }
+
+    // Collect all following user IDs
+    const followingUserIDs = followingSnap.docs.map(doc => doc.id);
+
+    // Fetch user data for each following user ID from the main "users" collection
+    const followingUsersPromises = followingUserIDs.map(async (followingUserID) => {
+      const userDoc = await db.collection('users').doc(followingUserID).get();
+      return userDoc.exists ? { userID: followingUserID, ...userDoc.data() } : null;
+    });
+
+    // Wait for all following user data to be fetched
+    const followingUsers = (await Promise.all(followingUsersPromises)).filter(user => user !== null);
+
+    return res.status(200).json(followingUsers);
+  } catch (error) {
+    console.error('Error fetching following users:', error);
+    return res.status(500).json({ message: 'Error fetching following users.' });
+  }
+});
+
+// Retrieve condensed user data with an isFollowing flag for each user
+app.get('/api/users/getcondensed/:currentUserID', async (req, res) => {
+  const { currentUserID } = req.params;
+
+  if (!currentUserID) {
+    return res.status(400).json({ message: 'Current user ID is required.' });
+  }
+
+  try {
+    // Fetch all user documents in the "users" collection
+    const usersSnap = await db.collection('users').get();
+
+    // Get all user IDs that the current user is following
+    const followingSnap = await db.collection('users').doc(currentUserID).collection('following').get();
+    const followingIDs = followingSnap.docs.map(doc => doc.id);
+
+    // Map through each user document and create the condensed user object
+    const condensedUsers = usersSnap.docs.map(doc => {
+      const userData = doc.data();
+      return {
+        userID: doc.id,
+        username: userData.username || null,
+        profilePicture: userData.profilePicture || null,
+        isFollowing: followingIDs.includes(doc.id) // Check if the user is in the current user's "following" list
+      };
+    });
+
+    return res.status(200).json(condensedUsers);
+  } catch (error) {
+    console.error('Error fetching condensed user data:', error);
+    return res.status(500).json({ message: 'Error fetching condensed user data.' });
+  }
+});
 
 // Get all posts made by a specific user
 app.get('/api/users/:userID/posts', async (req, res) => {
@@ -794,35 +894,42 @@ app.put('/api/update/user/profilePicture/:userID', upload.single('profilePicture
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const leaderboardRef = db.collection('leaderboard').orderBy('points', 'desc');
-    const snapshot = await leaderboardRef.get();
+    const leaderboardSnapshot = await leaderboardRef.get();
 
-    if (snapshot.empty) {
+    if (leaderboardSnapshot.empty) {
+      console.log('No leaderboard data found.');
       return res.status(404).json({ message: 'No leaderboard data found.' });
     }
 
-    // Fetch leaderboard data along with `username` and `profilePicture`
-    const leaderboard = await Promise.all(snapshot.docs.map(async (doc) => {
-      const userID = doc.id;
-      const userDoc = await db.collection('users').doc(userID).get();
+    // Get userIDs from the leaderboard snapshot
+    const userIds = leaderboardSnapshot.docs.map(doc => doc.id);
+    console.log('Fetched userIDs:', userIds);
 
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-        return {
-          userID,
-          points: doc.data().points,
-          username: userData.username || null,
-          profilePicture: userData.profilePicture || null
-        };
+    // Fetch all user documents in a batch request
+    const usersSnapshot = await db.getAll(...userIds.map(id => db.collection('users').doc(id)));
+
+    // Map user data by userID for easy lookup
+    const userDataMap = {};
+    usersSnapshot.forEach((doc) => {
+      if (doc.exists) {
+        userDataMap[doc.id] = doc.data();
       } else {
-        return {
-          userID,
-          points: doc.data().points,
-          username: null,
-          profilePicture: null
-        };
+        console.log(`User not available for userID: ${doc.id}`);
       }
-    }));
-    
+    });
+
+    // Combine leaderboard and user data
+    const leaderboard = leaderboardSnapshot.docs.map((doc) => {
+      const userID = doc.id;
+      const user = userDataMap[userID];
+      return {
+        userID,
+        points: doc.data().points,
+        username: user ? user.username : 'Unknown User',
+        profilePicture: user ? user.profilePicture : 'default-profile-picture-url'
+      };
+    });
+
     return res.status(200).json(leaderboard);
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
