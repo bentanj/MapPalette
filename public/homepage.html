@@ -1,11 +1,5 @@
 <!-- TODO:
-1. fix the grid system for small screens
-    2. find different pic for hero section 
-3. follower count remove?
-4. update card design (pending)
-5. Color theme?
-6. quick actions redundant?
-7. for small screens, remove the left sidebar. (maybe keep the hero section only.)
+4. trending route -> when map clicked goes to route page with modal of map opened?
 -->
 
 <!DOCTYPE html>
@@ -14,542 +8,703 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MapPalette Homepage</title>
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- homepage CSS -->
     <link rel="stylesheet" href="homepage_style.css">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Firebase -->
+    <script type="module" src="firebase.js"></script>
+
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- axios-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const appContainer = document.getElementById('app-container');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            // Check if currentUser is available and ready
+            const checkUserLoaded = setInterval(() => {
+                if (window.currentUser) {
+                    clearInterval(checkUserLoaded);  // Stop checking
+                    loadingSpinner.style.display = 'none'; // Hide loading spinner
+                    appContainer.style.display = 'block';  // Show main content
+                    console.log("User data is ready:", window.currentUser);
+                }
+            }, 100);
+        });
+    </script> -->
 </head>
     
 <body>
-    <!-- Keep your existing navbar code -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="#"><img src="resources/mappalettelogo.png" alt="MapPalette Logo">MapPalette</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-              <li class="nav-item">
-                <a class="nav-link" href="homepage_temp.html">Feed</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Routes</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="addMaps.html">Draw</a>
-              </li>
-              <!--Profile picture with dropdown-->
-              <li class="nav-item dropdown d-flex align-items-center ms-3">
-                <a class="nav-link dropdown-toggle p-0" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <img src="resources/download.jpeg" alt="Profile" class="rounded-circle" width="32" height="32">
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                  <li><a class="dropdown-item" href="#">Your Profile</a></li>
-                  <li><a class="dropdown-item" href="#">Settings</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="#">Log Out</a></li>
-                </ul>
-              </li>
-            </ul>
-          </div>
-        </div>
-    </nav>
-
-    <section class="hero-section">
-        <div class="hero-background"></div>
-        <div class="hero-overlay"></div>
-        <div class="container">
-            <div class="hero-content">
-                <h1>Running Community Feed</h1>
-                <p>Stay inspired by fellow runners' achievements, discover popular routes, and share your running journey.</p>
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <i class="bi bi-people-fill"></i>
-                        <span>2.5k Active Runners</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="bi bi-map-fill"></i>
-                        <span>500+ Shared Routes</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="bi bi-trophy-fill"></i>
-                        <span>Daily Achievements</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Left sidebar -->
-            <div class="col-lg-3 col-md-4">
-                <div class="side-column bg-white p-4 rounded shadow-sm">
-                    <!-- Profile Summary -->
-                    <div class="mb-4 pb-3 border-bottom">
-                        <div class="d-flex align-items-center mb-3">
-                            <img src="resources/download.jpeg" alt="Profile" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                            <div>
-                                <h6 class="mb-0 fw-bold">John Doe</h6>
-                                <small class="text-muted">@johndoe</small>
-                                this is gpt created, can remove follower count
-                            </div>
-                        </div>
-                        <div class="row text-center g-2">
-                            <div class="col-4">
-                                <div class="p-2 border rounded">
-                                    <div class="fw-bold">24</div>
-                                    <small class="text-muted">Routes</small>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="p-2 border rounded">
-                                    <div class="fw-bold">156</div>
-                                    <small class="text-muted">Following</small>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="p-2 border rounded">
-                                    <div class="fw-bold">198</div>
-                                    <small class="text-muted">Followers</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-            
-                    <!-- Quick Actions -->
-                    <div class="mb-4 pb-3 border-bottom">
-                        <h6 class="mb-3 text-uppercase fw-bold text-muted small">Quick Actions (a bit redundant?)</h6>
-                        <button class="btn btn-primary w-100 mb-2">
-                            <i class="bi bi-map me-2"></i>
-                            Create New Route
-                        </button>
-                        <button class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-search me-2"></i>
-                            Browse Routes
-                        </button>
-                    </div>
-            
-                    <!-- Navigation Menu -->
-                    <div class="mb-4">
-                        <h6 class="mb-3 text-uppercase fw-bold text-muted small">Menu</h6>
-                        <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
-                                <i class="bi bi-activity me-3"></i>
-                                My Activities
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
-                                <i class="bi bi-map me-3"></i>
-                                Saved Routes
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
-                                <i class="bi bi-trophy me-3"></i>
-                                Challenges
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
-                                <i class="bi bi-calendar-event me-3"></i>
-                                Events
-                            </a>
-                        </div>
-                    </div>
-            
-                    <!-- Trending Routes -->
-                    <div>
-                        <h6 class="mb-3 text-uppercase fw-bold text-muted small">Trending Routes</h6>
-                        <div class="card mb-2 hover-overlay">
-                            <img src="resources/map1.png" class="card-img-top" alt="Route preview" style="height: 100px; object-fit: cover;">
-                            <div class="card-body p-2">
-                                <h6 class="card-title mb-1">Marina Bay Loop</h6>
-                                <p class="card-text small text-muted mb-0">5.2km • 42 saves this week</p>
-                            </div>
-                        </div>
-                        <div class="card mb-2 hover-overlay">
-                            <img src="resources/map2.png" class="card-img-top" alt="Route preview" style="height: 100px; object-fit: cover;">
-                            <div class="card-body p-2">
-                                <h6 class="card-title mb-1">East Coast Park Trail</h6>
-                                <p class="card-text small text-muted mb-0">8.1km • 38 saves this week</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Updated main content area -->
-            <div class="col-lg-8 col-md-7 content">
-                <div id="activity-feed"></div>
-            </div>
-            
-            <!-- <div class="col-md-1 spacing">
-            </div> -->
-            
-            <!-- Keep your existing right sidebar -->
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="text-center" style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
 
+    <!-- Main Content, Hidden Initially -->
+    <div id="app-container" style="display: none;">
+        <div id="app">
+        <!-- Navbar -->
+        <nav-bar :user_profile="userProfile"></nav-bar>
+
+        <div class="main-content-wrapper">
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="hero-background"></div>
+                <div class="hero-overlay"></div>
+                <div class="container">
+                    <div class="hero-content">
+                        <h1>Running Community Feed</h1>
+                        <p>Stay inspired by fellow runners' achievements, discover popular routes, and share your running journey.</p>
+                        <div class="hero-stats">
+                            <div v-for="stat in heroStats" :key="stat.id" class="stat-item">
+                                <i :class="stat.icon"></i>
+                                <span>{{ stat.text }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- main content -->
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- Left sidebar -->
+                    <div class="col-lg-3 col-md-4">
+                        <div class="side-column bg-white p-4 rounded shadow-sm">
+                            <!-- Profile Summary -->
+                            <div class="mb-4 pb-3 border-bottom">
+                                <div class="d-flex align-items-center mb-3">
+                                    <img :src="userProfile.avatar" alt="Profile" class="rounded-circle me-3" 
+                                        style="width: 50px; height: 50px; object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ userProfile.name }}</h6>
+                                        <small class="text-muted">{{ userProfile.username }}</small>
+                                    </div>
+                                </div>
+                                <div class="row text-center g-2">
+                                    <div class="col-4" v-for="(value, key) in userProfile.stats" :key="key">
+                                        <div class="p-2 border rounded">
+                                            <div class="fw-bold">{{ value }}</div>
+                                            <small class="text-muted">{{ key }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <!-- Quick Actions -->
+                            <div class="mb-4 pb-3 border-bottom">
+                                <h6 class="mb-3 text-uppercase fw-bold text-muted small">Quick Actions</h6>
+                                <a href="addMaps.html" class="btn btn-primary w-100 mb-2">
+                                    <i class="bi bi-map me-2"></i>
+                                    Draw Your Map!
+                                </a>
+                                <a href="routes.html" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-search me-2"></i>
+                                    Browse Routes
+                                </a>
+                            </div>
+                    
+                            <!-- Navigation Menu -->
+                            <div class="mb-4">
+                                <h6 class="mb-3 text-uppercase fw-bold text-muted small">Menu</h6>
+                                <div class="list-group list-group-flush">
+                                    <a v-for="item in menuItems" 
+                                    :key="item.id" 
+                                    href="#" 
+                                    class="list-group-item list-group-item-action d-flex align-items-center">
+                                        <i :class="item.icon + ' me-3'"></i>
+                                        {{ item.text }}
+                                    </a>
+                                </div>
+                            </div>
+                    
+                            <!-- Trending Routes -->
+                            <div>
+                                <h6 class="mb-3 text-uppercase fw-bold text-muted small">Trending Routes</h6>
+                                <div v-for="route in trendingRoutes" 
+                                    :key="route.id" 
+                                    class="card mb-2 hover-overlay"
+                                    @click="viewRoute(route)">
+                                    <img :src="route.image" class="card-img-top" alt="Route preview" 
+                                        style="height: 100px; object-fit: cover;">
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title mb-1">{{ route.title }}</h6>
+                                        <p class="card-text small text-muted mb-0">{{ route.distance }} • {{ route.saves }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main content area using vue components -->
+                    <div class="col-lg-8 col-md-8 content">
+                        <div id="activity-feed">
+                            <activity-card
+                                v-for="activity in activities"
+                                :key="activity.id"
+                                :activity="activity"
+                                :current-user="currentUser"
+                                @like="likeActivity"
+                                @open-modal="openActivityModal"
+                                @edit="handleActivityEdit">
+                            </activity-card>
+                        </div>
+                    </div>
+
+                    <!-- Updated modal component -->
+                    <comment-modal
+                        v-if="selectedActivity"
+                        :activity="selectedActivity"
+                        @close="selectedActivity = null"
+                        @like="likeActivity"
+                    ></comment-modal>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <site-footer></site-footer>
+        </div>
+    </div>
+    
+
+        <!-- Initial Vue app setup -->
     <script>
-        // The JavaScript for creating activity cards remains the same as in the previous version
-        const activities = [
-            {
-                user: "Wei Shen",
-                userImg: 'resources/download.jpeg',
-                date: "30 September 2024 at 21:33",
-                location: "Central",
-                title: "Night Run",
-                distance: "6.05 km",
-                description: "-placeholder-",
-                time: "30m 3s",
-                mapImg: "resources/map1.png"
+
+        const { createApp } = Vue
+
+        // ActivityCard Component
+        const ActivityCard = {
+        props: {
+            activity: {
+                type: Object,
+                required: true
             },
-            {
-                user: "Potato",
-                userImg: 'resources/download.jpeg',
-                date: "29 September 2024 at 21:33",
-                location: "Central",
-                title: "Evening Run",
-                description: "-placeholder-",
-                distance: "2.40 km",
-                time: "10m 15s",
-                mapImg: "resources/map2.png"
+            currentUser: {  
+                type: String,
+                required: true
             }
-        ];
-
-        // Updated createActivityCard function with Future Imperfect styling
-        function createActivityCard(activity) {
-            // Create main article element with Future Imperfect styling
-            const article = document.createElement('article');
-            article.className = 'post';
-            article.style.cursor = 'pointer';
-
-            // Make the entire card clickable
-            article.addEventListener('click', function() {
-                const modal = new bootstrap.Modal(document.getElementById(`commentModal${activity.id}`));
-                modal.show();
-            });
-
-            // Header section
-            const header = document.createElement('header');
-            
-            // Title div with activity name and location
-            const titleDiv = document.createElement('div');
-            titleDiv.className = 'title';
-            const h2 = document.createElement('h2');
-            h2.textContent = activity.title;
-            const location = document.createElement('p');
-            location.textContent = activity.location;
-            titleDiv.appendChild(h2);
-            titleDiv.appendChild(location);
-
-            // Meta div with date and user info
-            const metaDiv = document.createElement('div');
-            metaDiv.className = 'meta';
-            const date = document.createElement('time');
-            date.className = 'published';
-            date.textContent = activity.date;
-            const author = document.createElement('div');
-            author.className = 'd-flex align-items-center justify-content-end mt-2';
-            author.innerHTML = `
-                <span class="me-2">${activity.user}</span>
-                <img src="${activity.userImg}" alt="Profile" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
-            `;
-            metaDiv.appendChild(date);
-            metaDiv.appendChild(author);
-
-            // Append title and meta to header
-            header.appendChild(titleDiv);
-            header.appendChild(metaDiv);
-            article.appendChild(header);
-
-            // Image section
-            if (activity.mapImg) {
-                const imageLink = document.createElement('a');
-                imageLink.className = 'image featured';
-                imageLink.href = '#';
-                const img = document.createElement('img');
-                img.src = activity.mapImg;
-                img.alt = 'Activity Map';
-                img.style.height = '300px';
-                img.style.objectFit = 'cover';
-                img.style.width = '100%';
-                imageLink.appendChild(img);
-                article.appendChild(imageLink);
+        },
+        computed: {
+            isLiked() {
+                return this.activity.isLiked || false;
+            },
+            isOwnPost() {  
+                return this.currentUser === this.activity.user;
             }
-
-            // Content section
-            const content = document.createElement('div');
-            content.className = 'content';
-            
-            // Stats display
-            const stats = document.createElement('div');
-            stats.className = 'd-flex justify-content-between text-center mb-3';
-            stats.innerHTML = `
-                <div>
-                    <h6 class="mb-0 fw-bold">${activity.distance}</h6>
-                    <small class="text-muted">Distance</small>
+        },
+        methods: {
+            handleEdit() {
+                window.location.href = `addMaps.html?id=${this.activity.id}`;
+            },
+            useRoute() {
+                window.location.href = `addMaps.html?id=${this.activity.id}`;
+            },
+            handleShare() {
+                window.location.href = `homepage.html?id=${this.activity.id}`;
+            }
+        },
+        template: `
+            <article class="post">
+                <!-- d header -->
+                <header>
+                    <div class="title">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h2>{{ activity.title }}</h2>
+                            <!-- Add dropdown menu -->
+                            <div v-if="isOwnPost" class="dropdown">
+                                <button class="btn btn-link text-dark p-0" 
+                                        type="button" 
+                                        data-bs-toggle="dropdown" 
+                                        aria-expanded="false"
+                                        @click.stop>
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <button class="dropdown-item" @click.stop="handleEdit">
+                                            <i class="fas fa-edit me-2"></i>Edit Post
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p>{{ activity.user }}</p>
+                    </div>
+                    <div class="meta">
+                        <time class="published">{{ activity.date }}</time>
+                        <div class="d-flex align-items-center justify-content-end mt-2">
+                            <span class="me-2">{{ activity.user }}</span>
+                            <img :src="activity.userImg" alt="Profile" class="rounded-circle" 
+                                style="width: 40px; height: 40px; object-fit: cover;">
+                        </div>
+                    </div>
+                </header>
+                
+                
+                <div class="image featured" @click="$emit('open-modal', activity)">
+                    <img :src="activity.mapImg" alt="Activity Map">
                 </div>
-                <div>
-                    <h6 class="mb-0 fw-bold">${activity.time}</h6>
-                    <small class="text-muted">Time</small>
+                
+                <div class="content">
+                    <div class="d-flex justify-content-between text-center mb-3">
+                        <div>
+                            <h6 class="mb-0 fw-bold">{{ activity.distance }}</h6>
+                            <small class="text-muted">Distance</small>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">{{ activity.time }}</h6>
+                            <small class="text-muted">Time</small>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="flex-grow-1">
+                            <p v-if="activity.description" class="mb-0">{{ activity.description }}</p>
+                        </div>
+                        <div class="d-flex ms-3">
+                            <div class="me-3">
+                                <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ activity.location }}</small>
+                            </div>
+                            <div class="me-3">
+                                <small class="text-muted"><i class="bi bi-heart"></i> {{ activity.likes || 0 }}</small>
+                            </div>
+                            <div>
+                                <small class="text-muted"><i class="bi bi-chat"></i> {{ activity.comments ? activity.comments.length : 0 }}</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            `;
-            content.appendChild(stats);
-
-            // Description
-            if (activity.description) {
-                const description = document.createElement('p');
-                description.textContent = activity.description;
-                content.appendChild(description);
-            }
-
-            article.appendChild(content);
-
-            // Footer section with actions
-            const footer = document.createElement('footer');
-            
-            // Action buttons (Like and Comment)
-            const actions = document.createElement('div');
-            actions.className = 'actions';
-
-            // Like button
-            const likeButton = document.createElement('button');
-            likeButton.className = 'btn btn-outline-primary btn-sm me-2';
-            likeButton.innerHTML = '<i class="bi bi-hand-thumbs-up"></i> Like';
-            likeButton.addEventListener('click', function(event) {
-                event.stopPropagation(); // Prevent card click event
-                console.log('Liked:', activity.title);
-            });
-
-            // Comment button
-            const commentButton = document.createElement('button');
-            commentButton.className = 'btn btn-outline-secondary btn-sm';
-            commentButton.setAttribute('data-bs-toggle', 'modal');
-            commentButton.setAttribute('data-bs-target', `#commentModal${activity.id}`);
-            commentButton.innerHTML = '<i class="bi bi-chat"></i> Comment';
-            commentButton.addEventListener('click', function(event) {
-                event.stopPropagation(); // Prevent card click event
-            });
-
-            actions.appendChild(likeButton);
-            actions.appendChild(commentButton);
-            footer.appendChild(actions);
-
-            // Stats list
-            const statsList = document.createElement('ul');
-            statsList.className = 'stats';
-            statsList.innerHTML = `
-                <li><i class="bi bi-geo-alt"></i> ${activity.location}</li>
-                <li><i class="bi bi-heart"></i> 0</li>
-                <li><i class="bi bi-chat"></i> 0</li>
-            `;
-            footer.appendChild(statsList);
-
-            article.appendChild(footer);
-
-            return article;
-        }   
-
-        // Keep your existing modal creation and comment functionality
-        function createCommentModal(activity) {
-            const modal = document.createElement('div');
-            modal.className = 'modal fade';
-            modal.id = `commentModal${activity.id}`;
-            modal.tabIndex = '-1';
-            modal.setAttribute('aria-labelledby', `commentModalLabel${activity.id}`);
-            modal.setAttribute('aria-hidden', 'true');
-
-            const modalDialog = document.createElement('div');
-            modalDialog.className = 'modal-dialog modal-lg';
-            modal.appendChild(modalDialog);
-
-            const modalContent = document.createElement('div');
-            modalContent.className = 'modal-content';
-            modalDialog.appendChild(modalContent);
-
-            // Modal Header
-            const modalHeader = document.createElement('div');
-            modalHeader.className = 'modal-header flex-column align-items-start';
-            modalContent.appendChild(modalHeader);
-
-            const titleDiv = document.createElement('div');
-            titleDiv.className = 'w-100 d-flex justify-content-between align-items-center mb-1';
-            modalHeader.appendChild(titleDiv);
-
-            const modalTitle = document.createElement('h5');
-            modalTitle.className = 'modal-title mb-0';
-            modalTitle.id = `commentModalLabel${activity.id}`;
-            modalTitle.textContent = activity.title;
-            titleDiv.appendChild(modalTitle);
-
-            const closeButton = document.createElement('button');
-            closeButton.type = 'button';
-            closeButton.className = 'btn-close';
-            closeButton.setAttribute('data-bs-dismiss', 'modal');
-            closeButton.setAttribute('aria-label', 'Close');
-            titleDiv.appendChild(closeButton);
-
-            const userNameHeader = document.createElement('p');
-            userNameHeader.className = 'mb-0 text-muted';
-            userNameHeader.style.fontSize = '0.9rem';
-            userNameHeader.textContent = `by ${activity.user}`;
-            modalHeader.appendChild(userNameHeader);
-
-            // Modal Body
-            const modalBody = document.createElement('div');
-            modalBody.className = 'modal-body';
-            modalContent.appendChild(modalBody);
-
-            // Image Section
-            const imageContainer = document.createElement('div');
-            imageContainer.style.width = '100%';
-            imageContainer.style.height = '300px';
-            imageContainer.style.backgroundColor = '#e9ecef';
-            imageContainer.style.borderRadius = '8px';
-            imageContainer.style.marginBottom = '15px';
-            imageContainer.style.display = 'flex';
-            imageContainer.style.justifyContent = 'center';
-            imageContainer.style.alignItems = 'center';
-            modalBody.appendChild(imageContainer);
-
-            if (activity.mapImg) {
-                const mapImage = document.createElement('img');
-                mapImage.src = activity.mapImg;
-                mapImage.alt = 'Activity Map';
-                mapImage.style.width = '100%';
-                mapImage.style.height = '100%';
-                mapImage.style.objectFit = 'cover';
-                mapImage.style.borderRadius = '8px';
-                imageContainer.appendChild(mapImage);
-            }
-
-            // Activity details
-            const details = document.createElement('p');
-            details.className = 'text-muted';
-            details.textContent = `${activity.date} | 0 Likes`; // Assuming no likes initially
-            modalBody.appendChild(details);
-
-            const distance = document.createElement('p');
-            distance.innerHTML = `<strong>Distance:</strong> ${activity.distance}`;
-            modalBody.appendChild(distance);
-
-            const description = document.createElement('p');
-            description.innerHTML = `<strong>Description:</strong> ${activity.description}`;
-            modalBody.appendChild(description);
-
-            // Like, Comment, Share Links
-            const actionLinks = document.createElement('div');
-            actionLinks.className = 'd-flex justify-content-around border-top border-bottom py-2';
-            modalBody.appendChild(actionLinks);
-
-            const createActionLink = (icon, text) => {
-                const link = document.createElement('a');
-                link.href = '#';
-                link.className = 'd-flex align-items-center text-decoration-none text-dark';
-                link.innerHTML = `<i class="bi bi-${icon} me-2"></i> <span>${text}</span>`;
-                return link;
-            };
-
-            actionLinks.appendChild(createActionLink('hand-thumbs-up', 'Like'));
-            actionLinks.appendChild(createActionLink('chat', 'Comment'));
-            actionLinks.appendChild(createActionLink('share', 'Share'));
-
-            // Add a horizontal rule
-            const horizontalRule = document.createElement('hr');
-            horizontalRule.className = 'my-3'; // Add some margin to the top and bottom
-            modalBody.appendChild(horizontalRule);
-
-            // Comments section
-            const commentsHeader = document.createElement('h6');
-            commentsHeader.textContent = 'Comments';
-            modalBody.appendChild(commentsHeader);
-
-            const commentInput = document.createElement('textarea');
-            commentInput.className = 'form-control mb-3';
-            commentInput.rows = '2';
-            commentInput.placeholder = 'Add a comment...';
-            modalBody.appendChild(commentInput);
-
-            const submitButton = document.createElement('button');
-            submitButton.className = 'btn btn-primary mb-3';
-            submitButton.textContent = 'Post Comment';
-            modalBody.appendChild(submitButton);
-
-            const commentList = document.createElement('ul');
-            commentList.className = 'list-unstyled';
-            modalBody.appendChild(commentList);
-
-            submitButton.addEventListener('click', function() {
-                addComment(activity.id, commentInput.value);
-                commentInput.value = '';
-            });
-
-            return modal;
+                
+                <!-- start of footer -->
+                <footer>
+                    <div class="actions">
+                        <div class="d-flex justify-content-between border-top border-bottom py-3">
+                            <button
+                                class="btn btn-link p-0 action-button"
+                                @click.stop="$emit('like', activity)"
+                                :class="{ 'liked': isLiked }"
+                                :disabled="activity.likeDisabled">
+                                <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
+                                <span>Like</span>
+                            </button>
+                            <button
+                                class="btn btn-link p-0 action-button"
+                                @click.stop="$emit('open-modal', activity)">
+                                <i class="far fa-comment me-1"></i>
+                                <span>Comment</span>
+                            </button>
+                            <button
+                                class="btn btn-link p-0 action-button"
+                                @click.stop="useRoute">
+                                <i class="far fa-map me-1"></i>
+                                <span>Use</span>
+                            </button>
+                            <button
+                                class="btn btn-link p-0 action-button"
+                                @click.stop="handleShare">
+                                <i class="far fa-share-square me-1"></i>
+                                <span>Share</span>
+                            </button>
+                        </div>
+                    </div>
+                </footer>
+            </article>`
         }
 
-        function addComment(activityId, commentText) {
-            const commentList = document.querySelector(`#commentModal${activityId} .list-unstyled`);
-            
-            const commentElement = document.createElement('li');
-            
-            const userStrong = document.createElement('strong');
-            userStrong.textContent = 'User:';
-            
-            const commentContent = document.createTextNode(` ${commentText}`);
-            
-            commentElement.appendChild(userStrong);
-            commentElement.appendChild(commentContent);
-            
-            commentList.appendChild(commentElement);
+        // CommentModal Component
+        const CommentModal = {
+                props: {
+                    activity: {
+                        type: Object,
+                        required: true
+                    }
+                },
+
+                data() {
+                    return {
+                        newComment: '',
+                        modal: null,
+                        showAllComments: false,
+                        disabledActions: {},
+                        lastApiCallTime: 0
+                    }
+                },
+
+                computed: {
+                    isLiked() {
+                        return this.activity.isLiked || false;
+                    }
+                },
+
+                mounted() {
+                    this.modal = new bootstrap.Modal(this.$el)
+                    this.modal.show()
+                    this.$el.addEventListener('hidden.bs.modal', () => {
+                        this.$emit('close')
+                    })
+                },
+
+                methods: {
+
+                    useRoute() {
+                        window.location.href = `addMaps.html?id=${this.activity.id}`;
+                    },
+                    handleShare() {
+                        window.location.href = `homepage.html?id=${this.activity.id}`;
+                    },
+
+                    submitComment() {
+                        if (!this.newComment.trim()) return;
+
+                        const currentTime = Date.now();
+                        if (currentTime - this.lastApiCallTime < 1000) {
+                            alert('Please wait a moment before performing another action.');
+                            return;
+                    }
+
+                    this.lastApiCallTime = currentTime;
+                    this.disabledActions.comment = true;
+
+                    if (!this.activity.comments) {
+                        this.activity.comments = [];
+                    }
+                    
+                    this.activity.comments.push({
+                        name: 'You',
+                        text: this.newComment
+                    });
+                    
+                    this.newComment = '';
+
+                    setTimeout(() => {
+                        this.disabledActions.comment = false;
+                    }, 1000);
+                },
+
+                toggleShowAllComments() {
+                    this.showAllComments = !this.showAllComments;
+                },
+
+                limitedComments() {
+                    if (this.showAllComments) {
+                        return this.activity.comments;
+                    } else {
+                        return this.activity.comments ? this.activity.comments.slice(0, 4) : [];
+                    }
+                },
+                
+            },
+
+            template: `
+                <div class="modal fade" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <!-- Modal Header -->
+                        <div class="modal-header d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="modal-title" :id="'modalLabel'">{{ activity.title }}</h5>
+                                <h6 class="modal-author text-muted">by {{ activity.user }}</h6>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="modal-body">
+                            <div id="modal-pic">
+                                <img :src="activity.mapImg" alt="Activity Map" class="img-fluid">
+                            </div>
+
+                            <!-- Modal Content -->
+                            <p class="text-muted">Posted {{ activity.date }}</p>
+                            <p class="text-muted">{{ activity.likes || 0 }} Likes | {{ activity.comments ? activity.comments.length : 0 }} Comments</p>
+                            
+                            <!-- Stats Row -->
+                            <div class="d-flex mb-3">
+                                <p class="me-4"><strong>Distance:</strong> {{ activity.distance }}</p>
+                                <p><strong>Time:</strong> {{ activity.time }}</p>
+                            </div>
+                            
+                            <p>{{ activity.description }}</p>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex border-top border-bottom py-3">
+                                <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
+                                    <button class="btn btn-link p-0 action-button" 
+                                            @click="$emit('like', activity)"
+                                            :class="{ 'liked': isLiked }"
+                                            :disabled="activity.likeDisabled">
+                                        <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
+                                        <span>Like</span>
+                                    </button>
+
+                                    <button class="btn btn-link p-0 action-button"
+                                            @click="useRoute"
+                                            :disabled="disabledActions.use">
+                                        <i class="far fa-map me-1"></i>
+                                        <span>Use</span>
+                                    </button>
+
+                                    <button class="btn btn-link p-0 action-button"
+                                            @click="handleShare"
+                                            :disabled="disabledActions.share">
+                                        <i class="far fa-share-square me-1"></i>
+                                        <span>Share</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Comments Section -->
+                            <br>
+                            <h6>Comments</h6>
+                            <div class="mb-3">
+                                <textarea class="form-control mb-2"
+                                        placeholder="Add a comment..."
+                                        rows="2"
+                                        v-model="newComment"></textarea>
+                                <button class="btn btn-primary"
+                                        @click="submitComment"
+                                        :disabled="disabledActions.comment">
+                                    <span v-if="!disabledActions.comment">Post Comment</span>
+                                    <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
+                                </button>
+                            </div>
+
+                            <ul class="list-unstyled">
+                                <li v-for="comment in limitedComments()" class="mb-2">
+                                    <strong>{{ comment.name }}:</strong> {{ comment.text }}
+                                </li>
+                            </ul>
+
+                            <button v-if="activity.comments && activity.comments.length > 4"
+                                    @click="toggleShowAllComments"
+                                    class="btn btn-link p-0">
+                                {{ showAllComments ? 'Show Less Comments' : 'Load More Comments' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`
         }
 
-        // Initialize the feed
-        const activityFeed = document.getElementById('activity-feed');
-        activities.forEach(activity => {
-            activityFeed.appendChild(createActivityCard(activity));
-            document.body.appendChild(createCommentModal(activity));
+        // vue app with axios data fetching
+        const app = createApp({
+            components: {
+                ActivityCard,
+                CommentModal, 
+            },
+            data() {
+                return {
+                    currentUser: '',
+                    selectedActivity: null,
+                    lastApiCallTime: 0,
+                    userProfile: {
+                        name: '',
+                        username: '',
+                        avatar: '',
+                        stats: {
+                            routes: 0,
+                            following: 0,
+                            followers: 0
+                        }
+                    },
+                    heroStats: [
+                        { 
+                            id: 1, 
+                            icon: 'bi bi-people-fill', 
+                            text: '2.5k Active Runners' 
+                        },
+                        { 
+                            id: 2, 
+                            icon: 'bi bi-map-fill', 
+                            text: '500+ Shared Routes' 
+                        },
+                        { 
+                            id: 3, 
+                            icon: 'bi bi-trophy-fill', 
+                            text: 'Daily Achievements' 
+                        }
+                    ],
+                    menuItems: [
+                        { 
+                            id: 1, 
+                            icon: 'bi bi-activity', 
+                            text: 'My Activities', 
+                            route: 'activities' 
+                        },
+                        { 
+                            id: 2, 
+                            icon: 'bi bi-map', 
+                            text: 'Saved Routes', 
+                            route: 'saved-routes' 
+                        },
+                        { 
+                            id: 3, 
+                            icon: 'bi bi-trophy', 
+                            text: 'Challenges', 
+                            route: 'challenges' 
+                        }
+                    ],
+                    trendingRoutes: [],
+                    activities: []
+                }
+            },
+            mounted() {
+                const loadingSpinner = document.getElementById('loading-spinner');
+                const appContainer = document.getElementById('app-container');
+
+                // Check every 100ms if `window.currentUser` is populated
+                const userCheckInterval = setInterval(() => {
+                    if (window.currentUser) {
+                        this.updateUserProfile(window.currentUser);
+                        loadingSpinner.style.display = 'none';
+                        appContainer.style.display = 'block';
+                        clearInterval(userCheckInterval); // Stop checking once loaded
+                    }
+                }, 100);
+            },
+
+            created() {
+                // axios user and post data
+                const postsPromise = axios.get('databaseTemplateFolder/postTemplate.json');
+                const usersPromise = axios.get('databaseTemplateFolder/userTemplate.json');
+                
+                const user1 = window.currentUser
+                // console.log("Hello, i am user1: " + user1)
+
+                Promise.all([postsPromise, usersPromise])
+                    .then(([postsResponse, usersResponse]) => {
+                        const posts = postsResponse.data.posts;
+                        const users = usersResponse.data.users;
+
+                        // assume user1 nw
+                        const user1 = users[0]
+                        // const user1 = window.currentUser
+
+                        console.log("Hello, i am user1: " + user1)
+                        // this.currentUser = user1.username;
+
+                        // user profile
+                        this.userProfile = {
+                            name: user1.username,
+                            username: `@${user1.username}`,
+                            avatar: user1.profilePicture,
+                            stats: {
+                                routes: user1.postsCreated.length,
+                                following: user1.numFollowed || user1.followed.length,
+                                followers: user1.numFollowers || user1.followers.length
+                            }
+                        };
+
+                        // user1
+                        this.activities = posts.map(post => {
+                            const runTitles = "Morning Run";
+
+                            return {
+                                id: post.postID,
+                                user: user1.username,
+                                userImg: user1.profilePicture,
+                                date: new Date(post.createdAt).toLocaleString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }),
+                                location: post.waypoints[0].address,
+
+                                // hard code
+                                title: runTitles,
+                                routeTitle: post.title,
+                                description: post.description,
+                                distance: `${post.distance} km`,
+                                time: "N/A",
+                                mapImg: post.image,
+                                likes: post.likeCount,
+                                comments: [],
+                                isLiked: user1.postsLiked.some(liked => liked.postID === post.postID)
+                            };
+                        });
+
+                        // Sort posts by date for feed
+                        this.activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                        // Set trending routes (most liked posts)
+                        this.trendingRoutes = posts
+                            .sort((a, b) => b.likeCount - a.likeCount)
+                            .slice(0, 2)
+                            .map(post => ({
+                                id: post.postID,
+                                title: post.title,
+                                distance: `${post.distance} km`,
+                                saves: `${post.shareCount} saves this week`,
+                                image: post.image
+                            }));
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data:', error);
+                    }
+                );
+            },
+
+            methods: {
+                openActivityModal(activity) {
+                    this.selectedActivity = activity;
+                },
+                
+                likeActivity(activity) {
+                    activity.likeDisabled = true;
+                    if (!activity.isLiked) {
+                        if (!activity.likes) activity.likes = 0;
+                        activity.likes++;
+                        activity.isLiked = true;
+                    } else {
+                        activity.likes--;
+                        activity.isLiked = false;
+                    }
+                    setTimeout(() => {
+                        activity.likeDisabled = false;
+                    }, 1000);
+                },
+                updateUserProfile(user) {
+                    this.userProfile = {
+                        name: user.username,
+                        username: `@${user.username}`,
+                        avatar: user.profilePicture,
+                        stats: {
+                            routes: user.postsCreated?.length || 0,
+                            following: user.followed?.length || 0,
+                            followers: user.followers?.length || 0
+                        }
+                    };
+                }
+
+            }
         });
     </script>
 
-    <!-- Keep your existing footer code -->
-        <!-- Footer Section -->
-    <footer class="bg-light text-center text-lg-start mt-5">
-        <div class="container p-4">
-            <!-- Grid row -->
-            <div class="row align-items-center">
-                <!-- Column 1: Brand Name -->
-                <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
-                    <h5 class="text-uppercase fw-bold">MapPalette</h5>
-                </div>
+    <!-- import navbar from navbar.js -->
+    <script src="navbar/navbar.js"></script>
 
-                <!-- Column 2: Contact Information -->
-                <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
-                    <h6 class="fw-bold">Contact us</h6>
-                    <p class="mb-1">mappalette@gmail.com</p>
-                    <p class="mb-1">+65-687654321</p>
-                    <p>81 Victoria St, Singapore 188065</p>
-                </div>
+    <!-- import footer from footer.js -->
+    <script src="footer/footer.js"></script>
 
-                <!-- Column 3: Social Media Icons -->
-                <div class="col-lg-4 col-md-12 text-md-end">
-                    <a href="#" class="me-3 text-dark"><img
-                            src="https://img.icons8.com/ios-filled/24/000000/facebook-new.png" alt="Facebook" /></a>
-                    <a href="#" class="me-3 text-dark"><img
-                            src="https://img.icons8.com/ios-filled/24/000000/linkedin.png" alt="LinkedIn" /></a>
-                    <a href="#" class="me-3 text-dark"><img
-                            src="https://img.icons8.com/ios-filled/24/000000/twitter.png" alt="Twitter" /></a>
-                    <a href="#" class="text-dark"><img
-                            src="https://img.icons8.com/ios-filled/24/000000/instagram-new.png" alt="Instagram" /></a>
-                </div>
-            </div>
-            <!-- Grid row -->
-
-            <hr class="my-4">
-
-            <!-- Copyright -->
-            <div class="text-center">
-                <p class="mb-0">&copy; 2024. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <script>
+        app.mount('#app')
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,0 +1,729 @@
+<!-- A LOT OF CODE HERE IS ADAPTED FROM HOMEPAGE.HTML (esp the activity cards part)-->
+
+<!--Profile page when press share do what?-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapPalette Profile</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- existing CSS (included homepage for the nav bar css code) -->
+    <link rel="stylesheet" href="homepage_style.css">
+    <link rel="stylesheet" href="profile_style.css">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- axios-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    
+</head>
+<body>
+    <div id="app">
+        <!-- Navbar -->
+        <nav-bar :user_profile="userProfile"></nav-bar>
+
+        <!-- Profile Header Section -->
+        <div class="main-content-wrapper">
+            <div class="profile-header">
+                <div class="cover-photo">
+                    <img :src="userProfile.coverPhoto" alt="Cover Photo">
+                    <button class="btn btn-light btn-sm edit-cover-photo">
+                        <i class="bi bi-camera"></i> Edit Cover Photo
+                    </button>
+                </div>
+                <div class="container position-relative">
+                    <div class="profile-info">
+                        <div class="profile-picture-container">
+                            <img :src="userProfile.avatar" alt="Profile Picture" class="profile-picture">
+                            <button class="btn btn-light btn-sm edit-profile-photo">
+                                <i class="bi bi-camera"></i>
+                            </button>
+                        </div>
+                        <div class="profile-details">
+                            <h1>{{ userProfile.name }}</h1>
+                            <p class="text-muted">{{ userProfile.bio || 'No bio yet' }}</p>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="btn btn-primary">
+                                <i class="bi bi-pencil"></i> Edit Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="container mt-4">
+                <div class="row">
+                    <!-- Left Sidebar -->
+                    <div class="col-lg-4">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">About</h5>
+                                <div class="about-items">
+                                    <div class="about-item">
+                                        <i class="bi bi-geo-alt"></i>
+                                        <span>Lives in {{ userProfile.location }}</span>
+                                    </div>
+                                    <div class="about-item">
+                                        <i class="bi bi-calendar3"></i>
+                                        <span>Joined {{ userProfile.joinDate }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Stats</h5>
+                                <div class="stats-grid">
+                                    <div class="stat-item">
+                                        <h3>{{ userProfile.stats.routes }}</h3>
+                                        <span>Routes</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <h3>{{ userProfile.stats.following }}</h3>
+                                        <span>Following</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <h3>{{ userProfile.stats.followers }}</h3>
+                                        <span>Followers</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <h3>{{ userProfile.stats.totalDistance }}km</h3>
+                                        <span>Total Distance</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="card-title mb-0">Recent Badges</h5>
+                                    <a href="#" class="text-primary">See All</a>
+                                </div>
+                                <div class="badges-grid">
+                                    <div v-for="badge in recentBadges" :key="badge.id" class="badge-item">
+                                        <img :src="badge.icon" :alt="badge.name">
+                                        <span>{{ badge.name }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content Area -->
+                    <div class="col-lg-8">
+                        <!-- Profile Navigation -->
+                        <div class="profile-nav mb-4">
+                            <div class="nav nav-tabs">
+                                <button class="nav-link" 
+                                        :class="{ 'active': currentTab === 'activities' }"
+                                        @click="currentTab = 'activities'">Activities</button>
+                                <button class="nav-link" 
+                                        :class="{ 'active': currentTab === 'routes' }"
+                                        @click="currentTab = 'routes'">Routes</button>
+                                <button class="nav-link" 
+                                        :class="{ 'active': currentTab === 'badges' }"
+                                        @click="currentTab = 'badges'">Badges</button>
+                            </div>
+                        </div>
+
+                        <!-- Activities Tab -->
+                        <div v-if="currentTab === 'activities'" id="activity-feed">
+                            <activity-card
+                                v-for="activity in activities"
+                                :key="activity.id"
+                                :activity="activity"
+                                :current-user="currentUser"
+                                @like="likeActivity"
+                                @open-modal="openActivityModal"
+                                @edit="handleActivityEdit">
+                            </activity-card>
+                        </div>
+
+                        <!-- Routes Tab -->
+                        <div v-if="currentTab === 'routes'" class="routes-grid">
+                            <div v-for="route in routes" :key="route.id" class="route-card">
+                                <img :src="route.image" :alt="route.title">
+                                <div class="route-info">
+                                    <h5>{{ route.title }}</h5>
+                                    <p>{{ route.distance }} • {{ route.duration }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Badges Tab -->
+                        <div v-if="currentTab === 'badges'" class="badges-container">
+                            <div v-for="badge in badges" :key="badge.id" class="badge-card">
+                                <img :src="badge.icon" :alt="badge.name">
+                                <h5>{{ badge.name }}</h5>
+                                <p>{{ badge.description }}</p>
+                                <small class="text-muted">Earned {{ badge.earnedDate }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <comment-modal
+            v-if="selectedActivity"
+            :activity="selectedActivity"
+            @close="selectedActivity = null"
+            @like="likeActivity">
+        </comment-modal>
+
+        <!-- Footer Section -->
+        <site-footer></site-footer>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        // ActivityCard Component (copy exactly as is from homepage)
+        const ActivityCard = {
+            props: {
+                activity: {
+                    type: Object,
+                    required: true
+                },
+                currentUser: {  
+                    type: String,
+                    required: true
+                }
+            },
+            computed: {
+                isLiked() {
+                    return this.activity.isLiked || false;
+                },
+                isOwnPost() {  
+                    return this.currentUser === this.activity.user;
+                }
+            },
+            methods: {
+                handleEdit() {
+                    window.location.href = `addMaps.html?id=${this.activity.id}`;
+                },
+                handleUse() {
+                    window.location.href = `addMaps.html?id=${this.activity.id}`;
+                },
+                handleShare() {
+                    window.location.href = `homepage.html?id=${this.activity.id}`;
+                }
+            },
+            template: `
+                <article class="post">
+                    <header>
+                        <div class="title">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h2>{{ activity.title }}</h2>
+                                <div v-if="isOwnPost" class="dropdown">
+                                    <button class="btn btn-link text-dark p-0" 
+                                            type="button" 
+                                            data-bs-toggle="dropdown" 
+                                            aria-expanded="false"
+                                            @click.stop>
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <button class="dropdown-item" 
+                                                    @click.stop="handleEdit">
+                                                <i class="fas fa-edit me-2"></i>Edit Post
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <p>{{ activity.user }}</p>
+                        </div>
+                        <div class="meta">
+                            <time class="published">{{ activity.date }}</time>
+                            <div class="d-flex align-items-center justify-content-end mt-2">
+                                <span class="me-2">{{ activity.user }}</span>
+                                <img :src="activity.userImg" alt="Profile" class="rounded-circle" 
+                                    style="width: 40px; height: 40px; object-fit: cover;">
+                            </div>
+                        </div>
+                    </header>
+                    
+                    <div class="image featured" @click="$emit('open-modal', activity)">
+                        <img :src="activity.mapImg" alt="Activity Map">
+                    </div>
+                    
+                    <div class="content">
+                        <div class="d-flex justify-content-between text-center mb-3">
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ activity.distance }}</h6>
+                                <small class="text-muted">Distance</small>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ activity.time }}</h6>
+                                <small class="text-muted">Time</small>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="flex-grow-1">
+                                <p v-if="activity.description" class="mb-0">{{ activity.description }}</p>
+                            </div>
+                            <div class="d-flex ms-3">
+                                <div class="me-3">
+                                    <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ activity.location }}</small>
+                                </div>
+                                <div class="me-3">
+                                    <small class="text-muted"><i class="bi bi-heart"></i> {{ activity.likes || 0 }}</small>
+                                </div>
+                                <div>
+                                    <small class="text-muted"><i class="bi bi-chat"></i> {{ activity.comments ? activity.comments.length : 0 }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <footer>
+                        <div class="actions">
+                            <div class="d-flex justify-content-between border-top border-bottom py-3">
+                                <button
+                                    class="btn btn-link p-0 action-button"
+                                    @click.stop="$emit('like', activity)"
+                                    :class="{ 'liked': isLiked }"
+                                    :disabled="activity.likeDisabled">
+                                    <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
+                                    <span>Like</span>
+                                </button>
+                                <button
+                                    class="btn btn-link p-0 action-button"
+                                    @click.stop="$emit('open-modal', activity)">
+                                    <i class="far fa-comment me-1"></i>
+                                    <span>Comment</span>
+                                </button>
+                                <button
+                                    class="btn btn-link p-0 action-button"
+                                    @click.stop="handleUse">
+                                    <i class="far fa-map me-1"></i>
+                                    <span>Use</span>
+                                </button>
+                                <button
+                                    class="btn btn-link p-0 action-button"
+                                    @click.stop="handleShare">
+                                    <i class="far fa-share-square me-1"></i>
+                                    <span>Share</span>
+                                </button>
+                            </div>
+                        </div>
+                    </footer>
+                </article>`
+        }
+
+        // CommentModal Component (copy from homepage)
+        const CommentModal = {
+                props: {
+                    activity: {
+                        type: Object,
+                        required: true
+                    }
+                },
+
+                data() {
+                    return {
+                        newComment: '',
+                        modal: null,
+                        showAllComments: false,
+                        disabledActions: {},
+                        lastApiCallTime: 0
+                    }
+                },
+
+                computed: {
+                    isLiked() {
+                        return this.activity.isLiked || false;
+                    }
+                },
+
+                mounted() {
+                    this.modal = new bootstrap.Modal(this.$el)
+                    this.modal.show()
+                    this.$el.addEventListener('hidden.bs.modal', () => {
+                        this.$emit('close')
+                    })
+                },
+
+                methods: {
+                    useRoute() {
+                        window.location.href = `addMaps.html?id=${this.activity.id}`;
+                    },
+
+                    shareRoute() {
+                        window.location.href = `homepage.html?id=${this.activity.id}`;
+                    },
+
+                    submitComment() {
+                        if (!this.newComment.trim()) return;
+
+                        const currentTime = Date.now();
+                        if (currentTime - this.lastApiCallTime < 1000) {
+                            alert('Please wait a moment before performing another action.');
+                            return;
+                    }
+
+                    this.lastApiCallTime = currentTime;
+                    this.disabledActions.comment = true;
+
+                    if (!this.activity.comments) {
+                        this.activity.comments = [];
+                    }
+                    
+                    this.activity.comments.push({
+                        name: 'You',
+                        text: this.newComment
+                    });
+                    
+                    this.newComment = '';
+
+                    setTimeout(() => {
+                        this.disabledActions.comment = false;
+                    }, 1000);
+                },
+
+                limitedComments() {
+                    if (this.showAllComments) {
+                        return this.activity.comments;
+                    } else {
+                        return this.activity.comments ? this.activity.comments.slice(0, 4) : [];
+                    }
+                },
+
+                toggleShowAllComments() {
+                    this.showAllComments = !this.showAllComments;
+                }
+            },
+
+            template: `
+                <div class="modal fade" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <!-- Modal Header -->
+                        <div class="modal-header d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="modal-title" :id="'modalLabel'">{{ activity.title }}</h5>
+                                <h6 class="modal-author text-muted">by {{ activity.user }}</h6>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="modal-body">
+                            <div id="modal-pic">
+                                <img :src="activity.mapImg" alt="Activity Map" class="img-fluid">
+                            </div>
+
+                            <!-- Modal Content -->
+                            <p class="text-muted">Posted {{ activity.date }}</p>
+                            <p class="text-muted">{{ activity.likes || 0 }} Likes | {{ activity.comments ? activity.comments.length : 0 }} Comments</p>
+                            
+                            <!-- Stats Row -->
+                            <div class="d-flex mb-3">
+                                <p class="me-4"><strong>Distance:</strong> {{ activity.distance }}</p>
+                                <p><strong>Time:</strong> {{ activity.time }}</p>
+                            </div>
+                            
+                            <p>{{ activity.description }}</p>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex border-top border-bottom py-3">
+                                <!-- Container for buttons with even spacing -->
+                                <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
+                                    <!-- Like Button -->
+                                    <button class="btn btn-link p-0 action-button" 
+                                            @click="$emit('like', activity)"
+                                            :class="{ 'liked': isLiked }"
+                                            :disabled="activity.likeDisabled">
+                                        <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
+                                        <span>Like</span>
+                                    </button>
+
+                                    <!-- Use Button -->
+                                    <button class="btn btn-link p-0 action-button"
+                                            @click='useRoute'
+                                            :disabled="disabledActions.use">
+                                        <i class="far fa-map me-1"></i>
+                                        <span>Use</span>
+                                    </button>
+
+                                    <!-- Share Button -->
+                                    <button class="btn btn-link p-0 action-button"
+                                            @click="shareRoute"
+                                            :disabled="disabledActions.share">
+                                        <i class="far fa-share-square me-1"></i>
+                                        <span>Share</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Comments Section -->
+                            <br>
+                            <h6>Comments</h6>
+                            <div class="mb-3">
+                                <textarea class="form-control mb-2"
+                                        placeholder="Add a comment..."
+                                        rows="2"
+                                        v-model="newComment"></textarea>
+                                <button class="btn btn-primary"
+                                        @click="submitComment"
+                                        :disabled="disabledActions.comment">
+                                    <span v-if="!disabledActions.comment">Post Comment</span>
+                                    <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
+                                </button>
+                            </div>
+
+                            <ul class="list-unstyled">
+                                <li v-for="comment in limitedComments()" class="mb-2">
+                                    <strong>{{ comment.name }}:</strong> {{ comment.text }}
+                                </li>
+                            </ul>
+
+                            <button v-if="activity.comments && activity.comments.length > 4"
+                                    @click="toggleShowAllComments"
+                                    class="btn btn-link p-0">
+                                {{ showAllComments ? 'Show Less Comments' : 'Load More Comments' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`
+        }
+
+        //  handle API data
+        const app = createApp({
+            components: {
+                ActivityCard,
+                CommentModal
+            },
+            data() {
+                return {
+                    currentTab: 'activities',
+                    currentUser: null,
+                    currentUserId: null, 
+                    selectedActivity: null,
+                    lastApiCallTime: 0,
+                    userProfile: {
+                        name: '',
+                        avatar: '',
+                        // hardcoded
+                        coverPhoto: 'resources/coverphoto_profile.jpg', 
+                        bio: '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
+                        location: 'Singapore',
+                        joinDate: '',
+                        stats: {
+                            routes: 0,
+                            following: 0,
+                            followers: 0,
+                            totalDistance: 0
+                        }
+                    },
+                    // hardcoded
+                    recentBadges: [
+                        { id: 1, name: '5K Master', icon: 'resources/badges/5km_master.jpg' },
+                        { id: 2, name: 'Early Bird', icon: '/api/placeholder/50/50' },
+                        { id: 3, name: 'Route Creator', icon: '/api/placeholder/50/50' }
+                    ],
+                    activities: [],
+                    routes: [],
+
+                    // hardcoded
+                    badges: [
+                        {
+                            id: 1,
+                            name: '5K Master',
+                            description: 'Completed 10 5K runs',
+                            icon: '/api/placeholder/80/80',
+                            earnedDate: 'Sep 15, 2024'
+                        }
+                    ],
+                    users: [],
+                    posts: []
+                }
+            },
+            created() {
+                const postsPromise = axios.get('./databaseTemplateFolder/postTemplate.json');
+                const usersPromise = axios.get('./databaseTemplateFolder/userTemplate.json');
+
+                Promise.all([postsPromise, usersPromise])
+                    .then(([postsResponse, usersResponse]) => {
+                        console.log('Posts Data:', postsResponse.data);
+                        console.log('Users Data:', usersResponse.data);
+
+                        this.users = usersResponse.data.users;
+                        this.posts = postsResponse.data.posts;
+
+                        // user1 for now
+                        const currentUserData = this.users[0]; 
+                        this.currentUser = currentUserData.username;
+                        this.currentUserId = currentUserData.id;
+
+                        // Update user profile
+                        this.updateUserProfile(currentUserData);
+
+                        // only show the current user's posts
+                        this.processUserPosts(currentUserData);
+                    })
+                    .catch(error => {
+                        console.error("Error fetching data:", error);
+                    });
+            },
+            methods: {
+                updateUserProfile(userData) {
+                    this.userProfile = {
+                        name: userData.username,
+                        // hardcoded
+                        avatar: userData.profilePicture || 'resources/download.jpeg', // Use actual profile picture if available
+                        coverPhoto: 'resources/coverphoto_profile.jpg', // Should come from userData when available
+                        bio: '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
+                        location: 'Singapore',
+                        joinDate: this.formatJoinDate(userData.createdAt || new Date()),
+                        stats: {
+                            routes: userData.postsCreated.length,
+                            following: userData.numFollowed || userData.followed.length,
+                            followers: userData.numFollowers || userData.followers.length,
+                            totalDistance: this.calculateTotalDistance(userData.postsCreated)
+                        }
+                    };
+                },
+
+                calculateTotalDistance(postsCreated) {
+                    let totalDistance = 0;
+                    postsCreated.forEach(post => {
+                        const fullPost = this.posts.find(p => p.postID === post.postID);
+                        if (fullPost) {
+                            totalDistance += fullPost.distance || 0;
+                        }
+                    });
+                    return parseFloat(totalDistance.toFixed(1));
+                },
+
+                processUserPosts(userData) {
+                    // only logged in user posts
+                    const userPostIds = new Set(userData.postsCreated.map(post => post.postID));
+                    const userPosts = this.posts.filter(post => userPostIds.has(post.postID));
+
+                    // format user's posts to activities 
+                    this.activities = userPosts.map(post => {
+                        return {
+                            id: post.postID,
+                            user: userData.username,
+                            userImg: userData.profilePicture || 'resources/download.jpeg',
+                            date: this.formatDate(post.createdAt),
+                            location: post.waypoints[0].address,
+                            title: this.generateRunTitle(post.createdAt),
+                            distance: `${post.distance} km`,
+                            description: post.description,
+                            time: this.generatePlaceholderTime(),
+                            mapImg: post.image,
+                            likes: post.likeCount,
+                            comments: [],
+                            isLiked: false
+                        };
+                    });
+
+                    // format user's posts to routes 
+                    this.routes = userPosts.map(post => ({
+                        id: post.postID,
+                        title: post.title,
+                        distance: `${post.distance}km`,
+                        duration: this.generatePlaceholderTime(),
+                        image: post.image
+                    }));
+                },
+
+                formatJoinDate(dateString) {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long'
+                    });
+                },
+
+                generateRunTitle(dateString) {
+                    const date = new Date(dateString);
+                    const hour = date.getHours();
+                    let timeOfDay;
+                    
+                    if (hour < 12) timeOfDay = "Morning";
+                    else if (hour < 17) timeOfDay = "Afternoon";
+                    else if (hour < 20) timeOfDay = "Evening";
+                    else timeOfDay = "Night";
+                    
+                    return `${timeOfDay} Run`;
+                },
+                
+                // missing in api
+                generatePlaceholderTime() {
+                    return "30m 00s";
+                },
+
+                formatDate(dateString) {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }).replace('at', 'at');
+                },
+
+                openActivityModal(activity) {
+                    this.selectedActivity = activity;
+                },
+                
+                likeActivity(activity) {
+                    const currentTime = Date.now();
+                    if (currentTime - this.lastApiCallTime < 1000) {
+                        alert('Please wait a moment before performing another action.');
+                        return;
+                    }
+
+                    this.lastApiCallTime = currentTime;
+                    activity.likeDisabled = true;
+
+                    if (!activity.isLiked) {
+                        if (!activity.likes) activity.likes = 0;
+                        activity.likes++;
+                        activity.isLiked = true;
+                    } else {
+                        activity.likes--;
+                        activity.isLiked = false;
+                    }
+
+                    setTimeout(() => {
+                        activity.likeDisabled = false;
+                    }, 1000);
+                }
+            }
+        });
+    </script>
+
+<!-- import navbar from navbar.js -->
+<script src="navbar/navbar.js"></script>
+
+<!-- import footer from footer.js -->
+<script src="footer/footer.js"></script>
+
+<script>
+    app.mount('#app')
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -2,557 +2,619 @@
 <html lang="en">
 
 <head>
+    <!-- Meta and Title -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MapPalette - Feed</title>
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Updated CSS Styles -->
+    <link rel="stylesheet" href="search.css">
+
+    <!-- Firebase -->
+    <script type="module" src="firebase.js"></script>
+
+    <!-- Vue.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
-
-    <style>
-        .navbar {
-            position: sticky;
-            top: 0;
-            z-index: 3;
-        }
-
-        .navbar-brand {
-            /*controls brand name size in navbar*/
-            font-size: 1.5rem;
-        }
-
-        .nav-link {
-            /*controls font size and margin of nav links*/
-            font-size: 1.2rem;
-            margin-left: 20px;
-        }
-
-        .profile-pic {
-            /*profile pic sizing*/
-            width: 30px;
-            height: 30px;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        .navbar-brand img {
-            /*brand logo sizing*/
-            width: 30px;
-            height: 30px;
-            margin-right: 8px;
-        }
-
-        .feed-header {
-            /*header background*/
-            background: url('route_photos/run.jpg') no-repeat center center;
-            background-size: cover;
-            position: relative;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 300px;
-        }
-
-        .feed-header::before {
-            /*dark overlay on header's bg image to enhance readability*/
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: inherit;
-            z-index: 1;
-        }
-
-        .feed-header h1,
-        .feed-header p {
-            /*places text above background image*/
-            position: relative;
-            z-index: 2;
-        }
-
-        .filters-section {
-            /*filter section outermost styling*/
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-            border: 1px solid #e0e0e0;
-        }
-
-        .filters-section h4 {
-            /*"Filter Routes" styling*/
-            color: #343a40;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .filters-section .form-label {
-            /*Location, Popularity, Time Created styling*/
-            font-weight: bold;
-            color: #495057;
-        }
-
-        .filters-section .form-control,
-        .filters-section .form-select {
-            /*Filter input field styling*/
-            border: 1px solid #ced4da;
-            padding: 10px;
-            transition: box-shadow 0.2s ease-in-out;
-        }
-
-        .filters-section .form-control:focus,
-        .filters-section .form-select:focus {
-            /*filter input focus styling*/
-            box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-            border-color: #007bff;
-        }
-
-        .filters-section .btn-primary {
-            /*filter button styling*/
-            background-color: #007bff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            transition: background-color 0.2s ease-in-out;
-        }
-
-        .filters-section .btn-primary:hover {
-            /*hover on filter button*/
-            background-color: #0056b3;
-        }
-
-        .post-card {
-            /*Card styling*/
-            margin-bottom: 20px;
-            cursor: pointer;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-            border: 1px solid #e0e0e0;
-        }
-
-        .truncate-2-lines {
-            /*truncates the description to fit only 2 lines*/
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-height: 3em;
-            min-height: 3em;
-        }
-
-        .image-box img {
-            /*image within card styling*/
-            border-radius: 8px;
-            width: 400px;
-            height: 150px;
-            object-fit: cover;
-        }
-
-        #modal-pic {
-            width: 100%;
-            height: 300px;
-            background-color: #e9ecef;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #modal-pic img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .modal-header {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .modal-title {
-            margin-bottom: 0;
-            /* Removes extra margin at the bottom of the title */
-        }
-
-        .modal-author {
-            margin: 0.25rem 0 0 0;
-            /* Adjusts margin to remove any bottom gap */
-            font-size: 0.875rem;
-            /* Optional: Adjust font size for author name */
-            color: #6c757d;
-            /* Muted text styling */
-        }
-
-
-        .fixed-bottom-right {
-            /*"Create Your Own Route!" button*/
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background-color: #007bff;
-            color: white;
-            border-radius: 30px;
-            font-size: 18px;
-            text-align: center;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            white-space: nowrap;
-        }
-    </style>
+    <!-- Axios for HTTP Requests -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
+    <div id="app">
+        <!-- Navbar -->
+        <nav-bar></nav-bar>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#"><img src="route_photos/mappalettelogo.png">MapPalette</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Feed</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Routes</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Draw</a>
-                    </li>
-                    <!--Profile picture-->
+        <!-- Feed Header -->
+        <div class="sample-header">
+            <div class="sample-header-section">
+                <h1>Routes</h1>
+                <h2>Discover, share, and engage with creative running routes.</h2>
+            </div>
+        </div>
+
+<!-- Main Content Wrapper -->
+<div class="sample-section-wrap">
+    <div class="container-fluid sample-section">
+        <!-- Your main content (Vue components) -->
+        <div>
+            <!-- Filter, Search, and Badge Row -->
+            <div class="row align-items-center mb-2">
+                
+                <!-- Search Input -->
+                <div class="col-4">
+                    <p>Search for a route:</p>
+                    <input type="text" class="form-control" v-model="searchQuery" @input="applyFilters"
+                        placeholder="Route Name">
+                </div>
+                
+
+                <!-- Badge (Positioned to the left of Filter Button) -->
+                <div class="col-auto ms-auto">
+                    <span v-if="filters.sortOption" class="badge">
+                        {{ filters.sortOption }}
+                        <span @click="removeFilter()" class="ms-1">&times;</span>
+                    </span>
+                </div>
+
+                <!-- Filter Options Button -->
+                <div class="col-auto">
                     <div class="dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" id="profileDropdown"
+                        <button class="btn filter-btn dropdown-toggle" type="button" id="filterDropdown"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="route_photos/download.jpeg" alt="Profile" class="profile-pic">
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                            <li><a class="dropdown-item" href="#">Your Profile</a></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            Sort By
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                            <!-- Sort by Distance -->
+                            <li>
+                                <h6 class="dropdown-header">Distance</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Shortest')">Shortest to
+                                    Longest</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Longest')">Longest to
+                                    Shortest</a>
+                            </li>
+
+                            <!-- Sort by Popularity -->
+                            <li>
+                                <h6 class="dropdown-header">Popularity</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Most Popular')">Most
+                                    Popular</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Least Popular')">Least
+                                    Popular</a>
+                            </li>
+
+                            <!-- Sort by Time Created -->
+                            <li>
+                                <h6 class="dropdown-header">Time Created</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Newest')">Newest</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Oldest')">Oldest</a>
+                            </li>
+
+                            <!-- Reset Button -->
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" href="#">Log Out</a></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" @click="resetFilters()">Reset
+                                    Filters</a>
+                            </li>
                         </ul>
                     </div>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-
-    <!-- Feed Header -->
-    <section class="feed-header">
-        <h1>Routes</h1>
-        <p>Discover, share, and engage with creative running routes.</p>
-    </section>
-
-    <div class="container-fluid">
-
-        <!-- Filters Section -->
-         <!-- reference steam filter -->
-        <div class="filters-section mt-3">
-            <h4>Filter Routes</h4>
-            <form class="row g-3">
-                <div class="col-md-3">
-                    <label for="location" class="form-label">
-                        <img src="https://img.icons8.com/ios-glyphs/16/000000/marker.png" alt="Location Icon"
-                            class="me-1">
-                        Location
-                    </label>
-                    <input type="text" class="form-control" id="location" placeholder="Enter location">
-                </div>
-
-                <div class="col-md-3">
-                    <label for="popularity" class="form-label">
-                        <img src="https://img.icons8.com/ios-glyphs/16/000000/star.png" alt="Star Icon" class="me-1">
-                        Popularity
-                    </label>
-                    <select id="popularity" class="form-select">
-                        <option selected>Choose...</option>
-                        <option>Most popular</option>
-                        <option>Trending</option>
-                        <option>Least popular</option>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label for="time" class="form-label">
-                        <img src="https://img.icons8.com/ios-glyphs/16/000000/time.png" alt="Time Icon" class="me-1">
-                        Time Created
-                    </label>
-                    <select id="time" class="form-select">
-                        <option selected>Choose...</option>
-                        <option>Newest</option>
-                        <option>Oldest</option>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label for="distance" class="form-label">
-                        <img src="https://img.icons8.com/ios-glyphs/16/000000/road.png" alt="Distance Icon"
-                            class="me-1">
-                        Distance
-                    </label>
-                    <select id="distance" class="form-select">
-                        <option selected>Choose...</option>
-                        <option>Shortest to Longest</option>
-                        <option>Longest to Shortest</option>
-                    </select>
-
-                </div>
-
-                <div class="col-md-12 text-end">
-                    <button type="submit" class="btn btn-primary">Filter</button>
-                </div>
-                <!-- Allow users to see what filter they choose -->
-            </form>
-        </div>
-
-        <div id="app">
-            <div class="container-fluid">
-                <!-- Dynamic Cards Rendering -->
-                <div class="row">
-                    <!-- Loop through the routes and render each in a column -->
-                    <div class="col-md-6 mb-4" v-for="route in routes" :key="route.modalId">
-                        <div class="card post-card" @click="openModal(route)">
-                            <div class="card-body d-flex flex-column flex-sm-row align-items-start">
-                                <div class="image-box me-3 mb-3 mb-sm-0">
-                                    <img :src="route.image" class="img-fluid" :alt="route.title">
-                                </div>
-                                <div>
-                                    <h5 class="card-title">{{ route.title }}</h5>
-                                    <p class="card-text truncate-2-lines">{{ truncateText(route.description, 150) }}</p>
-                                    <p class="mb-3"><strong>Distance:</strong> {{ route.distance }}</p>
-                                    <p class="mb-3"><strong>Location:</strong> {{ route.location }}</p>
-                                </div>
-                            </div>
-                            <div class="card-footer text-muted">
-                                {{ route.date }} | {{ route.likes }} Likes | {{ route.comments }} Comments
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dynamic Modals Rendering -->
-                <div v-for="route in routes" :key="route.modalId">
-                    <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'"
-                        aria-hidden="true">
-                        <div class="modal-dialog modal-xl">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                                    <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
-                                    <h6 class="modal-author text-muted">by {{ route.author }}</h6>
-                                </div>
-
-                                <div class="modal-body">
-                                    <div id="modal-pic">
-                                        <img :src="route.image" alt="Route Image" class="img-fluid">
-                                    </div>
-                                    <p class="text-muted">{{ route.date }} | {{ route.likes }} Likes</p>
-                                    <div>
-                                        <p><strong>Distance:</strong> {{ route.distance }}</p>
-                                        <p>{{ route.description }}</p>
-
-                                        <!-- Like, Comment, Share Links -->
-                                        <div class="d-flex justify-content-around border-top border-bottom py-2">
-                                            <a href="#"
-                                                class="d-flex align-items-center text-decoration-none text-dark">
-                                                <i class="fas fa-thumbs-up me-2"></i> <span>Like</span>
-                                            </a>
-                                            <a href="#"
-                                                class="d-flex align-items-center text-decoration-none text-dark">
-                                                <i class="fas fa-comment-alt me-2"></i> <span>Comment</span>
-                                            </a>
-                                            <a href="#"
-                                                class="d-flex align-items-center text-decoration-none text-dark">
-                                                <i class="fas fa-share me-2"></i> <span>Share</span>
-                                            </a>
-                                        </div>
-
-                                        <hr>
-
-                                        <!-- Comments Section: Render comments dynamically from commentsList -->
-                                        <h6>Comments</h6>
-                                        <textarea class="form-control mb-3" placeholder="Add a comment..."
-                                            rows="2"></textarea>
-                                        <button class="btn btn-primary mb-3">Post Comment</button>
-
-                                        <ul class="list-unstyled">
-                                            <li v-for="comment in route.commentsList" :key="comment.name">
-                                                <strong>{{ comment.name }}:</strong> {{ comment.text }}
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
-        </div>
+            <hr>
+            <!-- Modals -->
+            <route-modals :routes="filteredRoutes"></route-modals>
 
-        <!-- Floating "Create Your Own Route" Button -->
-        <div class="fixed-bottom-right">
-            <span class="create-route-text">+ Create Your Own Route!</span>
-        </div>
-
-
-        <!-- Footer Section -->
-        <footer class="bg-light text-center text-lg-start mt-5">
-            <div class="container p-4">
-                <!-- Grid row -->
-                <div class="row align-items-center">
-                    <!-- Column 1: Brand Name -->
-                    <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
-                        <h5 class="text-uppercase fw-bold">MapPalette</h5>
-                    </div>
-
-                    <!-- Column 2: Contact Information -->
-                    <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
-                        <h6 class="fw-bold">Contact us</h6>
-                        <p class="mb-1">mappalette@gmail.com</p>
-                        <p class="mb-1">+65-687654321</p>
-                        <p>81 Victoria St, Singapore 188065</p>
-                    </div>
-
-                    <!-- Column 3: Social Media Icons -->
-                    <div class="col-lg-4 col-md-12 text-md-end">
-                        <a href="#" class="me-3 text-dark"><img
-                                src="https://img.icons8.com/ios-filled/24/000000/facebook-new.png" alt="Facebook" /></a>
-                        <a href="#" class="me-3 text-dark"><img
-                                src="https://img.icons8.com/ios-filled/24/000000/linkedin.png" alt="LinkedIn" /></a>
-                        <a href="#" class="me-3 text-dark"><img
-                                src="https://img.icons8.com/ios-filled/24/000000/twitter.png" alt="Twitter" /></a>
-                        <a href="#" class="text-dark"><img
-                                src="https://img.icons8.com/ios-filled/24/000000/instagram-new.png"
-                                alt="Instagram" /></a>
-                    </div>
-                </div>
-                <!-- Grid row -->
-
-                <hr class="my-4">
-
-                <!-- Copyright -->
-                <div class="text-center">
-                    <p class="mb-0">&copy; 2024. All rights reserved.</p>
-                </div>
+            <!-- Cards -->
+            <div class="row mt-4">
+                <route-cards :routes="filteredRoutes"></route-cards>
             </div>
-        </footer>
 
-        <script>
-            const app = Vue.createApp({
-                data() {
-                    return {
-                        routes: [
-                            {
-                                title: "Ring of Resilience",
-                                description: "Challenge yourself on the Ring of Resilience, a circular route around Yishun Ring Road that tests your endurance and determination. It’s more than just a run—it’s a journey to discover your inner strength. Lace up, hit the ring, and let your resilience shine!",
-                                distance: "20km",
-                                location: "Yishun Ring Road",
-                                image: "route_photos/bob.jpg",
-                                date: "2 days ago",
-                                likes: 35,
-                                comments: 12,
-                                modalId: "ringModal",
-                                author: "Wei Shen",
-                                commentsList: [
-                                    { name: "Jane", text: "Amazing route! Really tests your stamina." },
-                                    { name: "Tom", text: "Loved the scenic views!" }
-                                ]
-                            },
-                            {
-                                title: "Dino Dash: Punggol Edition",
-                                description: "Tackle the Dino Dash: Punggol Edition, a unique route shaped like a dinosaur. Trace the curves of this prehistoric path and let its playful design fuel your run. Lace up and conquer this one-of-a-kind trail!",
-                                distance: "15km",
-                                location: "Punggol",
-                                image: "route_photos/bob.jpg",
-                                date: "1 day ago",
-                                likes: 25,
-                                comments: 5,
-                                modalId: "dinoModal",
-                                author: "Jane Doe",
-                                commentsList: [
-                                    { name: "Sarah", text: "So much fun! The dinosaur shape is awesome." },
-                                    { name: "Mike", text: "Great for a weekend run!" }
-                                ]
-                            },
-                            {
-                                title: "Palawan Beach Bolt",
-                                description: "Dive into the Palawan Beach Bolt, a coastal route that hugs the shoreline of Palawan Beach. With ocean breezes and sandy views guiding your run, this trail mixes relaxation with a dash of speed. Lace up, hit the sands, and let the island vibe push you forward!",
-                                distance: "8km",
-                                location: "Palawan Beach, Sentosa",
-                                image: "route_photos/bob.jpg",
-                                date: "3 days ago",
-                                likes: 18,
-                                comments: 7,
-                                modalId: "palawanModal",
-                                author: "John Smith",
-                                commentsList: [
-                                    { name: "Alice", text: "Love the beach vibe! So relaxing." },
-                                    { name: "John", text: "Perfect for an evening run!" }
-                                ]
-                            },
-                            {
-                                title: "Mount Faber Ascent",
-                                description: "Conquer the Mount Faber Ascent, a challenging uphill route that winds through lush greenery and offers breathtaking views of Singapore's skyline. This run is all about testing your stamina and reaching new heights. Lace up and rise above on this scenic trail!",
-                                distance: "7km",
-                                location: "Mount Faber",
-                                image: "route_photos/bob.jpg",
-                                date: "4 days ago",
-                                likes: 22,
-                                comments: 10,
-                                modalId: "faberModal",
-                                author: "Michael Lee",
-                                commentsList: [
-                                    { name: "Robert", text: "Tough climb but worth the view!" },
-                                    { name: "Linda", text: "My favorite uphill trail in Singapore!" }
-                                ]
-                            }
-                        ]
-                    };
+            <!-- Load More Button -->
+            <div class="text-center mt-4" v-if="displayedRoutes < routes.length">
+                <button class="btn btn-outline-primary" @click="loadMoreRoutes">Load More</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button @click="scrollToTop" class="btn back-to-top">
+    <i class="fas fa-chevron-up"></i>
+</button>
+
+<!-- Footer -->
+<site-footer></site-footer>
+
+</div>
+
+
+
+
+</body>
+
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                isDropdownOpen: false,
+                filters: {
+                    sortOption: null
                 },
-                methods: {
-                    openModal(route) {
-                        const modalElement = new bootstrap.Modal(document.getElementById(route.modalId));
-                        modalElement.show();
-                    },
-                    truncateText(text, length) {
-                        return text.length > length ? text.substring(0, length) + "..." : text;
-                    },
+                routes: [],
+                users: [],
+                filteredRoutes: [],
+                displayedRoutes: 8,
+                userName: 'You',
+                searchQuery: '',
+            };
+        },
+        created() {
+            const routesPromise = axios.get('./databaseTemplateFolder/postTemplate.json');
+            const usersPromise = axios.get('./databaseTemplateFolder/userTemplate.json');
+
+            Promise.all([routesPromise, usersPromise])
+                .then(([routesResponse, usersResponse]) => {
+                    console.log('Users Data:', usersResponse.data);
+                    console.log('Routes Data:', routesResponse.data);
+
+                    this.users = usersResponse.data.users;
+                    this.routes = routesResponse.data.posts.map(route => {
+                        const user = this.users.find(user => user.id === route.userID);
+
+                        if (!user) {
+                            console.warn(`User not found for route ${route.postID} with userID ${route.userID}`);
+                        }
+
+                        return {
+                            ...route,
+                            modalId: 'modal-' + route.postID,
+                            timeSince: this.calculateTimeSince(route.createdAt),
+                            commentsList: route.commentsList || [],
+                            username: user ? user.username : 'Unknown User',
+                        };
+                    });
+                    this.applyFilters();
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                });
+        },
+
+
+
+        computed: {
+            activeFilters() {
+                return this.filters.sortOption ? [{ key: 'Sort By', value: this.filters.sortOption }] : [];
+            }
+        },
+        methods: {
+            calculateTimeSince(dateString) {
+                const postDate = new Date(dateString);
+                const currentDate = new Date();
+                const diffInSeconds = Math.floor((currentDate - postDate) / 1000);
+                const intervals = [
+                    { label: 'year', seconds: 31536000 },
+                    { label: 'month', seconds: 2592000 },
+                    { label: 'day', seconds: 86400 },
+                    { label: 'hour', seconds: 3600 },
+                    { label: 'minute', seconds: 60 },
+                    { label: 'second', seconds: 1 },
+                ];
+                for (const interval of intervals) {
+                    const count = Math.floor(diffInSeconds / interval.seconds);
+                    if (count >= 1) {
+                        return count === 1
+                            ? `1 ${interval.label} ago`
+                            : `${count} ${interval.label}s ago`;
+                    }
                 }
-            });
+                return 'Just Now';
+            },
+            loadMoreRoutes() {
+                this.displayedRoutes += 8;
+                this.applyFilters();
+            },
+            applyFilters() {
+                let routes = [...this.routes];
+                if (this.searchQuery) {
+                    const lowerQuery = this.searchQuery.toLowerCase();
+                    routes = routes.filter(route => route.title.toLowerCase().includes(lowerQuery));
+                }
+                if (this.filters.sortOption) {
+                    switch (this.filters.sortOption) {
+                        case 'Shortest':
+                            routes.sort((a, b) => a.distance - b.distance);
+                            break;
+                        case 'Longest':
+                            routes.sort((a, b) => b.distance - a.distance);
+                            break;
+                        case 'Most Popular':
+                            routes.sort((a, b) => b.likeCount - a.likeCount);
+                            break;
+                        case 'Least Popular':
+                            routes.sort((a, b) => a.likeCount - b.likeCount);
+                            break;
+                        case 'Newest':
+                            routes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                            break;
+                        case 'Oldest':
+                            routes.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                            break;
+                        default:
+                    }
+                }
+                this.filteredRoutes = routes.slice(0, this.displayedRoutes);
+            },
+            setFilter(value) {
+                this.filters.sortOption = value;
+                this.displayedRoutes = 8;
+                this.applyFilters();
+            },
+            removeFilter() {
+                this.filters.sortOption = null;
+                this.applyFilters();
+            },
+            resetFilters() {
+                this.filters.sortOption = null;
+                this.displayedRoutes = 8;
+                this.applyFilters();
+            },
+            scrollToTop() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth',
+                });
+            }
+        }
+    });
 
-            app.mount('#app');
+    app.component('route-cards', {
+        props: ['routes'],
+        methods: {
+            openModal(route) {
+                const modalElement = new bootstrap.Modal(document.getElementById(route.modalId));
+                modalElement.show();
+            },
+            truncateText(text, length) {
+                return text.length > length ? text.substring(0, length) + "..." : text;
+            }
+        },
+        // Location will be the first waypoint's address
+        template: `
+                <div class="col-md-6 mb-4" v-for="route in routes" :key="route.postID">
+                    <div class="card post-card" @click="openModal(route)">
+                        <div class="card-body d-flex flex-column flex-sm-row align-items-start">
+                            <div class="image-box me-3 mb-3 mb-sm-0">
+                                <img :src="route.image" class="img-fluid" :alt="route.title">
+                            </div>
+                            <div>
+                                <h5 class="card-title" style="font-weight:bold">{{ route.title }}</h5>
+                                <p class="card-text truncate-2-lines">{{ truncateText(route.description, 150) }}</p>
+                                <p class="mb-3"><strong>Distance:</strong> {{ route.distance }} km</p>
+                                <p class="mb-3"><strong>Location:</strong> {{ route.waypoints[0].address }}</p>
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted">
+                            {{ route.timeSince }} | {{ route.likeCount }} Likes | {{ route.commentsList.length }} Comments | by {{ route.username }}
+                        </div>
+                    </div>
+                </div>
+            `
+    });
 
+    // Component for Route Modals
+    app.component('route-modals', {
+        props: ['routes'],
+        data() {
+            return {
+                newCommentText: {},
+                likedRoutes: {},
+                lastApiCallTime: 0,
+                disabledActions: {},
+                shareableLinks: {},
+                showShareModal: {}
+            };
+        },
+        methods: {
+            likeRoute(route) {
+                const apiEndpoint = `https://app-6kmdo5luna-uc.a.run.app/api/posts/like?id=${route.postID}`; // Dynamic endpoint
+                const currentTime = Date.now();
 
+                // Throttle to avoid rapid calls
+                if (currentTime - this.lastApiCallTime < 1000) {
+                    alert('Please wait a moment before liking again.');
+                    return;
+                }
 
-        </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+                this.lastApiCallTime = currentTime;
+
+                // Toggle local like state for immediate feedback
+                const isLiked = this.likedRoutes[route.postID];
+                this.likedRoutes[route.postID] = !isLiked;
+                route.likeCount += isLiked ? -1 : 1;
+
+                // Disable the button during the API call
+                this.disableAction(route, 'like');
+
+                // Send a POST request to update the like count in the database
+                axios.post(apiEndpoint)
+                    .then(response => {
+                        console.log("Like updated in the database:", response.data);
+                    })
+                    .catch(error => {
+                        console.error("Error updating like:", error);
+
+                        // Revert like action on error
+                        this.likedRoutes[route.postID] = isLiked;
+                        route.likeCount += isLiked ? 1 : -1;
+                        alert("Failed to update like. Please try again.");
+                    });
+            },
+            // submitComment(route) {
+            //     const commentText = this.newCommentText[route.postID];
+            //     if (!commentText) return;
+
+            //     const currentTime = Date.now();
+
+            //     if (currentTime - this.lastApiCallTime < 1000) {
+            //         alert('Please wait a moment before performing another action.');
+            //         return;
+            //     }
+
+            //     this.lastApiCallTime = currentTime;
+
+            //     // Disable the comment button and show loading
+            //     this.disableAction(route, 'comment');
+            //     this.newCommentText[route.postID] = ''; // Clear the textarea
+
+            //     // Simulate delay before adding the comment
+            //     setTimeout(() => {
+            //         // Create a new comment object
+            //         const newComment = {
+            //             commenterID: 'currentUserID', // Replace with actual user ID
+            //             commenterName: this.userName,
+            //             commentText: commentText,
+            //             timestamp: new Date().toISOString()
+            //         };
+
+            //         // Add the new comment to the route's commentsList
+            //         route.commentsList.push(newComment);
+
+            //         // Update the comment count
+            //         route.commentCount = route.commentsList.length;
+
+            //         // Re-enable the comment button
+            //         this.disabledActions[route.postID].comment = false;
+            //     }, 1000);
+            // },
+            disableAction(route, actionType) {
+                if (!this.disabledActions[route.postID]) {
+                    this.disabledActions[route.postID] = {};
+                }
+
+                this.disabledActions[route.postID][actionType] = true;
+
+                setTimeout(() => {
+                    this.disabledActions[route.postID][actionType] = false;
+                }, 1000);
+            },
+            // API call for "Use" button
+            useRoute(route) {
+                // Define the API endpoint and payload
+                const apiEndpoint = "https://api.example.com/use"; // Replace with your actual API endpoint
+
+                // Send POST request with route's ID
+                axios.post(apiEndpoint, { postID: route.postID })
+                    .then(response => {
+                        console.log("Route used:", response.data);
+                        // Optional: provide user feedback
+                    })
+                    .catch(error => {
+                        console.error("Error using route:", error);
+                        alert("Error using route.");
+                    });
+                this.disableAction(route, 'use')
+            },
+
+            // API call for "Share" button
+            shareRoute(route) {
+                // Define the API endpoint and payload
+                const apiEndpoint = "https://api.example.com/share"; // Replace with your actual API endpoint
+
+                // Send POST request with route's ID
+                axios.post(apiEndpoint, { postID: route.postID })
+                    .then(response => {
+                        console.log("Route shared:", response.data);
+                        alert("Route shared successfully!");
+                    })
+                    .catch(error => {
+                        console.error("Error sharing route:", error);
+                        alert("Failed to share route.");
+                    });
+                this.disableAction(route, 'share')
+            }
+        },
+        template: `
+    <div v-for="route in routes" :key="route.postID">
+      <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header d-flex justify-content-between align-items-start">
+              <div>
+                <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
+                <h6 class="modal-author text-muted">by {{ route.username }}</h6>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <!-- Modal Body -->
+            <div class="modal-body">
+              <div id="modal-pic">
+                <img :src="route.image" alt="Route Image" class="img-fluid">
+              </div>
+              <!-- Modal Content -->
+              <p class="text-muted">Posted {{ route.timeSince }}</p>
+              <p class="text-muted">{{ route.likeCount }} Likes | {{ route.commentCount }} Comments</p>
+              <p><strong>Distance:</strong> {{ route.distance }} km</p>
+              <p>{{ route.description }}</p>
+<!-- Action Buttons -->
+<div class="d-flex justify-content-around border-top border-bottom py-3">
+  <!-- Like Button -->
+  <button
+    class="btn btn-link p-0 action-button"
+    @click="likeRoute(route)"
+    :disabled="disabledActions[route.postID]?.like"
+    :class="{ liked: likedRoutes[route.postID] }"
+  >
+    <i :class="likedRoutes[route.postID] ? 'fas fa-thumbs-up me-1' : 'far fa-thumbs-up me-1'"></i>
+    <span>Like</span>
+  </button>
+  <!-- Use Button -->
+  <button
+    class="btn btn-link p-0 action-button"
+    @click="useRoute(route)"
+    :disabled="disabledActions[route.postID]?.use"
+  >
+    <i class="fas fa-route me-1"></i>
+    <span>Use</span>
+  </button>
+  <!-- Share Button -->
+  <button
+    class="btn btn-link p-0 action-button"
+    @click="shareRoute(route)"
+    :disabled="disabledActions[route.postID]?.share"
+  >
+    <i class="far fa-share-square me-1"></i>
+    <span>Share</span>
+  </button>
+</div>
+
+              <!-- Comments Section -->
+              <br>
+              <h6>Comments ({{ route.commentCount }})</h6>
+              <div v-if="route.commentsList && route.commentsList.length">
+                <div v-for="(comment, index) in route.commentsList" :key="index" class="mb-3">
+                  <strong>{{ comment.commenterName }}</strong> <span class="text-muted">{{ formatTime(comment.timestamp) }}</span>
+                  <p>{{ comment.commentText }}</p>
+                </div>
+              </div>
+              <div v-else>
+                <p>No comments yet. Be the first to comment!</p>
+              </div>
+
+              <!-- Comment Input -->
+              <div class="mb-3">
+                <textarea
+                  class="form-control mb-2"
+                  placeholder="Add a comment..."
+                  rows="2"
+                  v-model="newCommentText[route.postID]"
+                ></textarea>
+                <button
+                  class="btn btn-primary"
+                  @click="submitComment(route)"
+                  :disabled="disabledActions[route.postID]?.comment"
+                >
+                  <span v-if="!disabledActions[route.postID]?.comment">Post Comment</span>
+                  <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Share Modal -->
+      <div
+        class="modal fade"
+        :id="'shareModal' + route.modalId"
+        tabindex="-1"
+        :aria-labelledby="'shareModalLabel' + route.modalId"
+        aria-hidden="true"
+        v-if="showShareModal[route.postID]"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" :id="'shareModalLabel' + route.modalId">Share Route</h5>
+              <button type="button" class="btn-close" @click="closeShareModal(route)" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Share this link with your friends:</p>
+              <div class="input-group mb-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  :value="shareableLinks[route.postID]"
+                  readonly
+                >
+                <button class="btn btn-outline-secondary" type="button" @click="copyToClipboard(route)">
+                  Copy
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+    });
+</script>
+
+<script src="navbar/navbar.js"></script>
+
+<!-- import footer from footer.js -->
+<script src="footer/footer.js"></script>
+
+<script>
+    app.mount('#app')
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
+
+
+<!-- <script>
+    // This JS script will allow hover to open navbar dropdown, but the dropdown menu flows out of page
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get the dropdown element
+        var dropdown = document.querySelector('.nav-item.dropdown');
+
+        // Add event listeners for mouseenter and mouseleave
+        dropdown.addEventListener('mouseenter', function () {
+            var dropdownToggle = this.querySelector('.dropdown-toggle');
+            var dropdownMenu = this.querySelector('.dropdown-menu');
+
+            dropdownToggle.classList.add('show');
+            dropdownMenu.classList.add('show');
+        });
+
+        dropdown.addEventListener('mouseleave', function () {
+            var dropdownToggle = this.querySelector('.dropdown-toggle');
+            var dropdownMenu = this.querySelector('.dropdown-menu');
+
+            dropdownToggle.classList.remove('show');
+            dropdownMenu.classList.remove('show');
+        });
+    });
+</script> -->

@@ -1,7 +1,21 @@
-/* Map and Controls Layout */
+/* navbar_style styles */
+@import 'navbar/navbar_style.css';
+
+/* footer_style styles */
+@import 'footer/footer_style.css';
+
 /* Set the height of the map to take full screen minus the navbar */
 #app{
-  padding:0px;
+  padding-top:70px;
+}
+
+.alert {
+  position: fixed;
+  top: 62px;
+  left: 0;
+  width: 100%;
+  z-index: 1020; /* Ensure it's below the navbar */
+  border-radius: 0;
 }
 
 .row{
@@ -10,17 +24,33 @@
 }
 
 #map {
+  position: relative;
   height: 70vh; /* Takes 60% of the viewport height */
-  width: 65%; /* Map takes up 3/4 width */
-  float: left;
+  /* width: 65%;
+  float: left; */
 }
 
+/* Map Search Styling */
+#map-search {
+  position: absolute;
+  top: 6px;
+  left: calc(40% + 6px);
+  transform: translateX(-50%);
+  width: 80%;
+  z-index: 5;
+}
+
+#map-search input#pac-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+}
+
+/* Control section */
 #controls {
-  width: 35%; /* Controls take up 1/4 width */
-  float: right;
   padding: 20px;
   background-color: #f8f9fa;
-  height: 70vh; /* Set height for controls */
+  height: 70vh;
   display: flex;
   flex-direction: column;
 }
@@ -90,42 +120,21 @@
   transform: scale(1.02);
 }
 
-/* Animation to fill the background from right to left */
-.point-item::before {
-  content: '';
+/* Transition classes */
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.list-leave-active {
   position: absolute;
-  top: 0;
-  left: 100%; /* Start from the right side */
-  width: 100%;
-  height: 100%;
-  background-color: #dc3545; /* Red background */
-  z-index: -1; /* Place behind content */
-  transition: left 1s ease; /* Smooth transition for background */
-}
-
-/* Ensure new elements start with the background at the right */
-.point-item:not(.is-filling)::before {
-  left: 100%;
-}
-
-/* When the item is being deleted, move the background to the left */
-.point-item.is-filling::before {
-  left: 0; /* Move background to fill the entire element */
-}
-
-.point-item.is-filling {
-  color: white; /* Change text color when background is filling */
-  transition: color 1s ease; /* Smooth color change */
-}
-
-/* Fade out after animation */
-.point-item.delete {
-  display: none; /* Hide the element completely after the animation */
-}
-
-/* Ensure the item is not affected before the animation */
-.point-item:not(.is-filling)::before {
-  background-color: transparent;
 }
 
 /* Color Box Styling */
@@ -154,6 +163,7 @@ textarea {
 /* Fixed part of the controls */
 #fixed-controls {
   flex-shrink: 0;
+  position:relative;
 }
 
 /* Scrollable plotted points */
@@ -161,19 +171,62 @@ textarea {
   flex-grow: 1; /* Take the remaining height */
   overflow-y: auto; /* Enable vertical scrolling */
   overflow-x: hidden; /* Prevent horizontal scrolling */
+  position:relative;
 }
 
-/* Responsive changes for mobile (XS screens) */
-@media (max-width: 576px) {
-  #map {
-    width: 100%;
-    height: 50vh;
-    float: none;
-  }
+/* Color Box Button Styling */
+.color-box-btn {
+  width: 30px;
+  height: 30px;
+  margin: 5px;
+  cursor: pointer;
+  display: inline-block;
+  border: none;
+  padding: 0;
+  border-radius:5px;
+}
 
-  #controls {
-    width: 100%;
-    height: 50vh;
-    float: none;
-  }
+.color-box-btn.active {
+  transform:scale(1.3)
+}
+
+.color-box-btn:hover {
+  opacity: 0.8; /* Slightly fade on hover */
+}
+
+/* Optional: Reset default button styles */
+.color-box-btn {
+  background: none;
+  outline: none;
+  border: none;
+}
+
+/* Spinner animation */
+@keyframes spinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-overlay.active {
+  display: flex;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #fff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spinner 1s linear infinite;
 }
