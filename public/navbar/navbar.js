@@ -102,7 +102,7 @@ app.component('nav-bar', {
                                        href="settings_page.html">Settings</a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#">Log Out</a></li>
+                                <li><a class="dropdown-item" id='logout'>Log Out</a></li>
                             </ul>
                         </li>
                     </ul>

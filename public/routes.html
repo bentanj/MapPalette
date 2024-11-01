@@ -39,108 +39,113 @@
             </div>
         </div>
 
-        <!-- Main Content Wrapper -->
-        <div class="sample-section-wrap">
-            <div class="container-fluid sample-section">
-                <!-- Your main content (Vue components) -->
-                <div>
-                    <!-- Filter button and dropdown -->
-                    <div class="d-flex align-items-center mb-2 flex-wrap">
-                        <!-- Group badge and button, and push them to the right -->
-                        <div class="d-flex align-items-center ms-auto">
-                            <!-- Badge -->
-                            <span v-if="filters.sortOption" class="badge me-2">
-                                {{ filters.sortOption }}
-                                <span @click="removeFilter()" class="ms-1">&times;</span>
-                            </span>
+<!-- Main Content Wrapper -->
+<div class="sample-section-wrap">
+    <div class="container-fluid sample-section">
+        <!-- Your main content (Vue components) -->
+        <div>
+            <!-- Filter, Search, and Badge Row -->
+            <div class="row align-items-center mb-2">
+                
+                <!-- Search Input -->
+                <div class="col-4">
+                    <p>Search for a route:</p>
+                    <input type="text" class="form-control" v-model="searchQuery" @input="applyFilters"
+                        placeholder="Route Name">
+                </div>
+                
 
-                            <!-- Filter Options Button -->
-                            <div class="dropdown">
-                                <button class="btn filter-btn dropdown-toggle" type="button" id="filterDropdown"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    Sort By
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
-                                    <!-- Sort by Distance -->
-                                    <li>
-                                        <h6 class="dropdown-header">Distance</h6>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Shortest')">Shortest to
-                                            Longest</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Longest')">Longest to
-                                            Shortest</a>
-                                    </li>
+                <!-- Badge (Positioned to the left of Filter Button) -->
+                <div class="col-auto ms-auto">
+                    <span v-if="filters.sortOption" class="badge">
+                        {{ filters.sortOption }}
+                        <span @click="removeFilter()" class="ms-1">&times;</span>
+                    </span>
+                </div>
 
-                                    <!-- Sort by Popularity -->
-                                    <li>
-                                        <h6 class="dropdown-header">Popularity</h6>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Most Popular')">Most
-                                            Popular</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Least Popular')">Least
-                                            Popular</a>
-                                    </li>
+                <!-- Filter Options Button -->
+                <div class="col-auto">
+                    <div class="dropdown">
+                        <button class="btn filter-btn dropdown-toggle" type="button" id="filterDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Sort By
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                            <!-- Sort by Distance -->
+                            <li>
+                                <h6 class="dropdown-header">Distance</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Shortest')">Shortest to
+                                    Longest</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Longest')">Longest to
+                                    Shortest</a>
+                            </li>
 
-                                    <!-- Sort by Time Created -->
-                                    <li>
-                                        <h6 class="dropdown-header">Time Created</h6>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Newest')">Newest</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Oldest')">Oldest</a>
-                                    </li>
+                            <!-- Sort by Popularity -->
+                            <li>
+                                <h6 class="dropdown-header">Popularity</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Most Popular')">Most
+                                    Popular</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Least Popular')">Least
+                                    Popular</a>
+                            </li>
 
-                                    <!-- Reset Button -->
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item text-danger" href="#" @click="resetFilters()">Reset
-                                            Filters</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+                            <!-- Sort by Time Created -->
+                            <li>
+                                <h6 class="dropdown-header">Time Created</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Newest')">Newest</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="setFilter('Oldest')">Oldest</a>
+                            </li>
 
-                    <div class="mb-4">
-                        <input type="text" class="form-control" v-model="searchQuery" @input="applyFilters"
-                            placeholder="Search for a route by name">
-                    </div>
-
-                    <!-- Modals -->
-                    <route-modals :routes="filteredRoutes"></route-modals>
-
-                    <!-- Cards -->
-                    <div class="row mt-4">
-                        <route-cards :routes="filteredRoutes"></route-cards>
-                    </div>
-
-                    <!-- Load More Button -->
-                    <div class="text-center mt-4" v-if="displayedRoutes < routes.length">
-                        <button class="btn btn-outline-primary" @click="loadMoreRoutes">Load More</button>
+                            <!-- Reset Button -->
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" @click="resetFilters()">Reset
+                                    Filters</a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
+            <hr>
+            <!-- Modals -->
+            <route-modals :routes="filteredRoutes"></route-modals>
+
+            <!-- Cards -->
+            <div class="row mt-4">
+                <route-cards :routes="filteredRoutes"></route-cards>
+            </div>
+
+            <!-- Load More Button -->
+            <div class="text-center mt-4" v-if="displayedRoutes < routes.length">
+                <button class="btn btn-outline-primary" @click="loadMoreRoutes">Load More</button>
+            </div>
         </div>
-
-        <button @click="scrollToTop" class="btn back-to-top">
-            <i class="fas fa-chevron-up"></i>
-        </button>
-
-
-        <!-- Footer -->
-        <site-footer></site-footer>
-
     </div>
+</div>
+
+<button @click="scrollToTop" class="btn back-to-top">
+    <i class="fas fa-chevron-up"></i>
+</button>
+
+<!-- Footer -->
+<site-footer></site-footer>
+
+</div>
+
 
 
 
@@ -164,7 +169,7 @@
             };
         },
         created() {
-            const routesPromise = axios.get('./databaseTemplateFolder/routeTemplate.json');
+            const routesPromise = axios.get('./databaseTemplateFolder/postTemplate.json');
             const usersPromise = axios.get('./databaseTemplateFolder/userTemplate.json');
 
             Promise.all([routesPromise, usersPromise])
@@ -173,16 +178,16 @@
                     console.log('Routes Data:', routesResponse.data);
 
                     this.users = usersResponse.data.users;
-                    this.routes = routesResponse.data.routes.map(route => {
+                    this.routes = routesResponse.data.posts.map(route => {
                         const user = this.users.find(user => user.id === route.userID);
 
                         if (!user) {
-                            console.warn(`User not found for route ${route.routeID} with userID ${route.userID}`);
+                            console.warn(`User not found for route ${route.postID} with userID ${route.userID}`);
                         }
 
                         return {
                             ...route,
-                            modalId: 'modal-' + route.routeID,
+                            modalId: 'modal-' + route.postID,
                             timeSince: this.calculateTimeSince(route.createdAt),
                             commentsList: route.commentsList || [],
                             username: user ? user.username : 'Unknown User',
@@ -194,6 +199,7 @@
                     console.error("Error fetching data:", error);
                 });
         },
+
 
 
         computed: {
@@ -295,7 +301,7 @@
         },
         // Location will be the first waypoint's address
         template: `
-                <div class="col-md-6 mb-4" v-for="route in routes" :key="route.routeID">
+                <div class="col-md-6 mb-4" v-for="route in routes" :key="route.postID">
                     <div class="card post-card" @click="openModal(route)">
                         <div class="card-body d-flex flex-column flex-sm-row align-items-start">
                             <div class="image-box me-3 mb-3 mb-sm-0">
@@ -331,7 +337,7 @@
         },
         methods: {
             likeRoute(route) {
-                const apiEndpoint = `https://app-6kmdo5luna-uc.a.run.app/api/posts/like?id=${route.routeID}`; // Dynamic endpoint
+                const apiEndpoint = `https://app-6kmdo5luna-uc.a.run.app/api/posts/like?id=${route.postID}`; // Dynamic endpoint
                 const currentTime = Date.now();
 
                 // Throttle to avoid rapid calls
@@ -343,8 +349,8 @@
                 this.lastApiCallTime = currentTime;
 
                 // Toggle local like state for immediate feedback
-                const isLiked = this.likedRoutes[route.routeID];
-                this.likedRoutes[route.routeID] = !isLiked;
+                const isLiked = this.likedRoutes[route.postID];
+                this.likedRoutes[route.postID] = !isLiked;
                 route.likeCount += isLiked ? -1 : 1;
 
                 // Disable the button during the API call
@@ -359,13 +365,13 @@
                         console.error("Error updating like:", error);
 
                         // Revert like action on error
-                        this.likedRoutes[route.routeID] = isLiked;
+                        this.likedRoutes[route.postID] = isLiked;
                         route.likeCount += isLiked ? 1 : -1;
                         alert("Failed to update like. Please try again.");
                     });
             },
             // submitComment(route) {
-            //     const commentText = this.newCommentText[route.routeID];
+            //     const commentText = this.newCommentText[route.postID];
             //     if (!commentText) return;
 
             //     const currentTime = Date.now();
@@ -379,7 +385,7 @@
 
             //     // Disable the comment button and show loading
             //     this.disableAction(route, 'comment');
-            //     this.newCommentText[route.routeID] = ''; // Clear the textarea
+            //     this.newCommentText[route.postID] = ''; // Clear the textarea
 
             //     // Simulate delay before adding the comment
             //     setTimeout(() => {
@@ -398,18 +404,18 @@
             //         route.commentCount = route.commentsList.length;
 
             //         // Re-enable the comment button
-            //         this.disabledActions[route.routeID].comment = false;
+            //         this.disabledActions[route.postID].comment = false;
             //     }, 1000);
             // },
             disableAction(route, actionType) {
-                if (!this.disabledActions[route.routeID]) {
-                    this.disabledActions[route.routeID] = {};
+                if (!this.disabledActions[route.postID]) {
+                    this.disabledActions[route.postID] = {};
                 }
 
-                this.disabledActions[route.routeID][actionType] = true;
+                this.disabledActions[route.postID][actionType] = true;
 
                 setTimeout(() => {
-                    this.disabledActions[route.routeID][actionType] = false;
+                    this.disabledActions[route.postID][actionType] = false;
                 }, 1000);
             },
             // API call for "Use" button
@@ -418,7 +424,7 @@
                 const apiEndpoint = "https://api.example.com/use"; // Replace with your actual API endpoint
 
                 // Send POST request with route's ID
-                axios.post(apiEndpoint, { routeID: route.routeID })
+                axios.post(apiEndpoint, { postID: route.postID })
                     .then(response => {
                         console.log("Route used:", response.data);
                         // Optional: provide user feedback
@@ -436,7 +442,7 @@
                 const apiEndpoint = "https://api.example.com/share"; // Replace with your actual API endpoint
 
                 // Send POST request with route's ID
-                axios.post(apiEndpoint, { routeID: route.routeID })
+                axios.post(apiEndpoint, { postID: route.postID })
                     .then(response => {
                         console.log("Route shared:", response.data);
                         alert("Route shared successfully!");
@@ -449,7 +455,7 @@
             }
         },
         template: `
-    <div v-for="route in routes" :key="route.routeID">
+    <div v-for="route in routes" :key="route.postID">
       <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'" aria-hidden="true">
         <div class="modal-dialog modal-xl">
           <div class="modal-content">
@@ -477,17 +483,17 @@
   <button
     class="btn btn-link p-0 action-button"
     @click="likeRoute(route)"
-    :disabled="disabledActions[route.routeID]?.like"
-    :class="{ liked: likedRoutes[route.routeID] }"
+    :disabled="disabledActions[route.postID]?.like"
+    :class="{ liked: likedRoutes[route.postID] }"
   >
-    <i :class="likedRoutes[route.routeID] ? 'fas fa-thumbs-up me-1' : 'far fa-thumbs-up me-1'"></i>
+    <i :class="likedRoutes[route.postID] ? 'fas fa-thumbs-up me-1' : 'far fa-thumbs-up me-1'"></i>
     <span>Like</span>
   </button>
   <!-- Use Button -->
   <button
     class="btn btn-link p-0 action-button"
     @click="useRoute(route)"
-    :disabled="disabledActions[route.routeID]?.use"
+    :disabled="disabledActions[route.postID]?.use"
   >
     <i class="fas fa-route me-1"></i>
     <span>Use</span>
@@ -496,7 +502,7 @@
   <button
     class="btn btn-link p-0 action-button"
     @click="shareRoute(route)"
-    :disabled="disabledActions[route.routeID]?.share"
+    :disabled="disabledActions[route.postID]?.share"
   >
     <i class="far fa-share-square me-1"></i>
     <span>Share</span>
@@ -522,14 +528,14 @@
                   class="form-control mb-2"
                   placeholder="Add a comment..."
                   rows="2"
-                  v-model="newCommentText[route.routeID]"
+                  v-model="newCommentText[route.postID]"
                 ></textarea>
                 <button
                   class="btn btn-primary"
                   @click="submitComment(route)"
-                  :disabled="disabledActions[route.routeID]?.comment"
+                  :disabled="disabledActions[route.postID]?.comment"
                 >
-                  <span v-if="!disabledActions[route.routeID]?.comment">Post Comment</span>
+                  <span v-if="!disabledActions[route.postID]?.comment">Post Comment</span>
                   <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
                 </button>
               </div>
@@ -544,7 +550,7 @@
         tabindex="-1"
         :aria-labelledby="'shareModalLabel' + route.modalId"
         aria-hidden="true"
-        v-if="showShareModal[route.routeID]"
+        v-if="showShareModal[route.postID]"
       >
         <div class="modal-dialog">
           <div class="modal-content">
@@ -558,7 +564,7 @@
                 <input
                   type="text"
                   class="form-control"
-                  :value="shareableLinks[route.routeID]"
+                  :value="shareableLinks[route.postID]"
                   readonly
                 >
                 <button class="btn btn-outline-secondary" type="button" @click="copyToClipboard(route)">

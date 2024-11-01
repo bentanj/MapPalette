@@ -18,6 +18,11 @@
     
     <!-- Vue.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- axios -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+
 </head>
 <body>
     <div id="app">
@@ -101,19 +106,36 @@
                                             </button>
                                         </div>
                                     </div>
-
+                                
                                     <div class="mb-3">
                                         <label class="form-label">Birthday</label>
                                         <input type="date" class="form-control" v-model="userProfile.birthday">
                                     </div>
-
+                                
                                     <div class="mb-3">
                                         <label class="form-label">Gender</label>
                                         <select class="form-select" v-model="userProfile.gender">
-                                            <option value="Man">Man</option>
-                                            <option value="Woman">Woman</option>
-                                            <option value="Other">Other</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Prefer not to say">Prefer not to say</option>
                                         </select>
+                                    </div>
+
+                                    <!-- to be added to api -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Bio</label>
+                                        <div class="input-group">
+                                            <textarea 
+                                                class="form-control" 
+                                                v-model="userProfile.bio" 
+                                                rows="3" 
+                                                placeholder="🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time">
+                                            </textarea>
+                                            <button class="btn btn-outline-secondary" type="button" @click="updateBio">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-muted">Share a little about yourself with the community</small>
                                     </div>
                                 </form>
                             </div>
@@ -226,99 +248,152 @@
 
     <!-- Vue App -->
     <script>
-        const { createApp } = Vue 
+    const { createApp } = Vue 
 
-        const app = createApp({
-            data() {
-                return {
-                    currentTab: 'profile',
-                    showEmailChange: false,    
-                    newEmail: '',
-                    newPassword: '',
-                    currentPassword: '', 
-                    userProfile: {           
-                        name: 'Wei Shen',
-                        avatar: 'resources/download.jpeg',
-                        birthday: '2002-04-15',
-                        gender: 'Man',
-                        // may not want to implement change email func
-                        email: 'ilovewad2@private.com',
-                        password: 'password'
+    const app = createApp({
+        data() {
+            return {
+                currentTab: 'profile',
+                showEmailChange: false,    
+                newEmail: '',
+                newPassword: '',
+                currentPassword: '', 
+                users: [],
+                posts: [],
+                currentUserId: null,
+                userProfile: {
+                    name: '',
+                    username: '',
+                    avatar: '',
+                    birthday: '',
+                    gender: '',
+                    email: '',
+                    password: ''
+                },
+                navItems: [
+                    {
+                        id: 'profile',
+                        icon: 'bi bi-person',
+                        label: 'Profile Settings',
+                        description: 'Manage your personal information'
                     },
-                    navItems: [
-                        {
-                            id: 'profile',
-                            icon: 'bi bi-person',
-                            label: 'Profile Settings',
-                            description: 'Manage your personal information'
-                        },
-                        {
-                            id: 'account',
-                            icon: 'bi bi-shield-lock',
-                            label: 'Account Settings',
-                            description: 'Security and account preferences'
-                        },
-                        // extra stuff as placeholder.
-                        {
-                            id: 'privacy',
-                            icon: 'bi bi-eye',
-                            label: 'Privacy',
-                            description: 'Control your privacy settings'
-                        },
-                        {
-                            id: 'notifications',
-                            icon: 'bi bi-bell',
-                            label: 'Notifications',
-                            description: 'Manage your notifications'
-                        },
-                        {
-                            id: 'connected',
-                            icon: 'bi bi-link-45deg',
-                            label: 'Connected Apps',
-                            description: 'Manage your connected applications'
-                        }
-                    ]
-                }
+                    {
+                        id: 'account',
+                        icon: 'bi bi-shield-lock',
+                        label: 'Account Settings',
+                        description: 'Security and account preferences'
+                    },
+                    {
+                        id: 'privacy',
+                        icon: 'bi bi-eye',
+                        label: 'Privacy',
+                        description: 'Control your privacy settings'
+                    },
+                    {
+                        id: 'notifications',
+                        icon: 'bi bi-bell',
+                        label: 'Notifications',
+                        description: 'Manage your notifications'
+                    },
+                    {
+                        id: 'connected',
+                        icon: 'bi bi-link-45deg',
+                        label: 'Connected Apps',
+                        description: 'Manage your connected applications'
+                    }
+                ]
+            }
+        },
+        created() {
+            const postsPromise = axios.get('./databaseTemplateFolder/postTemplate.json');
+            const usersPromise = axios.get('./databaseTemplateFolder/userTemplate.json');
+
+            Promise.all([postsPromise, usersPromise])
+                .then(([postsResponse, usersResponse]) => {
+                    console.log('Posts Data:', postsResponse.data);
+                    console.log('Users Data:', usersResponse.data);
+
+                    this.users = usersResponse.data.users;
+                    this.posts = postsResponse.data.posts;
+
+                    // use user1 
+                    const currentUserData = this.users[0];
+                    this.currentUserId = currentUserData.id;
+
+                    // user profile
+                    this.userProfile = {
+                        name: currentUserData.username,
+                        username: currentUserData.username,
+                        avatar: currentUserData.profilePicture,
+                        birthday: currentUserData.birthday,
+                        gender: currentUserData.gender,
+                        email: currentUserData.email,
+                        password: currentUserData.password,
+                        // hard coded
+                        bio: '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time', 
+                    };
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                });
+        },
+        methods: {
+            switchTab(tabId) {
+                this.currentTab = tabId;
             },
-            methods: {
-                switchTab(tabId) {
-                    this.currentTab = tabId;
-                },
-                togglePasswordVisibility() {
-                    this.showPassword = !this.showPassword;
-                },
-                
-                updateEmail() {
-                    // make an API call to update the email
+
+            updateBio() {
+                // API call to update the bio
+                alert('Bio updated successfully!');
+            },
+            
+            updateEmail() {
+                if (this.currentPassword === this.userProfile.password) {
                     this.userProfile.email = this.newEmail;
                     this.cancelEmailChange();
-                },
-                
-                cancelEmailChange() {
-                    this.showEmailChange = false;
-                    this.newEmail = '';
-                    this.currentPassword = '';
-                },
-                
-                updatePassword() {
-                    // make an API call to update the password
-                    this.userProfile.password = '••••••••••';
-                    this.cancelPasswordChange();
-                },
-                
-                cancelPasswordChange() {
-                    this.showPasswordChange = false;
+                    alert('Email updated successfully!');
+                } else {
+                    alert('Incorrect password');
+                }
+            },
+
+            cancelEmailChange() {
+                this.showEmailChange = false;
+                this.newEmail = '';
+                this.currentPassword = '';
+            },
+
+            updatePassword() {
+                if (this.currentPassword === this.userProfile.password) {
+                    this.userProfile.password = this.newPassword;
                     this.newPassword = '';
                     this.currentPassword = '';
-                },
-                
-                resetPassword() {
-                    // Implement password reset logic
-                    alert('Password reset email sent!');
+                    alert('Password updated successfully!');
+                } else {
+                    alert('Incorrect current password');
                 }
+            },
+
+            resetPassword() {
+                alert('Password reset email sent to ' + this.userProfile.email);
+            },
+
+            handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.userProfile.avatar = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            },
+            
+            removeProfilePicture() {
+                this.userProfile.avatar = 'resources/default-avatar.png';
             }
-        })
-        
+        }
+    });
     </script>
 
 <!-- import navbar from navbar.js -->
