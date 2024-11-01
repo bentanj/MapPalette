@@ -130,13 +130,7 @@ body {
 
 /* Cards */
 .post-card {
-    margin-bottom: 20px;
-    cursor: pointer;
-    padding: 20px;
-    border-radius: 10px;
-    background-color: #fff;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .post-card:hover {
@@ -149,14 +143,33 @@ body {
     border-top: none;
 }
 
-/* Image Box */
-.image-box img {
-    border-radius: 8px;
-    width: 400px;
+/* Card Body Flex Layout */
+.card-body {
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  /* Image Box */
+  .image-box {
+    width: 150px;
     height: 150px;
+    overflow: hidden;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  
+  .image-box img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-}
-
+  }
+  
+  /* Text Content */
+  .text-content {
+    flex-grow: 1;
+    overflow: hidden;
+  }
+  
 /* Truncate Description */
 .truncate-2-lines {
     display: -webkit-box;
@@ -168,6 +181,23 @@ body {
     max-height: 3em;
     min-height: 3em;
 }
+  /* Optional Card Height */
+  .post-card {
+    max-height: 300px;      /* Adjust as needed */
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 576px) {
+    .card-body {
+      flex-direction: column;
+    }
+  
+    .image-box {
+      width: 100%;
+      height: auto;
+    }
+  }
+  
 
 /* Modal */
 .modal-content {
