@@ -500,7 +500,7 @@ const app = Vue.createApp({
                 await this.captureMapAsImage(postId);
                 console.log(this.postTitle, this.postDescription, this.waypoints, this.userID, this.currentColor, this.totalDistance, this.region, this.image);
 
-                const response = await axios.post(`${this.API_ENDPOINT}/api/create/`, {
+                const response = await axios.post(`${this.API_ENDPOINT}/api/create/${this.userID}`, {
                     title: this.postTitle,
                     description: this.postDescription,
                     waypoints: this.waypoints,

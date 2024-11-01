@@ -28,78 +28,90 @@
 
 <body>
     <div id="app">
-        <!-- Navbar -->
-        <nav-bar></nav-bar>
 
-        <!-- Feed Header -->
-        <div class="sample-header">
-            <div class="sample-header-section">
-                <h1>Friends</h1>
-                <h2>Connect and engage with your running community.</h2>
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="text-center"
+            style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
         </div>
 
-        <!-- Friends and Other Users Section -->
-        <div class="container-fluid sample-section">
-            <div class="row">
-                <div class="col-md-4">
-                    <p>Search for friends or users:</p>
-                    <input type="text" v-model="searchQuery" placeholder="Name"
-                        class="form-control mb-3">
-                        
+        <!-- Main Content, Hidden Initially -->
+        <div id="app-container" style="display: none;">
+
+            <!-- Navbar -->
+            <nav-bar></nav-bar>
+
+            <!-- Feed Header -->
+            <div class="sample-header">
+                <div class="sample-header-section">
+                    <h1>Friends</h1>
+                    <h2>Connect and engage with your running community.</h2>
                 </div>
             </div>
-            <div class="row">
-                <hr>
-                <h1>Your Friends ({{friends.length}})</h1>
 
-                <!-- Friends Section with Load More -->
-                <div v-if="filteredFriends.length > 0" class="col-md-4 mb-4"
-                    v-for="friend in filteredFriends.slice(0, displayedFriends)" :key="friend.id">
-                    <friend-card :friend="friend" @confirm-unfollow="confirmUnfollow" :disabled="disableButtons"
-                        @open-profile="openProfile"></friend-card>
-                </div>
-                <p v-else>No friends match your search.</p>
-                <div class="text-center" v-if="displayedFriends < filteredFriends.length">
-                    <button class="btn btn-outline-primary" @click="loadMoreFriends">Load More</button>
-                </div>
+            <!-- Friends and Other Users Section -->
+            <div class="container-fluid sample-section">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p>Search for friends or users:</p>
+                        <input type="text" v-model="searchQuery" placeholder="Name" class="form-control mb-3">
 
-                <!-- Other Users Section with Load More -->
-                <h1>Other Users</h1>
-                <div v-if="filteredOtherUsers.length > 0" class="col-md-4 mb-4"
-                    v-for="user in filteredOtherUsers.slice(0, displayedOtherUsers)" :key="user.id">
-                    <other-user-card :user="user" @follow="followUser" :disabled="disableButtons"></other-user-card>
+                    </div>
                 </div>
-                <p v-else>No other users match your search.</p>
-                <div class="text-center" v-if="displayedOtherUsers < filteredOtherUsers.length">
-                    <button class="btn btn-outline-primary" @click="loadMoreOtherUsers">Load More</button>
+                <div class="row">
+                    <hr>
+                    <h1>Your Friends ({{friends.length}})</h1>
+
+                    <!-- Friends Section with Load More -->
+                    <div v-if="filteredFriends.length > 0" class="col-md-4 mb-4"
+                        v-for="friend in filteredFriends.slice(0, displayedFriends)" :key="friend.id">
+                        <friend-card :friend="friend" @confirm-unfollow="confirmUnfollow" :disabled="disableButtons"
+                            @open-profile="openProfile"></friend-card>
+                    </div>
+                    <p v-else>No friends match your search.</p>
+                    <div class="text-center" v-if="displayedFriends < filteredFriends.length">
+                        <button class="btn btn-outline-primary" @click="loadMoreFriends">Load More</button>
+                    </div>
+
+                    <!-- Other Users Section with Load More -->
+                    <h1>Other Users</h1>
+                    <div v-if="filteredOtherUsers.length > 0" class="col-md-4 mb-4"
+                        v-for="user in filteredOtherUsers.slice(0, displayedOtherUsers)" :key="user.id">
+                        <other-user-card :user="user" @follow="followUser" :disabled="disableButtons"></other-user-card>
+                    </div>
+                    <p v-else>No other users match your search.</p>
+                    <div class="text-center" v-if="displayedOtherUsers < filteredOtherUsers.length">
+                        <button class="btn btn-outline-primary" @click="loadMoreOtherUsers">Load More</button>
+                    </div>
                 </div>
             </div>
+
+            <!-- Unfollow Confirmation Modal -->
+            <div class="modal fade" id="unfollowModal" tabindex="-1" aria-labelledby="unfollowModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="unfollowModalLabel">Confirm Unfollow</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to unfollow <strong>{{ friendToUnfollow?.name }}</strong>?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" @click="unfollowConfirmed">Unfollow</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <site-footer></site-footer>
+
         </div>
-
-        <!-- Unfollow Confirmation Modal -->
-        <div class="modal fade" id="unfollowModal" tabindex="-1" aria-labelledby="unfollowModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="unfollowModalLabel">Confirm Unfollow</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        Are you sure you want to unfollow <strong>{{ friendToUnfollow?.name }}</strong>?
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-danger" @click="unfollowConfirmed">Unfollow</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <site-footer></site-footer>
-
     </div>
 </body>
 
@@ -112,7 +124,7 @@
     const app = Vue.createApp({
         data() {
             return {
-                currentUser: null,
+                currentUser: null, // stores an object here from mounted
                 friends: [],
                 otherUsers: [],
                 searchQuery: '',
@@ -167,7 +179,7 @@
                 unfollowModal.hide();
 
                 // Send API request
-                axios.post('https://your-api.com/api/unfollow', {
+                axios.post('https://app-907670644284.us-central1.run.app', {
                     currentUserId: currentUserId,
                     friendId: friendId
                 })
@@ -199,7 +211,7 @@
                 }, 1500);
 
                 // Send API request
-                axios.post('https://your-api.com/api/follow', {
+                axios.post('https://app-907670644284.us-central1.run.app', {
                     currentUserId: currentUserId,
                     friendId: friendId
                 })
@@ -231,27 +243,26 @@
                 alert('Opening profile for ' + user.username);
                 // Implement actual profile navigation here
             },
+
         },
         mounted() {
-            axios.get('./databaseTemplateFolder/userTemplate.json')
-                .then(response => {
-                    const users = response.data.users;
-                    const currentUserId = 'LJvFmX3tc762Uk8M3wRw'; // Assuming user1 is logged in
-                    const currentUser = users.find(user => user.id === currentUserId);
-                    if (!currentUser) {
-                        console.error('Current user not found');
-                        return;
-                    }
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const appContainer = document.getElementById('app-container');
 
-                    this.currentUser = currentUser;
-
-                    const friendsIds = currentUser.followed;
-                    this.friends = users.filter(user => friendsIds.includes(user.id));
-                    this.otherUsers = users.filter(user => !friendsIds.includes(user.id) && user.id !== currentUserId);
-                })
-                .catch(error => {
-                    console.error("Error loading data:", error);
-                });
+            // Check every 100ms if window.currentUser is populated
+            const userCheckInterval = setInterval(() => {
+                if (window.currentUser) {
+                    this.updateUserProfile(window.currentUser);
+                    loadingSpinner.style.display = 'none';
+                    appContainer.style.display = 'block';
+                    clearInterval(userCheckInterval); // Stop checking once loaded
+                }
+            }, 100);
+        },
+        created() {
+            // if window.currentUser is populated, call api to retrieve all users https://app-6kmdo5luna-uc.a.run.app/users/getallusers
+            // refer to canva slide 6 for response
+            
         }
     });
 
