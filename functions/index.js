@@ -1,6 +1,6 @@
 // Import function triggers from their respective submodules
 const { onRequest } = require('firebase-functions/v2/https');
-const { onSchedule } = require('firebase-functions/v2/scheduler');
+// const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { initializeApp, cert, applicationDefault} = require('firebase-admin/app');
 const { getStorage } = require('firebase-admin/storage');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore'); // Modular import for Firestore
@@ -40,12 +40,18 @@ app.use(express.json()); // Parse incoming JSON requests
 // HELPER FUNCTIONS
 //
 
+// Helper function to add points to the leaderboard
 async function addPointsToCreator(userID, points) {
   try {
     const userRef = db.collection('leaderboard').doc(userID);
+
+    // Use set with merge to update or create a document with both userID and points
     await userRef.set(
-      { points: FieldValue.increment(points) },
-      { merge: true }
+      {
+        userID: userID,           // Store the userID within the document
+        points: FieldValue.increment(points),
+      },
+      { merge: true }            // Merge to ensure we don’t overwrite existing fields
     );
   } catch (error) {
     console.error('Error adding points to creator:', error);
@@ -214,6 +220,7 @@ app.delete('/api/posts', async (req, res) => {
 //
 
 // Retrieve all posts from the posts collection
+// Retrieve all posts from the posts collection and include username and profile picture
 app.get('/api/allposts', async (req, res) => {
   try {
     const postsSnap = await db.collection('posts').get();
@@ -222,10 +229,22 @@ app.get('/api/allposts', async (req, res) => {
       return res.status(404).json({ message: 'No posts found.' });
     }
 
-    // Map through each document and return post data
-    const posts = postsSnap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
+    // Map through each document, fetch user data, and return post data with additional user info
+    const posts = await Promise.all(postsSnap.docs.map(async (doc) => {
+      const postData = { id: doc.id, ...doc.data() };
+      const userID = postData.userID;
+
+      // Fetch user details for each post
+      const userRef = db.collection('users').doc(userID);
+      const userSnap = await userRef.get();
+      const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
+
+      // Add username and profile picture to the post data
+      return {
+        ...postData,
+        username: userData.username || 'Unknown User',
+        profilePicture: userData.profilePicture || 'default-profile-picture-url'
+      };
     }));
 
     return res.status(200).json(posts);
@@ -235,17 +254,6 @@ app.get('/api/allposts', async (req, res) => {
   }
 });
 
-// Get all postIDs within the collection "posts"
-app.get('/api/postIDs', async (req, res) => {
-  try {
-    const postIDsSnap = await db.collection('posts').select('postID').get();
-    const postIDs = postIDsSnap.docs.map(doc => doc.data().postID);
-    return res.status(200).json(postIDs);
-  } catch (error) {
-    console.error('Error fetching map IDs:', error);
-    return res.status(500).json({ message: 'Error fetching map IDs' });
-  }
-});
 
 // 
 // POST LIKING API
@@ -693,11 +701,10 @@ app.get('/api/users/getallusers', async (req, res) => {
   }
 });
 
-
 // Get all user objects followed by the current user
 app.get('/api/users/getfollowed/:userID', async (req, res) => {
   const { userID } = req.params;
-
+  
   if (!userID) {
     return res.status(400).json({ message: 'User ID is required.' });
   }
@@ -758,6 +765,86 @@ app.get('/api/users/following/:userID', async (req, res) => {
     const followingUsers = (await Promise.all(followingUsersPromises)).filter(user => user !== null);
 
     return res.status(200).json(followingUsers);
+  } catch (error) {
+    console.error('Error fetching following users:', error);
+    return res.status(500).json({ message: 'Error fetching following users.' });
+  }
+});
+
+// Retrieve condensed user data with an isFollowing flag for each user
+app.get('/api/users/getcondensed/:currentUserID', async (req, res) => {
+  const { currentUserID } = req.params;
+
+  if (!currentUserID) {
+    return res.status(400).json({ message: 'Current user ID is required.' });
+  }
+
+  try {
+    // Fetch all user documents in the "users" collection
+    const usersSnap = await db.collection('users').get();
+
+    // Get all user IDs that the current user is following
+    const followingSnap = await db.collection('users').doc(currentUserID).collection('following').get();
+    const followingIDs = followingSnap.docs.map(doc => doc.id);
+
+    // Map through each user document and create the condensed user object
+    const condensedUsers = usersSnap.docs.map(doc => {
+      const userData = doc.data();
+      return {
+        userID: doc.id,
+        username: userData.username || null,
+        profilePicture: userData.profilePicture || null,
+        isFollowing: followingIDs.includes(doc.id) // Check if the user is in the current user's "following" list
+      };
+    });
+
+    return res.status(200).json(condensedUsers);
+  } catch (error) {
+    console.error('Error fetching condensed user data:', error);
+    return res.status(500).json({ message: 'Error fetching condensed user data.' });
+  }
+});
+
+
+// Get all post made by specific user
+app.get('/api/users/:userID/posts', async (req, res) => {
+  const { userID } = req.params;
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    // Fetch user's username and profile picture
+    const userRef = db.collection('users').doc(userID);
+    const userSnap = await userRef.get();
+    if (!userSnap.exists) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const { username, profilePicture } = userSnap.data();
+
+    // Fetch user's posts
+    const postsCreatedSnap = await db.collection('users').doc(userID).collection('postsCreated').get();
+    if (postsCreatedSnap.empty) {
+      return res.status(404).json({ message: 'No posts found for this user.' });
+    }
+
+    const posts = await Promise.all(
+      postsCreatedSnap.docs.map(async (doc) => {
+        const postRef = db.collection('posts').doc(doc.id);
+        const postSnap = await postRef.get();
+        return postSnap.exists
+          ? {
+              ...postSnap.data(),
+              username,
+              profilePicture
+            }
+          : null;
+      })
+    );
+
+    return res.status(200).json(posts.filter((post) => post !== null));
   } catch (error) {
     console.error('Error fetching following users:', error);
     return res.status(500).json({ message: 'Error fetching following users.' });
@@ -916,73 +1003,72 @@ app.put('/api/update/user/profilePicture/:userID', upload.single('profilePicture
   }
 });
 
-//
-// LEADERBOARD API
-//
-
-app.get('/api/leaderboard', async (req, res) => {
+// Get leaderboard data
+app.get('/api/challenge/leaderboard', async (req, res) => {
   try {
-    const leaderboardRef = db.collection('leaderboard').orderBy('points', 'desc');
-    const leaderboardSnapshot = await leaderboardRef.get();
+    // Fetch all entries from the leaderboard collection
+    const leaderboardSnap = await db.collection('leaderboard').get();
 
-    if (leaderboardSnapshot.empty) {
-      console.log('No leaderboard data found.');
-      return res.status(404).json({ message: 'No leaderboard data found.' });
+    if (leaderboardSnap.empty) {
+      return res.status(404).json({ message: 'Leaderboard is empty.' });
     }
 
-    // Get userIDs from the leaderboard snapshot
-    const userIds = leaderboardSnapshot.docs.map(doc => doc.id);
-    console.log('Fetched userIDs:', userIds);
+    // Map through leaderboard entries and fetch additional user details
+    const leaderboard = await Promise.all(
+      leaderboardSnap.docs.map(async (doc) => {
+        const leaderboardData = doc.data();
+        const { userID, points } = leaderboardData;
 
-    // Fetch all user documents in a batch request
-    const usersSnapshot = await db.getAll(...userIds.map(id => db.collection('users').doc(id)));
+        // Fetch the user's profile data
+        const userRef = db.collection('users').doc(userID);
+        const userSnap = await userRef.get();
 
-    // Map user data by userID for easy lookup
-    const userDataMap = {};
-    usersSnapshot.forEach((doc) => {
-      if (doc.exists) {
-        userDataMap[doc.id] = doc.data();
-      } else {
-        console.log(`User not available for userID: ${doc.id}`);
-      }
-    });
+        if (!userSnap.exists) {
+          return {
+            userID,
+            points,
+            username: 'Unknown User',
+            profilePicture: 'default-profile-picture-url'
+          };
+        }
 
-    // Combine leaderboard and user data
-    const leaderboard = leaderboardSnapshot.docs.map((doc) => {
-      const userID = doc.id;
-      const user = userDataMap[userID];
-      return {
-        userID,
-        points: doc.data().points,
-        username: user ? user.username : 'Unknown User',
-        profilePicture: user ? user.profilePicture : 'default-profile-picture-url'
-      };
-    });
+        const { username, profilePicture } = userSnap.data();
+
+        // Return leaderboard data along with user details
+        return {
+          userID,
+          points,
+          username: username || 'Unknown User',
+          profilePicture: profilePicture || 'default-profile-picture-url'
+        };
+      })
+    );
 
     return res.status(200).json(leaderboard);
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
-    return res.status(500).json({ message: 'Error fetching leaderboard data.' });
+    return res.status(500).json({ message: 'Error fetching leaderboard.' });
   }
 });
 
-// FUNCTION TO RESET LEADERBOARD
-exports.resetLeaderboard = onSchedule('59 23 * * 0', async (context) => {
-  try {
-    const leaderboardRef = db.collection('leaderboard');
-    const snapshot = await leaderboardRef.get();
 
-    const batch = db.batch();
-    snapshot.forEach((doc) => {
-      batch.update(doc.ref, { points: 0 });
-    });
+// // FUNCTION TO RESET LEADERBOARD
+// exports.resetLeaderboard = onSchedule('59 23 * * 0', async (context) => {
+//   try {
+//     const leaderboardRef = db.collection('leaderboard');
+//     const snapshot = await leaderboardRef.get();
 
-    await batch.commit();
-    console.log('Leaderboard reset successfully');
-  } catch (error) {
-    console.error('Error resetting leaderboard:', error);
-  }
-});
+//     const batch = db.batch();
+//     snapshot.forEach((doc) => {
+//       batch.update(doc.ref, { points: 0 });
+//     });
+
+//     await batch.commit();
+//     console.log('Leaderboard reset successfully');
+//   } catch (error) {
+//     console.error('Error resetting leaderboard:', error);
+//   }
+// });
 
 // TODO APIs
 // List of APIs that is needed.
