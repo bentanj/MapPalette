@@ -45,7 +45,7 @@ const app = Vue.createApp({
         // Post related
         postTitle:'',
         postDescription:'',
-        minDescriptionLength: 150, // Minimum character requirement
+        minDescriptionLength: 50, // Minimum character requirement
         userID:'',
         username:'',
         submitting:false,
