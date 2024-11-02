@@ -239,7 +239,7 @@ app.get('/api/allposts', async (req, res) => {
       const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
 
       // Exclude posts if user has `isPostPrivate` set to true
-      if (userData && userData.isPostPrivate) return null;
+      if (userData && userData.isPostPrivate) return undefined;
 
       // Add username and profile picture to the post data
       return {
@@ -249,7 +249,9 @@ app.get('/api/allposts', async (req, res) => {
       };
     }));
 
-    return res.status(200).json(posts);
+    // Filter out any undefined results before sending the response
+    const filteredPosts = posts.filter(post => post !== undefined && post !== null);
+    return res.status(200).json(filteredPosts);    
   } catch (error) {
     console.error('Error fetching all posts:', error);
     return res.status(500).json({ message: 'Error fetching posts.' });
@@ -744,7 +746,7 @@ app.get('/api/users/getallusers', async (req, res) => {
       // Base user data
       const userData = { id: doc.id, ...doc.data() };
 
-      if (userData.isProfilePrivate) return null;
+      if (userData.isProfilePrivate) return undefined;
 
       // Fetch all subcollections for the current user and add each as its own attribute in userData
       const subcollectionRefs = await db.collection('users').doc(doc.id).listCollections();
@@ -760,8 +762,10 @@ app.get('/api/users/getallusers', async (req, res) => {
       return userData;
     }));
 
-    // Respond with an array of all users, including their individual subcollections
-    return res.status(200).json(users);
+    // Filter out undefined results before sending the response
+    const filteredUsers = users.filter(user => user !== undefined);
+    return res.status(200).json(filteredUsers);
+    
   } catch (error) {
     console.error('Error fetching users:', error);
     return res.status(500).json({ message: 'Error fetching users' });
@@ -857,6 +861,9 @@ app.get('/api/users/getcondensed/:currentUserID', async (req, res) => {
     // Map through each user document and create the condensed user object
     const condensedUsers = usersSnap.docs.map(doc => {
       const userData = doc.data();
+
+      if (userData.isProfilePrivate) return undefined;
+
       return {
         userID: doc.id,
         username: userData.username || null,
@@ -865,7 +872,9 @@ app.get('/api/users/getcondensed/:currentUserID', async (req, res) => {
       };
     });
 
-    return res.status(200).json(condensedUsers);
+    // Filter out undefined results before sending the response
+    const filteredCondensedUsers = condensedUsers.filter(user => user !== undefined);
+    return res.status(200).json(filteredCondensedUsers);    
   } catch (error) {
     console.error('Error fetching condensed user data:', error);
     return res.status(500).json({ message: 'Error fetching condensed user data.' });
