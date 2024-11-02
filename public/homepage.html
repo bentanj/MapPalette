@@ -508,7 +508,9 @@
             },
             data() {
                 return {
-                    currentUser: '',
+                    API_ENDPOINT: 'https://app-907670644284.us-central1.run.app',
+                    currentUser: null,
+                    currentUserID: null,
                     selectedActivity: null,
                     lastApiCallTime: 0,
                     userProfile: {
@@ -559,114 +561,140 @@
                         }
                     ],
                     trendingRoutes: [],
-                    activities: []
+                    activities: [],
+                    users: [],
+                    posts: []
                 }
             },
-            mounted() {
+            created() {
                 const loadingSpinner = document.getElementById('loading-spinner');
                 const appContainer = document.getElementById('app-container');
-
-                // Check every 100ms if `window.currentUser` is populated
-                const userCheckInterval = setInterval(() => {
+                
+                // Check for window.currentUser
+                const checkUser = setInterval(() => {
                     if (window.currentUser) {
+                        clearInterval(checkUser);
+                        console.log('User data found:', window.currentUser);
+                        
+                        this.currentUser = window.currentUser;
+                        this.currentUserId = window.currentUser.id;
                         this.updateUserProfile(window.currentUser);
-                        loadingSpinner.style.display = 'none';
-                        appContainer.style.display = 'block';
-                        clearInterval(userCheckInterval); // Stop checking once loaded
+                        
+                        // Fetch posts for feed
+                        this.fetchPosts();
+                        
+                        // Hide loading spinner and show content
+                        if (loadingSpinner && appContainer) {
+                            loadingSpinner.style.display = 'none';
+                            appContainer.style.display = 'block';
+                        }
                     }
                 }, 100);
             },
 
-            created() {
-                // axios user and post data
-                const postsPromise = axios.get('databaseTemplateFolder/postTemplate.json');
-                const usersPromise = axios.get('databaseTemplateFolder/userTemplate.json');
-                
-                const user1 = window.currentUser
-                // console.log("Hello, i am user1: " + user1)
+            methods: {
+                updateUserProfile(userData) {
+                    this.userProfile = {
+                        name: userData.username,
+                        username: `@${userData.username}`,
+                        avatar: userData.profilePicture || 'resources/download.jpeg',
+                        stats: {
+                            routes: userData.postsCreated?.length || 0,
+                            following: userData.numFollowing || 0,
+                            followers: userData.numFollowers || 0
+                        }
+                    };
+                },
 
-                Promise.all([postsPromise, usersPromise])
-                    .then(([postsResponse, usersResponse]) => {
-                        const posts = postsResponse.data.posts;
-                        const users = usersResponse.data.users;
+                async fetchPosts() {
+                    try {
+                        // Fetch all posts
+                        const response = await axios.get(`${this.API_ENDPOINT}/api/posts`);
+                        this.posts = response.data;
+                        
+                        // Process posts for activities feed
+                        this.activities = this.posts.map(post => ({
+                            id: post.postID,
+                            user: this.currentUser.username,
+                            userImg: this.userProfile.avatar,
+                            date: this.formatDate(post.createdAt),
+                            location: post.waypoints[0].address,
+                            title: this.generateRunTitle(post.createdAt),
+                            routeTitle: post.title,
+                            description: post.description,
+                            distance: `${post.distance} km`,
+                            time: this.generatePlaceholderTime(),
+                            mapImg: post.image,
+                            likes: post.likeCount,
+                            comments: [],
+                            isLiked: this.currentUser.postsLiked.includes(post.postID)
+                        }));
 
-                        // assume user1 nw
-                        const user1 = users[0]
-                        // const user1 = window.currentUser
-
-                        console.log("Hello, i am user1: " + user1)
-                        // this.currentUser = user1.username;
-
-                        // user profile
-                        this.userProfile = {
-                            name: user1.username,
-                            username: `@${user1.username}`,
-                            avatar: user1.profilePicture,
-                            stats: {
-                                routes: user1.postsCreated.length,
-                                following: user1.numFollowed || user1.followed.length,
-                                followers: user1.numFollowers || user1.followers.length
-                            }
-                        };
-
-                        // user1
-                        this.activities = posts.map(post => {
-                            const runTitles = "Morning Run";
-
-                            return {
-                                id: post.postID,
-                                user: user1.username,
-                                userImg: user1.profilePicture,
-                                date: new Date(post.createdAt).toLocaleString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                }),
-                                location: post.waypoints[0].address,
-
-                                // hard code
-                                title: runTitles,
-                                routeTitle: post.title,
-                                description: post.description,
-                                distance: `${post.distance} km`,
-                                time: "N/A",
-                                mapImg: post.image,
-                                likes: post.likeCount,
-                                comments: [],
-                                isLiked: user1.postsLiked.some(liked => liked.postID === post.postID)
-                            };
-                        });
-
-                        // Sort posts by date for feed
+                        // Sort activities by date
                         this.activities.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                         // Set trending routes (most liked posts)
-                        this.trendingRoutes = posts
+                        this.trendingRoutes = this.posts
                             .sort((a, b) => b.likeCount - a.likeCount)
                             .slice(0, 2)
                             .map(post => ({
                                 id: post.postID,
                                 title: post.title,
                                 distance: `${post.distance} km`,
-                                saves: `${post.shareCount} saves this week`,
+                                saves: `${post.shareCount || 0} saves this week`,
                                 image: post.image
                             }));
-                    })
-                    .catch(error => {
-                        console.error('Error fetching data:', error);
-                    }
-                );
-            },
 
-            methods: {
+                    } catch (error) {
+                        console.error('Error fetching posts:', error);
+                    }
+                },
+
+                formatDate(dateObj) {
+                    const date = dateObj._seconds ? 
+                        new Date(dateObj._seconds * 1000) : 
+                        new Date(dateObj);
+                        
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }).replace('at', 'at');
+                },
+
+                generateRunTitle(dateString) {
+                    const date = new Date(dateString);
+                    const hour = date.getHours();
+                    let timeOfDay;
+                    
+                    if (hour < 12) timeOfDay = "Morning";
+                    else if (hour < 17) timeOfDay = "Afternoon";
+                    else if (hour < 20) timeOfDay = "Evening";
+                    else timeOfDay = "Night";
+                    
+                    return `${timeOfDay} Run`;
+                },
+
+                generatePlaceholderTime() {
+                    return "30m 00s";
+                },
+
                 openActivityModal(activity) {
                     this.selectedActivity = activity;
                 },
                 
                 likeActivity(activity) {
+                    const currentTime = Date.now();
+                    if (currentTime - this.lastApiCallTime < 1000) {
+                        alert('Please wait a moment before performing another action.');
+                        return;
+                    }
+
+                    this.lastApiCallTime = currentTime;
                     activity.likeDisabled = true;
+
                     if (!activity.isLiked) {
                         if (!activity.likes) activity.likes = 0;
                         activity.likes++;
@@ -675,23 +703,11 @@
                         activity.likes--;
                         activity.isLiked = false;
                     }
+
                     setTimeout(() => {
                         activity.likeDisabled = false;
                     }, 1000);
-                },
-                updateUserProfile(user) {
-                    this.userProfile = {
-                        name: user.username,
-                        username: `@${user.username}`,
-                        avatar: user.profilePicture,
-                        stats: {
-                            routes: user.postsCreated?.length || 0,
-                            following: user.followed?.length || 0,
-                            followers: user.followers?.length || 0
-                        }
-                    };
                 }
-
             }
         });
     </script>
