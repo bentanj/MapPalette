@@ -700,8 +700,8 @@ app.get('/api/users/getallusers', async (req, res) => {
   }
 });
 
-// Get all user objects followed by the current user
-app.get('/api/users/getfollowed/:userID', async (req, res) => {
+// Get all user objects followers by the current user
+app.get('/api/users/getfollowers/:userID', async (req, res) => {
   const { userID } = req.params;
   
   if (!userID) {
@@ -709,29 +709,29 @@ app.get('/api/users/getfollowed/:userID', async (req, res) => {
   }
 
   try {
-    // Reference the 'followed' subcollection under the current user
-    const followedSnap = await db.collection('users').doc(userID).collection('followed').get();
+    // Reference the 'followers' subcollection under the current user
+    const followersSnap = await db.collection('users').doc(userID).collection('followers').get();
 
-    if (followedSnap.empty) {
-      return res.status(404).json({ message: 'No followed users found for this user.' });
+    if (followersSnap.empty) {
+      return res.status(404).json({ message: 'No followers users found for this user.' });
     }
 
-    // Collect all followed user IDs
-    const followedUserIDs = followedSnap.docs.map(doc => doc.id);
+    // Collect all followers user IDs
+    const followersUserIDs = followersSnap.docs.map(doc => doc.id);
 
-    // Fetch user data for each followed user ID from the main "users" collection
-    const followedUsersPromises = followedUserIDs.map(async (followedUserID) => {
-      const userDoc = await db.collection('users').doc(followedUserID).get();
-      return userDoc.exists ? { userID: followedUserID, ...userDoc.data() } : null;
+    // Fetch user data for each followers user ID from the main "users" collection
+    const followersUsersPromises = followersUserIDs.map(async (followersUserID) => {
+      const userDoc = await db.collection('users').doc(followersUserID).get();
+      return userDoc.exists ? { userID: followersUserID, ...userDoc.data() } : null;
     });
 
-    // Wait for all followed user data to be fetched
-    const followedUsers = (await Promise.all(followedUsersPromises)).filter(user => user !== null);
+    // Wait for all followers user data to be fetched
+    const followersUsers = (await Promise.all(followersUsersPromises)).filter(user => user !== null);
 
-    return res.status(200).json(followedUsers);
+    return res.status(200).json(followersUsers);
   } catch (error) {
-    console.error('Error fetching followed users:', error);
-    return res.status(500).json({ message: 'Error fetching followed users.' });
+    console.error('Error fetching followers users:', error);
+    return res.status(500).json({ message: 'Error fetching followers users.' });
   }
 });
 
