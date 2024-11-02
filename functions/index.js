@@ -253,6 +253,55 @@ app.get('/api/allposts', async (req, res) => {
   }
 });
 
+// Retrieve all posts made by users that the current user follows
+app.get('/api/allposts/:userID', async (req, res) => {
+  const { userID } = req.params;
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    // Step 1: Retrieve the list of user IDs that `userID` is following
+    const followingSnap = await db.collection('users').doc(userID).collection('following').get();
+    if (followingSnap.empty) {
+      return res.status(404).json({ message: 'No followed users found for this user.' });
+    }
+
+    const followedUserIDs = followingSnap.docs.map(doc => doc.id);
+
+    // Step 2: Retrieve posts created by users that `userID` is following
+    const postsSnap = await db.collection('posts')
+      .where('userID', 'in', followedUserIDs)
+      .orderBy('createdAt', 'desc') // Sort by creation date, if needed
+      .get();
+
+    if (postsSnap.empty) {
+      return res.status(404).json({ message: 'No posts found from followed users.' });
+    }
+
+    const posts = await Promise.all(postsSnap.docs.map(async (doc) => {
+      const postData = doc.data();
+      
+      // Fetch additional user details for the post (optional)
+      const userRef = db.collection('users').doc(postData.userID);
+      const userSnap = await userRef.get();
+      const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
+
+      return {
+        ...postData,
+        id: doc.id,
+        username: userData.username || 'Unknown User',
+        profilePicture: userData.profilePicture || 'default-profile-picture-url'
+      };
+    }));
+
+    return res.status(200).json(posts);
+  } catch (error) {
+    console.error('Error fetching followed users posts:', error);
+    return res.status(500).json({ message: 'Error fetching posts.' });
+  }
+});
 
 // 
 // POST LIKING API
@@ -706,7 +755,7 @@ app.get('/api/users/getfollowers/:userID', async (req, res) => {
   
   if (!userID) {
     return res.status(400).json({ message: 'User ID is required.' });
-  }
+  } 
 
   try {
     // Reference the 'followers' subcollection under the current user
@@ -852,7 +901,7 @@ app.get('/api/users/:userID/posts', async (req, res) => {
 
 
 //
-// UPDATE USER PROFILE API
+// UPDATE USER PROFILE APIs
 //
 
 // Update username for a specific user

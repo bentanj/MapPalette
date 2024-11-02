@@ -138,7 +138,7 @@ onAuthStateChanged(auth, async (user) => {
               const postsCreated = await fetchSubcollectionIds(user.uid, 'postsCreated');
               const postsLiked = await fetchSubcollectionIds(user.uid, 'postsLiked');
               const followers = await fetchSubcollectionIds(user.uid, 'followers');
-              const followed = await fetchSubcollectionIds(user.uid, 'followed');
+              const following = await fetchSubcollectionIds(user.uid, 'followed');
 
               // Set `window.currentUser` with user data and subcollection IDs
               window.currentUser = {
@@ -147,7 +147,7 @@ onAuthStateChanged(auth, async (user) => {
                   postsCreated: postsCreated || [], // Populate with IDs or empty array if not found
                   postsLiked: postsLiked || [],
                   followers: followers || [],
-                  followed: followed || []
+                  following: following || []
               };
               // Check if user collection is imported correctly
               // console.log("User data loaded globally with subcollections:", window.currentUser);
