@@ -352,112 +352,25 @@
                         modal: null,
                         showAllComments: false,
                         disabledActions: {},
-                        lastApiCallTime: 0,
-                        // populate comment data
-                        comments: [],
-                        isLoadingComments: false,
-                        editingComment: null,
-                        editText: '',
-                        isUpdatingComment: false
+                        lastApiCallTime: 0
                     }
                 },
 
                 computed: {
                     isLiked() {
                         return this.activity.isLiked || false;
-                    },
-                    // max show 4 comments only.
-                    displayComments() {
-                        if (this.showAllComments) {
-                            return this.comments;
-                        } else {
-                            return this.comments.slice(0, 4);
-                        }
                     }
                 },
 
-                async mounted() {
+                mounted() {
                     this.modal = new bootstrap.Modal(this.$el)
                     this.modal.show()
                     this.$el.addEventListener('hidden.bs.modal', () => {
                         this.$emit('close')
                     })
-                    
-                    // Fetch comments when modal opens
-                    await this.fetchComments();
                 },
 
                 methods: {
-                    async fetchComments() {
-                        this.isLoadingComments = true;
-                        try {
-                            const response = await axios.get(
-                                `${this.$parent.API_ENDPOINT}/api/posts/${this.activity.id}/comments`
-                            );
-                            this.comments = response.data.map(comment => ({
-                                name: comment.userID, // You might want to fetch user details to get actual username
-                                text: comment.text,
-                                createdAt: comment.createdAt
-                            }));
-                        } catch (error) {
-                            console.error('Error fetching comments:', error);
-                            this.comments = [];
-                        } finally {
-                            this.isLoadingComments = false;
-                        }
-                    },
-
-                    // to edit comments
-                    startEditing(comment) {
-                        this.editingComment = comment.id;
-                        this.editText = comment.text;
-                    },
-
-                    cancelEditing() {
-                        this.editingComment = null;
-                        this.editText = '';
-                    },
-
-                    async updateComment(comment) {
-                        if (!this.editText.trim()) {
-                            alert('Comment text cannot be empty');
-                            return;
-                        }
-
-                        const currentTime = Date.now();
-                        if (currentTime - this.lastApiCallTime < 1000) {
-                            alert('Please wait a moment before performing another action.');
-                            return;
-                        }
-
-                        this.lastApiCallTime = currentTime;
-                        this.isUpdatingComment = true;
-
-                        try {
-                            await axios.put(
-                                `${this.$parent.API_ENDPOINT}/api/posts/${this.activity.id}/comments/${comment.id}`,
-                                { text: this.editText }
-                            );
-
-                            // Update the comment in the local state
-                            const commentIndex = this.comments.findIndex(c => c.id === comment.id);
-                            if (commentIndex !== -1) {
-                                this.comments[commentIndex] = {
-                                    ...comment,
-                                    text: this.editText
-                                };
-                            }
-
-                            this.editingComment = null;
-                            this.editText = '';
-                        } catch (error) {
-                            console.error('Error updating comment:', error);
-                            alert('Failed to update comment. Please try again.');
-                        } finally {
-                            this.isUpdatingComment = false;
-                        }
-                    },
-
                     useRoute() {
                         window.location.href = `addMaps.html?id=${this.activity.id}`;
                     },
@@ -466,32 +379,40 @@
                         window.location.href = `homepage.html?id=${this.activity.id}`;
                     },
 
-                    // need to implement api to add comments
-                    async submitComment() {
+                    submitComment() {
                         if (!this.newComment.trim()) return;
 
                         const currentTime = Date.now();
                         if (currentTime - this.lastApiCallTime < 1000) {
                             alert('Please wait a moment before performing another action.');
                             return;
-                        }
+                    }
 
                     this.lastApiCallTime = currentTime;
                     this.disabledActions.comment = true;
 
-                    this.comments.push({
+                    if (!this.activity.comments) {
+                        this.activity.comments = [];
+                    }
+                    
+                    this.activity.comments.push({
                         name: 'You',
-                        text: this.newComment,
-                        createdAt: new Date()
+                        text: this.newComment
                     });
                     
                     this.newComment = '';
 
-                    await this.fetchComments();
-
                     setTimeout(() => {
                         this.disabledActions.comment = false;
                     }, 1000);
+                },
+
+                limitedComments() {
+                    if (this.showAllComments) {
+                        return this.activity.comments;
+                    } else {
+                        return this.activity.comments ? this.activity.comments.slice(0, 4) : [];
+                    }
                 },
 
                 toggleShowAllComments() {
@@ -501,136 +422,98 @@
 
             template: `
                 <div class="modal fade" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                            <!-- Modal Header -->
-                            <div class="modal-header d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h5 class="modal-title" :id="'modalLabel'">{{ activity.title }}</h5>
-                                    <h6 class="modal-author text-muted">by {{ activity.user }}</h6>
-                                </div>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <!-- Modal Header -->
+                        <div class="modal-header d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="modal-title" :id="'modalLabel'">{{ activity.title }}</h5>
+                                <h6 class="modal-author text-muted">by {{ activity.user }}</h6>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="modal-body">
+                            <div id="modal-pic">
+                                <img :src="activity.mapImg" alt="Activity Map" class="img-fluid">
                             </div>
 
-                            <!-- Modal Body -->
-                            <div class="modal-body">
-                                <div id="modal-pic">
-                                    <img :src="activity.mapImg" alt="Activity Map" class="img-fluid">
-                                </div>
+                            <!-- Modal Content -->
+                            <p class="text-muted">Posted {{ activity.date }}</p>
+                            <p class="text-muted">{{ activity.likes || 0 }} Likes | {{ activity.comments ? activity.comments.length : 0 }} Comments</p>
+                            
+                            <!-- Stats Row -->
+                            <div class="d-flex mb-3">
+                                <p class="me-4"><strong>Distance:</strong> {{ activity.distance }}</p>
+                                <p><strong>Time:</strong> {{ activity.time }}</p>
+                            </div>
+                            
+                            <p>{{ activity.description }}</p>
 
-                                <!-- Modal Content -->
-                                <p class="text-muted">Posted {{ activity.date }}</p>
-                                <p class="text-muted">{{ activity.likes || 0 }} Likes | {{ comments.length }} Comments</p>
-                                
-                                <!-- Stats Row -->
-                                <div class="d-flex mb-3">
-                                    <p class="me-4"><strong>Distance:</strong> {{ activity.distance }}</p>
-                                    <p><strong>Time:</strong> {{ activity.time }}</p>
-                                </div>
-                                
-                                <p>{{ activity.description }}</p>
+                            <!-- Action Buttons -->
+                            <div class="d-flex border-top border-bottom py-3">
+                                <!-- Container for buttons with even spacing -->
+                                <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
+                                    <!-- Like Button -->
+                                    <button class="btn btn-link p-0 action-button" 
+                                            @click="$emit('like', activity)"
+                                            :class="{ 'liked': isLiked }"
+                                            :disabled="activity.likeDisabled">
+                                        <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
+                                        <span>Like</span>
+                                    </button>
 
-                                <!-- Action Buttons -->
-                                <div class="d-flex border-top border-bottom py-3">
-                                    <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
-                                        <button class="btn btn-link p-0 action-button" 
-                                                @click="$emit('like', activity)"
-                                                :class="{ 'liked': isLiked }"
-                                                :disabled="activity.likeDisabled">
-                                            <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
-                                            <span>Like</span>
-                                        </button>
+                                    <!-- Use Button -->
+                                    <button class="btn btn-link p-0 action-button"
+                                            @click='useRoute'
+                                            :disabled="disabledActions.use">
+                                        <i class="far fa-map me-1"></i>
+                                        <span>Use</span>
+                                    </button>
 
-                                        <button class="btn btn-link p-0 action-button"
-                                                @click='useRoute'
-                                                :disabled="disabledActions.use">
-                                            <i class="far fa-map me-1"></i>
-                                            <span>Use</span>
-                                        </button>
-
-                                        <button class="btn btn-link p-0 action-button"
-                                                @click="shareRoute"
-                                                :disabled="disabledActions.share">
-                                            <i class="far fa-share-square me-1"></i>
-                                            <span>Share</span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Comments Section -->
-                                <br>
-                                <h6>Comments</h6>
-                                <div class="mb-3">
-                                    <textarea class="form-control mb-2"
-                                            placeholder="Add a comment..."
-                                            rows="2"
-                                            v-model="newComment"></textarea>
-                                    <button class="btn btn-primary"
-                                            @click="submitComment"
-                                            :disabled="disabledActions.comment">
-                                        <span v-if="!disabledActions.comment">Post Comment</span>
-                                        <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
+                                    <!-- Share Button -->
+                                    <button class="btn btn-link p-0 action-button"
+                                            @click="shareRoute"
+                                            :disabled="disabledActions.share">
+                                        <i class="far fa-share-square me-1"></i>
+                                        <span>Share</span>
                                     </button>
                                 </div>
+                            </div>
 
-                                <!-- Loading State -->
-                                <div v-if="isLoadingComments" class="text-center">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Loading comments...</span>
-                                    </div>
-                                </div>
-
-                                <!-- Comments List (editing) -->
-                                <ul v-else class="list-unstyled">
-                                    <li v-for="comment in displayComments" :key="comment.id" class="mb-3 border-bottom pb-2">
-                                        <div v-if="editingComment === comment.id" class="mb-2">
-                                            <div class="input-group">
-                                                <textarea 
-                                                    class="form-control"
-                                                    v-model="editText"
-                                                    rows="2"
-                                                    :disabled="isUpdatingComment"
-                                                ></textarea>
-                                                <button 
-                                                    class="btn btn-success"
-                                                    @click="updateComment(comment)"
-                                                    :disabled="isUpdatingComment"
-                                                >
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                                <button 
-                                                    class="btn btn-secondary"
-                                                    @click="cancelEditing"
-                                                    :disabled="isUpdatingComment"
-                                                >
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div v-else class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <strong>{{ comment.name }}:</strong> {{ comment.text }}
-                                            </div>
-                                            <button 
-                                                class="btn btn-link btn-sm text-muted"
-                                                @click="startEditing(comment)"
-                                            >
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                        </div>
-                                    </li>
-                                </ul>
-
-                                <button v-if="comments.length > 4"
-                                        @click="toggleShowAllComments"
-                                        class="btn btn-link p-0">
-                                    {{ showAllComments ? 'Show Less Comments' : 'Load More Comments' }}
+                            <!-- Comments Section -->
+                            <br>
+                            <h6>Comments</h6>
+                            <div class="mb-3">
+                                <textarea class="form-control mb-2"
+                                        placeholder="Add a comment..."
+                                        rows="2"
+                                        v-model="newComment"></textarea>
+                                <button class="btn btn-primary"
+                                        @click="submitComment"
+                                        :disabled="disabledActions.comment">
+                                    <span v-if="!disabledActions.comment">Post Comment</span>
+                                    <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
                                 </button>
                             </div>
+
+                            <ul class="list-unstyled">
+                                <li v-for="comment in limitedComments()" class="mb-2">
+                                    <strong>{{ comment.name }}:</strong> {{ comment.text }}
+                                </li>
+                            </ul>
+
+                            <button v-if="activity.comments && activity.comments.length > 4"
+                                    @click="toggleShowAllComments"
+                                    class="btn btn-link p-0">
+                                {{ showAllComments ? 'Show Less Comments' : 'Load More Comments' }}
+                            </button>
                         </div>
                     </div>
-                </div>`
-            }
+                </div>
+            </div>`
+        }
 
         //  handle API data
         const app = createApp({

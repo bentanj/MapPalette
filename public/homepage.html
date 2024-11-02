@@ -509,8 +509,7 @@
             data() {
                 return {
                     API_ENDPOINT: 'https://app-907670644284.us-central1.run.app',
-                    currentUser: null,
-                    currentUserID: null,
+                    currentUser: '',
                     selectedActivity: null,
                     lastApiCallTime: 0,
                     userProfile: {
@@ -562,8 +561,6 @@
                     ],
                     trendingRoutes: [],
                     activities: [],
-                    users: [],
-                    posts: []
                 }
             },
             created() {
@@ -600,23 +597,32 @@
                         avatar: userData.profilePicture || 'resources/download.jpeg',
                         stats: {
                             routes: userData.postsCreated?.length || 0,
-                            following: userData.numFollowing || 0,
-                            followers: userData.numFollowers || 0
+                            following: userData.following?.length || 0,  
+                            followers: userData.followers?.length || 0   
                         }
                     };
                 },
 
                 async fetchPosts() {
+                    this.isLoading = true;
                     try {
-                        // Fetch all posts
-                        const response = await axios.get(`${this.API_ENDPOINT}/api/posts`);
-                        this.posts = response.data;
+                        // get user ID from window.currentUser
+                        const currentUserId = window.currentUser.id;
+                        console.log('Current user ID:', currentUserId);
+
+                        // api call to call to get all following posts
                         
-                        // Process posts for activities feed
-                        this.activities = this.posts.map(post => ({
+                        //debugging console stuffz
+                        console.log('Fetching posts for current user...');
+                        const response = await axios.get(`${this.API_ENDPOINT}/api/allposts/user/${currentUserId}`);
+                        const allPosts = response.data;
+                        console.log(`Total posts fetched: ${allPosts.length}`);
+
+                        // Process the posts for activities feed
+                        this.activities = allPosts.map(post => ({
                             id: post.postID,
-                            user: this.currentUser.username,
-                            userImg: this.userProfile.avatar,
+                            user: post.username || 'Unknown User',
+                            userImg: post.profilePicture || this.userProfile.avatar,
                             date: this.formatDate(post.createdAt),
                             location: post.waypoints[0].address,
                             title: this.generateRunTitle(post.createdAt),
@@ -627,14 +633,14 @@
                             mapImg: post.image,
                             likes: post.likeCount,
                             comments: [],
-                            isLiked: this.currentUser.postsLiked.includes(post.postID)
+                            isLiked: this.currentUser.postsLiked?.includes(post.postID) || false
                         }));
 
-                        // Sort activities by date
+                        // Sort activities by date (most recent first)
                         this.activities.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                         // Set trending routes (most liked posts)
-                        this.trendingRoutes = this.posts
+                        this.trendingRoutes = allPosts
                             .sort((a, b) => b.likeCount - a.likeCount)
                             .slice(0, 2)
                             .map(post => ({
@@ -646,7 +652,11 @@
                             }));
 
                     } catch (error) {
-                        console.error('Error fetching posts:', error);
+                        console.error('Error in fetchPosts:', error);
+                        this.activities = [];
+                        this.trendingRoutes = [];
+                    } finally {
+                        this.isLoading = false;
                     }
                 },
 
