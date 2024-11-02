@@ -144,102 +144,85 @@
             }
         },
         methods: {
-            // when user clicks on unfollow, show a modal to make them confirm the action
+            // Show modal to confirm unfollow action
             confirmUnfollow(friend) {
                 this.friendToUnfollow = friend;
                 const unfollowModal = new bootstrap.Modal(document.getElementById('unfollowModal'));
                 unfollowModal.show();
             },
-            // user confirms the action, reactively removes friend from friends list and append to other users list. 
-            // API is called to remove the friend, if unsuccessful, revert step 1 
+
+            // Unfollow confirmed action
             unfollowConfirmed() {
                 const friendId = this.friendToUnfollow.id;
-                const currentUserId = this.currentUser.id;
-                const friend = this.friendToUnfollow;
+                const currentUserId = this.currentUser.id;  // Assuming currentUser.id holds the ID of the logged-in user
 
-                // Optimistically update local data
-                const index = this.currentUser.followed.indexOf(friendId);
-                if (index > -1) {
-                    this.currentUser.followed.splice(index, 1);
-                }
-                const followerIndex = friend.followers.indexOf(currentUserId);
-                if (followerIndex > -1) {
-                    friend.followers.splice(followerIndex, 1);
-                }
+                console.log(`unfollowed friend id: ${friendId}`)
+                console.log(`my id: ${currentUserId}`)
 
+                // Optimistically update UI
                 this.friends = this.friends.filter(f => f.id !== friendId);
-                this.otherUsers.push(friend);
+                this.otherUsers.push(this.friendToUnfollow);
                 this.friendToUnfollow = null;
 
                 const unfollowModal = bootstrap.Modal.getInstance(document.getElementById('unfollowModal'));
                 unfollowModal.hide();
 
-                // Send API request
-                axios.post('https://app-907670644284.us-central1.run.app', {
-                    currentUserId: currentUserId,
-                    friendId: friendId
+                // Send API request for unfollow with required data in the body
+                axios.post('https://app-907670644284.us-central1.run.app/api/unfollow', {
+                    userID: currentUserId,
+                    followUserID: friendId
                 })
+                    .then(response => {
+                        console.log(`Successfully unfollowed user with ID: ${friendId}`);
+                    })
                     .catch(error => {
                         console.error('Error unfollowing user:', error);
                         alert('An error occurred while trying to unfollow the user. Please try again.');
-
-                        // Revert changes
-                        this.currentUser.followed.push(friendId);
-                        friend.followers.push(currentUserId);
-                        this.friends.push(friend);
-                        this.otherUsers = this.otherUsers.filter(u => u.id !== friendId);
+                        // Optionally, revert the UI update on failure
                     });
             },
+
+            // Follow user action
             followUser(user) {
                 const friendId = user.id;
-                const currentUserId = this.currentUser.id;
+                const currentUserId = this.currentUser.id;  // Assuming currentUser.id holds the ID of the logged-in user
 
-                this.currentUser.followed.push(friendId);
-                user.followers.push(currentUserId);
+                console.log(`followed friend id: ${friendId}`)
+                console.log(`my id: ${currentUserId}`)
 
+                // Optimistically update UI
                 this.otherUsers = this.otherUsers.filter(u => u.id !== friendId);
-
-                user.newFriend = true;
                 this.friends.unshift(user);
 
-                setTimeout(() => {
-                    user.newFriend = false;
-                }, 1500);
-
-                // Send API request
-                axios.post('https://app-907670644284.us-central1.run.app', {
-                    currentUserId: currentUserId,
-                    friendId: friendId
+                // Send API request for follow with required data in the body
+                axios.post('https://app-907670644284.us-central1.run.app/api/follow', {
+                    userID: currentUserId,
+                    followUserID: friendId
                 })
+                    .then(response => {
+                        console.log(`Successfully followed user with ID: ${friendId}`);
+                    })
                     .catch(error => {
                         console.error('Error following user:', error);
                         alert('An error occurred while trying to follow the user. Please try again.');
-
-                        // Revert changes
-                        const index = this.currentUser.followed.indexOf(friendId);
-                        if (index > -1) {
-                            this.currentUser.followed.splice(index, 1);
-                        }
-                        const followerIndex = user.followers.indexOf(currentUserId);
-                        if (followerIndex > -1) {
-                            user.followers.splice(followerIndex, 1);
-                        }
-
-                        this.friends = this.friends.filter(f => f.id !== friendId);
-                        this.otherUsers.push(user);
+                        // Optionally, revert the UI update on failure
                     });
             },
+
             loadMoreFriends() {
                 this.displayedFriends += 6;
             },
+
             loadMoreOtherUsers() {
                 this.displayedOtherUsers += 6;
             },
+
             openProfile(user) {
                 alert('Opening profile for ' + user.username);
                 // Implement actual profile navigation here
-            },
+            }
         },
+
         mounted() {
             const loadingSpinner = document.getElementById('loading-spinner');
             const appContainer = document.getElementById('app-container');
@@ -266,14 +249,17 @@
                         // Map userID to id for consistency
                         user.id = user.userID;
 
-                        // Check isFollowing value to categorize user
-                        if (user.isFollowing === true || user.isFollowing === 'true') {
-                            // Push directly into this.friends
-                            this.friends.push(user);
-                        } else {
-                            // Push directly into this.otherUsers
-                            this.otherUsers.push(user);
+                        if (user.id !== this.currentUser.id) { // if its not the current user, push to either friends/other users
+                            // Check isFollowing value to categorize user
+                            if (user.isFollowing === true || user.isFollowing === 'true') {
+                                // Push directly into this.friends
+                                this.friends.push(user);
+                            } else {
+                                // Push directly into this.otherUsers
+                                this.otherUsers.push(user);
+                            }
                         }
+
                     });
 
                     // Log the updated arrays
@@ -293,11 +279,12 @@
         template: `
     <div class="card friend-card h-100">
       <div class="card-body d-flex align-items-center">
-<img :src="friend.profilePicture" alt="Friend Profile" class="profile-pic me-3">
+<img :src="friend.profilePicture || 'default-profile.png'" alt="Friend Profile" class="profile-pic me-3">
         <div class="flex-grow-1">
-          <h5 class="card-title mb-1">{{ friend.username }}
-            <span v-if="friend.newFriend" class="text-danger ms-2" style="font-weight: bold;">New!</span>
-          </h5>
+<h5 class="card-title mb-1 truncate-text" :title="friend.username">
+  {{ friend.username }}
+  <span v-if="friend.newFriend" class="text-danger ms-2" style="font-weight: bold;">New!</span>
+</h5>
         </div>
         <div class="d-flex flex-column">
           <button class="btn mb-2" :class="{'btn-outline-danger': hovering, 'btn-success': !hovering}"
@@ -333,7 +320,7 @@
         template: `
     <div class="card friend-card h-100">
       <div class="card-body d-flex align-items-center">
-<img :src="user.profilePicture" alt="User Profile" class="profile-pic me-3">
+<img :src="user.profilePicture || 'default-profile.png'" alt="User Profile" class="profile-pic me-3">
         <div class="flex-grow-1">
           <h5 class="card-title mb-1">{{ user.username }}</h5>
         </div>

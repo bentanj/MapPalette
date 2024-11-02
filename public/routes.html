@@ -192,7 +192,7 @@
                     console.log('Routes Data:', routesResponse.data);
 
                     this.users = usersResponse.data.users;
-                    this.routes = routesResponse.data.posts.map(route => {
+                    this.routes = routesResponse.data.map(route => {
                         const user = this.users.find(user => user.id === route.userID);
 
                         if (!user) {
@@ -200,7 +200,7 @@
                         }
 
                         return {
-                            ...route,
+                            ...route, // spreads route into a new object and concats new key value pairs
                             modalId: 'modal-' + route.postID,
                             timeSince: this.calculateTimeSince(route.createdAt),
                             commentsList: route.commentsList || [],
