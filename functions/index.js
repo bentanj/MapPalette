@@ -238,6 +238,9 @@ app.get('/api/allposts', async (req, res) => {
       const userSnap = await userRef.get();
       const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
 
+      // Exclude posts if user has `isPostPrivate` set to true
+      if (userData && userData.isPostPrivate) return null;
+
       // Add username and profile picture to the post data
       return {
         ...postData,
@@ -741,6 +744,8 @@ app.get('/api/users/getallusers', async (req, res) => {
       // Base user data
       const userData = { id: doc.id, ...doc.data() };
 
+      if (userData.isProfilePrivate) return null;
+
       // Fetch all subcollections for the current user and add each as its own attribute in userData
       const subcollectionRefs = await db.collection('users').doc(doc.id).listCollections();
 
@@ -1034,6 +1039,61 @@ app.get('/api/challenge/leaderboard', async (req, res) => {
   }
 });
 
+// Get all liked posts for a specific user
+app.get('/api/users/:userID/likedPosts', async (req, res) => {
+  const { userID } = req.params;
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    // Reference all posts
+    const postsSnap = await db.collection('posts').get();
+
+    if (postsSnap.empty) {
+      return res.status(404).json({ message: 'No posts found.' });
+    }
+
+    const likedPosts = [];
+
+    // Iterate through each post and check if the user has liked it
+    await Promise.all(postsSnap.docs.map(async (postDoc) => {
+      const likeSnap = await postDoc.ref.collection('likes').doc(userID).get();
+      if (likeSnap.exists) {
+        likedPosts.push(postDoc.id); // Store the postID if liked by the user
+      }
+    }));
+
+    // Return the list of liked post IDs
+    return res.status(200).json({ likedPostIDs: likedPosts });
+  } catch (error) {
+    console.error('Error fetching liked posts:', error);
+    return res.status(500).json({ message: 'Error fetching liked posts.' });
+  }
+});
+
+// Update privacy settings for a user
+app.put('/api/users/:userID/privacy', async (req, res) => {
+  const { userID } = req.params;
+  const { isProfilePrivate, isPostPrivate } = req.body;
+
+  if (typeof isProfilePrivate === 'undefined' || typeof isPostPrivate === 'undefined') {
+      return res.status(400).json({ message: 'Both isProfilePrivate and isPostPrivate are required.' });
+  }
+
+  try {
+      const userRef = db.collection('users').doc(userID);
+      await userRef.update({
+          isProfilePrivate,
+          isPostPrivate
+      });
+      return res.status(200).json({ message: 'Privacy settings updated successfully!' });
+  } catch (error) {
+      console.error('Error updating privacy settings:', error);
+      return res.status(500).json({ message: 'Error updating privacy settings.' });
+  }
+});
 
 // // FUNCTION TO RESET LEADERBOARD
 // exports.resetLeaderboard = onSchedule('59 23 * * 0', async (context) => {
