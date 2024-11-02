@@ -578,7 +578,7 @@ const app = Vue.createApp({
                     // User is not the owner, set as new map
                     this.postId = null; // Clears postId for new save
                     this.isEditing = false; // Switch to "create" mode
-                    this.setAlert('error', 'You are viewing a copy of this map. Changes will save as a new post.');
+                    this.setAlert('error', 'You are viewing a copy of this map. Changes will save as a new public post.');
                 }
         
                 // Load waypoints as viewable/editable data
@@ -914,7 +914,10 @@ const app = Vue.createApp({
             }
         },
         
-        
+        showPublicPostReminder() {
+            // Display a warning to remind users that the post will be public
+            this.setAlert('error', 'This post will be publicly visible once posted.');
+        },
     },
     created() {
         // Assign initMap as a global function to initialize the map once the API loads
@@ -941,6 +944,7 @@ const app = Vue.createApp({
                     } else {
                         // Initialize new map for post creation
                         this.initMap();
+                        this.showPublicPostReminder();
                     }
                 } catch (error) {
                     console.error("Failed to load Google Maps API:", error);
