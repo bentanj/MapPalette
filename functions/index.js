@@ -371,9 +371,9 @@ app.post('/api/posts/:postId/comments', async (req, res) => {
     const commentCheckDoc = await commentCheckRef.get();
     
     if (!commentCheckDoc.exists) {
-      await addPointsToCreator(postData.userID, 2); // Adjust points as desired
+      await addPointsToCreator(userID, 2); // Adjust points as desired
       await commentCheckRef.set({ createdAt: FieldValue.serverTimestamp() }); // Record that points were awarded
-    }
+   }   
 
     return res.status(201).json({ id: commentRef.id, message: 'Comment created successfully!' });
   } catch (error) {
