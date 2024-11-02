@@ -169,51 +169,58 @@
             };
         },
         mounted() {
-                const loadingSpinner = document.getElementById('loading-spinner');
-                const appContainer = document.getElementById('app-container');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const appContainer = document.getElementById('app-container');
 
-                // Check every 100ms if window.currentUser is populated
-                const userCheckInterval = setInterval(() => {
-                    if (window.currentUser) {
-                        loadingSpinner.style.display = 'none';
-                        appContainer.style.display = 'block';
-                        clearInterval(userCheckInterval); // Stop checking once loaded
-                    }
-                }, 100);
-            },
-
-        created() {
-            const routesPromise = axios.get('https://app-907670644284.us-central1.run.app/api/allposts');
-            const usersPromise = axios.get('https://app-907670644284.us-central1.run.app/api/api/users/getallusers');
-
-            Promise.all([routesPromise, usersPromise])
-                .then(([routesResponse, usersResponse]) => {
-                    console.log('Users Data:', usersResponse.data);
-                    console.log('Routes Data:', routesResponse.data);
-
-                    this.users = usersResponse.data.users;
-                    this.routes = routesResponse.data.map(route => {
-                        const user = this.users.find(user => user.id === route.userID);
-
-                        if (!user) {
-                            console.warn(`User not found for route ${route.postID} with userID ${route.userID}`);
-                        }
-
-                        return {
-                            ...route, // spreads route into a new object and concats new key value pairs
-                            modalId: 'modal-' + route.postID,
-                            timeSince: this.calculateTimeSince(route.createdAt),
-                            commentsList: route.commentsList || [],
-                            username: user ? user.username : 'Unknown User',
-                        };  
-                    });
-                    this.applyFilters();
-                })
-                .catch(error => {
-                    console.error("Error fetching data:", error);
-                });
+            // Check every 100ms if window.currentUser is populated
+            const userCheckInterval = setInterval(() => {
+                if (window.currentUser) {
+                    loadingSpinner.style.display = 'none';
+                    appContainer.style.display = 'block';
+                    clearInterval(userCheckInterval); // Stop checking once loaded
+                }
+            }, 100);
         },
 
+        created() {
+            axios.get('https://app-907670644284.us-central1.run.app/api/allposts')
+                .then(response => {
+                    this.routes = response.data.map(route => ({
+                        ...route,
+                        modalId: 'modal-' + route.postID,
+                        timeSince: this.calculateTimeSince(new Date(route.createdAt._seconds * 1000)),
+                        username: '', // Placeholder for now
+                    }));
+
+                    // Extract unique user IDs from routes
+                    const userIDs = [...new Set(this.routes.map(route => route.userID))];
+
+                    // Fetch user data for each unique userID
+                    const userPromises = userIDs.map(id =>
+                        axios.get(`https://app-907670644284.us-central1.run.app/api/${id}`)
+                            .then(userResponse => ({
+                                id,
+                                username: userResponse.data.username // Adjust property as needed
+                            }))
+                    );
+
+                    // Populate routes with user data once all user data is fetched
+                    Promise.all(userPromises).then(users => {
+                        this.routes.forEach(route => {
+                            const user = users.find(user => user.id === route.userID);
+                            if (user) {
+                                route.username = user.username;
+                            }
+                        });
+                        this.applyFilters();
+                    }).catch(error => {
+                        console.error("Error fetching user data:", error);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching routes data:", error);
+                });
+        },
 
         computed: {
             activeFilters() {
@@ -268,15 +275,17 @@
                             routes.sort((a, b) => a.likeCount - b.likeCount);
                             break;
                         case 'Newest':
-                            routes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                            routes.sort((a, b) => new Date(b.createdAt._seconds * 1000) - new Date(a.createdAt._seconds * 1000));
                             break;
                         case 'Oldest':
-                            routes.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                            routes.sort((a, b) => new Date(a.createdAt._seconds * 1000) - new Date(b.createdAt._seconds * 1000));
                             break;
                         default:
+                            break;
                     }
                 }
                 this.filteredRoutes = routes.slice(0, this.displayedRoutes);
+
             },
             setFilter(value) {
                 this.filters.sortOption = value;
@@ -303,6 +312,7 @@
 
     app.component('route-cards', {
         props: ['routes'],
+
         methods: {
             openModal(route) {
                 const modalElement = new bootstrap.Modal(document.getElementById(route.modalId));
@@ -316,25 +326,24 @@
         // Location will be the first waypoint's address
         template: `
 <div class="col-md-6 mb-4" v-for="route in routes" :key="route.postID">
-  <div class="card post-card">
+  <div class="card post-card" @click="openModal(route)">
     <div class="card-body d-flex">
-      <!-- Image Box -->
       <div class="image-box me-3">
         <img :src="route.image" class="img-fluid" :alt="route.title">
       </div>
-      <!-- Text Content -->
       <div class="text-content">
         <h5 class="card-title">{{ route.title }}</h5>
-        <p class="card-text truncate-2-lines">{{  truncateText(route.description, 150) }}</p>
+        <p class="card-text">{{ route.description }}</p>
         <p><strong>Distance:</strong> {{ route.distance }} km</p>
-        <p><strong>Location:</strong> {{ route.waypoints[0].address }}</p>
+        <p><strong>Location:</strong> {{ route.waypoints.length > 0 ? route.waypoints[0].address : 'N/A' }}</p>
       </div>
     </div>
     <div class="card-footer text-muted">
-      {{ route.timeSince }} | {{ route.likeCount }} Likes | {{ route.commentsList.length }} Comments | by {{ route.username }}
+      {{ route.timeSince }} | {{ route.likeCount }} Likes
     </div>
   </div>
 </div>
+
 
             `
     });
@@ -354,76 +363,85 @@
         },
         methods: {
             likeRoute(route) {
-                const apiEndpoint = `https://app-6kmdo5luna-uc.a.run.app/api/posts/like?id=${route.postID}`; // Dynamic endpoint
-                const currentTime = Date.now();
+                const currentUserID = window.currentUser?.id || 'defaultUserID'; // Replace with your actual method for fetching the current user ID.
+                const endpoint = this.likedRoutes[route.postID]
+                    ? `https://app-907670644284.us-central1.run.app/api/posts/unlike`
+                    : `https://app-907670644284.us-central1.run.app/api/posts/like`;
 
-                // Throttle to avoid rapid calls
-                if (currentTime - this.lastApiCallTime < 1000) {
-                    alert('Please wait a moment before liking again.');
-                    return;
-                }
+                console.log(route.postID, currentUserID)
 
-                this.lastApiCallTime = currentTime;
+                // Construct the request payload with both postID and userID
+                const payload = {
+                    postID: route.postID,
+                    userID: currentUserID
+                };
 
-                // Toggle local like state for immediate feedback
-                const isLiked = this.likedRoutes[route.postID];
-                this.likedRoutes[route.postID] = !isLiked;
-                route.likeCount += isLiked ? -1 : 1;
-
-                // Disable the button during the API call
-                this.disableAction(route, 'like');
-
-                // Send a POST request to update the like count in the database
-                axios.post(apiEndpoint)
+                axios.post(endpoint, payload)
                     .then(response => {
-                        console.log("Like updated in the database:", response.data);
+                        console.log("Like/unlike updated successfully:", response.data);
                     })
                     .catch(error => {
-                        console.error("Error updating like:", error);
+                        console.error("Error updating like/unlike:", error);
+
+                        // Log server response for better insights
+                        if (error.response) {
+                            console.error("Server response:", error.response.data);
+                        }
 
                         // Revert like action on error
+                        const isLiked = this.likedRoutes[route.postID];
                         this.likedRoutes[route.postID] = isLiked;
                         route.likeCount += isLiked ? 1 : -1;
-                        alert("Failed to update like. Please try again.");
+                        alert("Failed to update like/unlike. Please try again.");
                     });
+            }
+            ,
+            submitComment(route) {
+                const commentText = this.newCommentText[route.postID];
+                if (!commentText) return;  // Exit if no comment text
+
+                const currentUserID = window.currentUser?.id || 'defaultUserID';  // Replace with actual user ID logic
+
+                // Disable the comment button while posting
+                this.disabledActions[route.postID] = { comment: true };
+
+                // POST request to submit the comment - backend issue need to fix
+                axios.post(`https://app-907670644284.us-central1.run.app/api/posts/${route.postID}/comments`, {
+                    userID: currentUserID,
+                    text: commentText
+                })
+                    .then(response => {
+                        console.log('Comment posted successfully:', response.data);
+
+                        // Add the new comment locally to the route's comments list
+                        if (!route.commentsList) {
+                            route.commentsList = [];
+                        }
+                        route.commentsList.push({
+                            commenterName: 'You',  // Display name for the current user
+                            commentText: commentText,
+                            timestamp: new Date().toISOString()  // Current timestamp
+                        });
+
+                        // Clear the input field after posting
+                        this.newCommentText[route.postID] = '';
+                    })
+                    .catch(error => {
+                        console.error('Error posting comment:', error);
+                        alert('Failed to post comment. Please try again.');
+
+                        // Log detailed error information
+                        if (error.response) {
+                            console.error('Server responded with:', error.response.data);
+                        }
+                        this.disabledActions[route.postID].comment = false;
+                    });
+            }
+            ,
+            formatTime(timestamp) {
+                const date = new Date(timestamp);
+                return date.toLocaleString();  // Adjust formatting as needed
             },
-            // submitComment(route) {
-            //     const commentText = this.newCommentText[route.postID];
-            //     if (!commentText) return;
-
-            //     const currentTime = Date.now();
-
-            //     if (currentTime - this.lastApiCallTime < 1000) {
-            //         alert('Please wait a moment before performing another action.');
-            //         return;
-            //     }
-
-            //     this.lastApiCallTime = currentTime;
-
-            //     // Disable the comment button and show loading
-            //     this.disableAction(route, 'comment');
-            //     this.newCommentText[route.postID] = ''; // Clear the textarea
-
-            //     // Simulate delay before adding the comment
-            //     setTimeout(() => {
-            //         // Create a new comment object
-            //         const newComment = {
-            //             commenterID: 'currentUserID', // Replace with actual user ID
-            //             commenterName: this.userName,
-            //             commentText: commentText,
-            //             timestamp: new Date().toISOString()
-            //         };
-
-            //         // Add the new comment to the route's commentsList
-            //         route.commentsList.push(newComment);
-
-            //         // Update the comment count
-            //         route.commentCount = route.commentsList.length;
-
-            //         // Re-enable the comment button
-            //         this.disabledActions[route.postID].comment = false;
-            //     }, 1000);
-            // },
             disableAction(route, actionType) {
                 if (!this.disabledActions[route.postID]) {
                     this.disabledActions[route.postID] = {};
@@ -476,7 +494,6 @@
       <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'" aria-hidden="true">
         <div class="modal-dialog modal-xl">
           <div class="modal-content">
-            <!-- Modal Header -->
             <div class="modal-header d-flex justify-content-between align-items-start">
               <div>
                 <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
@@ -484,108 +501,46 @@
               </div>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <!-- Modal Body -->
             <div class="modal-body">
               <div id="modal-pic">
                 <img :src="route.image" alt="Route Image" class="img-fluid">
               </div>
-              <!-- Modal Content -->
               <p class="text-muted">Posted {{ route.timeSince }}</p>
               <p class="text-muted">{{ route.likeCount }} Likes | {{ route.commentCount }} Comments</p>
               <p><strong>Distance:</strong> {{ route.distance }} km</p>
               <p>{{ route.description }}</p>
-<!-- Action Buttons -->
-<div class="d-flex justify-content-around border-top border-bottom py-3">
-  <!-- Like Button -->
-  <button
-    class="btn btn-link p-0 action-button"
-    @click="likeRoute(route)"
-    :disabled="disabledActions[route.postID]?.like"
-    :class="{ liked: likedRoutes[route.postID] }"
-  >
-    <i :class="likedRoutes[route.postID] ? 'fas fa-thumbs-up me-1' : 'far fa-thumbs-up me-1'"></i>
-    <span>Like</span>
-  </button>
-  <!-- Use Button -->
-  <button
-    class="btn btn-link p-0 action-button"
-    @click="useRoute(route)"
-    :disabled="disabledActions[route.postID]?.use"
-  >
-    <i class="fas fa-route me-1"></i>
-    <span>Use</span>
-  </button>
-  <!-- Share Button -->
-  <button
-    class="btn btn-link p-0 action-button"
-    @click="shareRoute(route)"
-    :disabled="disabledActions[route.postID]?.share"
-  >
-    <i class="far fa-share-square me-1"></i>
-    <span>Share</span>
-  </button>
-</div>
-
-              <!-- Comments Section -->
+              <div class="d-flex justify-content-around border-top border-bottom py-3">
+                <!-- Action Buttons (Like, Use, Share) -->
+                <button class="btn btn-link p-0 action-button" @click="likeRoute(route)">
+                  <i class="far fa-thumbs-up me-1"></i>
+                  <span>Like</span>
+                </button>
+                <button class="btn btn-link p-0 action-button" @click="useRoute(route)">
+                  <i class="fas fa-route me-1"></i>
+                  <span>Use</span>
+                </button>
+                <button class="btn btn-link p-0 action-button" @click="shareRoute(route)">
+                  <i class="far fa-share-square me-1"></i>
+                  <span>Share</span>
+                </button>
+              </div>
               <br>
-              <h6>Comments ({{ route.commentCount }})</h6>
+              <h6>Comments ({{ route.commentsList ? route.commentsList.length : 0 }})</h6>
               <div v-if="route.commentsList && route.commentsList.length">
                 <div v-for="(comment, index) in route.commentsList" :key="index" class="mb-3">
-                  <strong>{{ comment.commenterName }}</strong> <span class="text-muted">{{ formatTime(comment.timestamp) }}</span>
+                  <strong>{{ comment.commenterName }}</strong>
+                  <span class="text-muted">{{ formatTime(comment.timestamp) }}</span>
                   <p>{{ comment.commentText }}</p>
                 </div>
               </div>
               <div v-else>
                 <p>No comments yet. Be the first to comment!</p>
               </div>
-
-              <!-- Comment Input -->
               <div class="mb-3">
-                <textarea
-                  class="form-control mb-2"
-                  placeholder="Add a comment..."
-                  rows="2"
-                  v-model="newCommentText[route.postID]"
-                ></textarea>
-                <button
-                  class="btn btn-primary"
-                  @click="submitComment(route)"
-                  :disabled="disabledActions[route.postID]?.comment"
-                >
+                <textarea class="form-control mb-2" placeholder="Add a comment..." rows="2" v-model="newCommentText[route.postID]"></textarea>
+                <button class="btn btn-primary" @click="submitComment(route)" :disabled="disabledActions[route.postID]?.comment">
                   <span v-if="!disabledActions[route.postID]?.comment">Post Comment</span>
                   <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Share Modal -->
-      <div
-        class="modal fade"
-        :id="'shareModal' + route.modalId"
-        tabindex="-1"
-        :aria-labelledby="'shareModalLabel' + route.modalId"
-        aria-hidden="true"
-        v-if="showShareModal[route.postID]"
-      >
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" :id="'shareModalLabel' + route.modalId">Share Route</h5>
-              <button type="button" class="btn-close" @click="closeShareModal(route)" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <p>Share this link with your friends:</p>
-              <div class="input-group mb-3">
-                <input
-                  type="text"
-                  class="form-control"
-                  :value="shareableLinks[route.postID]"
-                  readonly
-                >
-                <button class="btn btn-outline-secondary" type="button" @click="copyToClipboard(route)">
-                  Copy
                 </button>
               </div>
             </div>
