@@ -20,7 +20,6 @@ const app = Vue.createApp({
                 followers: 198
             }
         },
-        
         // Map related
         map: null,
         directionsService: null,
@@ -46,6 +45,7 @@ const app = Vue.createApp({
         // Post related
         postTitle:'',
         postDescription:'',
+        minDescriptionLength: 50, // Minimum character requirement
         userID:'',
         username:'',
         submitting:false,
@@ -66,6 +66,14 @@ const app = Vue.createApp({
         tourStarted: false,
       };
 
+    },
+    computed:{
+        descriptionLength() {
+            return this.postDescription.length;
+        },
+        isSubmitDisabled() {
+            return this.descriptionLength < this.minDescriptionLength;
+        }
     },
     methods: {
 
@@ -469,7 +477,12 @@ const app = Vue.createApp({
         validateAndSubmit() {
             this.formValidated = true;
             const form = document.querySelector('form');
-        
+            
+            if (this.descriptionLength < this.minDescriptionLength) {
+                this.setAlert('error', `Description must be at least ${this.minDescriptionLength} characters.`);
+                return; // Prevent submission
+            }
+
             if (form.checkValidity()) {
                 if (!this.isEditing) {
                     // Not the owner, save as a new post
@@ -899,7 +912,8 @@ const app = Vue.createApp({
                 console.error('Error fetching town name:', error);
                 return "Error Fetching Town";
             }
-        },        
+        },
+        
         
     },
     created() {
@@ -936,7 +950,7 @@ const app = Vue.createApp({
                 window.location.href = "index.html";
             }
         });
-    }
+    },
 });
 
 app.component('nav-bar', {
