@@ -153,33 +153,34 @@
 
             // Unfollow confirmed action
             unfollowConfirmed() {
-                const friendId = this.friendToUnfollow.id;
-                const currentUserId = this.currentUser.id;  // Assuming currentUser.id holds the ID of the logged-in user
+            const friendId = this.friendToUnfollow.id;
+            const currentUserId = this.currentUser.id;
 
-                console.log(`unfollowed friend id: ${friendId}`)
-                console.log(`my id: ${currentUserId}`)
+            // Optimistic UI Update
+            this.friends = this.friends.filter(f => f.id !== friendId);
+            this.otherUsers.push(this.friendToUnfollow);
+            const previousFriendToUnfollow = this.friendToUnfollow;
+            this.friendToUnfollow = null;
 
-                // Optimistically update UI
-                this.friends = this.friends.filter(f => f.id !== friendId);
-                this.otherUsers.push(this.friendToUnfollow);
-                this.friendToUnfollow = null;
+            const unfollowModal = bootstrap.Modal.getInstance(document.getElementById('unfollowModal'));
+            unfollowModal.hide();
 
-                const unfollowModal = bootstrap.Modal.getInstance(document.getElementById('unfollowModal'));
-                unfollowModal.hide();
-
-                // Send API request for unfollow with required data in the body
-                axios.post(`https://app-907670644284.us-central1.run.app/api/unfollow?id=${friendId}`, {
-                    userID: currentUserId
+            // Send DELETE API request for unfollow
+            axios.delete(`https://app-907670644284.us-central1.run.app/api/unfollow?id=${friendId}`, {
+                data: { userID: currentUserId }
+            })
+                .then(response => {
+                    console.log(`Successfully unfollowed user with ID: ${friendId}`);
                 })
-                    .then(response => {
-                        console.log(`Successfully unfollowed user with ID: ${friendId}`);
-                    })
-                    .catch(error => {
-                        console.error('Error unfollowing user:', error);
-                        alert('An error occurred while trying to unfollow the user. Please try again.');
-                        // Optionally, revert the UI update on failure
-                    });
+                .catch(error => {
+                    console.error('Error unfollowing user:', error);
+                    alert('An error occurred while trying to unfollow the user. Please try again.');
+                    // Revert UI update if unfollow fails
+                    this.otherUsers = this.otherUsers.filter(u => u.id !== friendId);
+                    this.friends.push(previousFriendToUnfollow);
+                });
             },
+
 
             // Follow user action
             followUser(user) {
