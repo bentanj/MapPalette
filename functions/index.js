@@ -265,25 +265,33 @@ app.get('/api/allposts/:userID', async (req, res) => {
     // Step 1: Retrieve the list of user IDs that `userID` is following
     const followingSnap = await db.collection('users').doc(userID).collection('following').get();
     if (followingSnap.empty) {
+      console.log(`User ${userID} follows no users.`);
       return res.status(404).json({ message: 'No followed users found for this user.' });
     }
 
     const followedUserIDs = followingSnap.docs.map(doc => doc.id);
+    console.log('Followed User IDs:', followedUserIDs);
+
+    // Check if followedUserIDs length is greater than 10 (Firestore limitation)
+    if (followedUserIDs.length > 10) {
+      console.error(`Too many followed users. Only 10 are allowed.`);
+      return res.status(400).json({ message: 'Too many followed users. Limit is 10.' });
+    }
 
     // Step 2: Retrieve posts created by users that `userID` is following
     const postsSnap = await db.collection('posts')
       .where('userID', 'in', followedUserIDs)
-      .orderBy('createdAt', 'desc') // Sort by creation date, if needed
+      .orderBy('createdAt', 'desc')
       .get();
 
     if (postsSnap.empty) {
+      console.log(`No posts found for followed users of user ${userID}.`);
       return res.status(404).json({ message: 'No posts found from followed users.' });
     }
 
     const posts = await Promise.all(postsSnap.docs.map(async (doc) => {
       const postData = doc.data();
-      
-      // Fetch additional user details for the post (optional)
+
       const userRef = db.collection('users').doc(postData.userID);
       const userSnap = await userRef.get();
       const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
@@ -296,12 +304,14 @@ app.get('/api/allposts/:userID', async (req, res) => {
       };
     }));
 
+    console.log('Posts found:', posts.length);
     return res.status(200).json(posts);
   } catch (error) {
     console.error('Error fetching followed users posts:', error);
     return res.status(500).json({ message: 'Error fetching posts.' });
   }
 });
+
 
 // 
 // POST LIKING API
