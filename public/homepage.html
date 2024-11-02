@@ -199,12 +199,21 @@
                 required: true
             }
         },
+        data() {
+            return {
+                disabledActions: {},
+                lastApiCallTime: 0
+            }
+        },
         computed: {
             isLiked() {
                 return this.activity.isLiked || false;
             },
             isOwnPost() {  
                 return this.currentUser === this.activity.user;
+            },
+            commentCount() {
+                return this.activity.commentsList ? this.activity.commentsList.length : 0;
             }
         },
         methods: {
@@ -216,16 +225,47 @@
             },
             handleShare() {
                 window.location.href = `homepage.html?id=${this.activity.id}`;
+            },
+            async likePost(postId) {
+                const currentTime = Date.now();
+                if (currentTime - this.lastApiCallTime < 1000) {
+                    return;
+                }
+                this.lastApiCallTime = currentTime;
+                this.disabledActions.like = true;
+
+                try {
+                    const endpoint = this.isLiked 
+                        ? 'https://app-907670644284.us-central1.run.app/api/posts/unlike'
+                        : 'https://app-907670644284.us-central1.run.app/api/posts/like';
+                    
+                    const response = await axios.post(endpoint, {
+                        postID: postId,
+                        userID: window.currentUser.id
+                    });
+
+                    // Update local state
+                    this.activity.isLiked = !this.isLiked;
+                    this.activity.likes += this.isLiked ? -1 : 1;
+                    
+                    console.log("Like/unlike updated successfully:", response.data);
+                    } catch (error) {
+                        console.error("Error updating like/unlike:", error);
+                        if (error.response) {
+                            console.error("Server response:", error.response.data);
+                        }
+                    } finally {
+                        this.disabledActions.like = false;
+                }
             }
         },
         template: `
             <article class="post">
-                <!-- d header -->
+                <!-- Header -->
                 <header>
                     <div class="title">
                         <div class="d-flex justify-content-between align-items-start">
                             <h2>{{ activity.title }}</h2>
-                            <!-- Add dropdown menu -->
                             <div v-if="isOwnPost" class="dropdown">
                                 <button class="btn btn-link text-dark p-0" 
                                         type="button" 
@@ -255,11 +295,12 @@
                     </div>
                 </header>
                 
-                
+                <!-- Main Image -->
                 <div class="image featured" @click="$emit('open-modal', activity)">
                     <img :src="activity.mapImg" alt="Activity Map">
                 </div>
                 
+                <!-- Content -->
                 <div class="content">
                     <div class="d-flex justify-content-between text-center mb-3">
                         <div>
@@ -271,33 +312,39 @@
                             <small class="text-muted">Time</small>
                         </div>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div class="flex-grow-1">
                             <p v-if="activity.description" class="mb-0">{{ activity.description }}</p>
                         </div>
                         <div class="d-flex ms-3">
                             <div class="me-3">
-                                <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ activity.location }}</small>
+                                <small class="text-muted">
+                                    <i class="bi bi-geo-alt"></i> {{ activity.location }}
+                                </small>
                             </div>
                             <div class="me-3">
-                                <small class="text-muted"><i class="bi bi-heart"></i> {{ activity.likes || 0 }}</small>
+                                <small class="text-muted">
+                                    <i class="bi bi-heart"></i> {{ activity.likes || 0 }}
+                                </small>
                             </div>
                             <div>
-                                <small class="text-muted"><i class="bi bi-chat"></i> {{ activity.comments ? activity.comments.length : 0 }}</small>
+                                <small class="text-muted">
+                                    <i class="bi bi-chat"></i> {{ commentCount }}
+                                </small>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- start of footer -->
+                <!-- Footer -->
                 <footer>
                     <div class="actions">
-                        <div class="d-flex justify-content-between border-top border-bottom py-3">
+                        <div class="d-flex justify-content-around border-top border-bottom py-3">
                             <button
                                 class="btn btn-link p-0 action-button"
-                                @click.stop="$emit('like', activity)"
+                                @click.stop="likePost(activity.id)"
                                 :class="{ 'liked': isLiked }"
-                                :disabled="activity.likeDisabled">
+                                :disabled="disabledActions.like">
                                 <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
                                 <span>Like</span>
                             </button>
@@ -322,182 +369,325 @@
                         </div>
                     </div>
                 </footer>
-            </article>`
-        }
-
+            </article>
+        `
+    }
         // CommentModal Component
         const CommentModal = {
-                props: {
-                    activity: {
-                        type: Object,
-                        required: true
+            props: {
+                activity: {
+                    type: Object,
+                    required: true
+                }
+            },
+
+            data() {
+                return {
+                    newComment: '',
+                    modal: null,
+                    showAllComments: false,
+                    disabledActions: {},
+                    lastApiCallTime: 0,
+                    comments: [],
+                    isLoading: false,
+                    error: null
+                }
+            },
+
+            computed: {
+                isLiked() {
+                    return this.activity.isLiked || false;
+                },
+
+                displayedComments() {
+                    if (this.showAllComments) {
+                        return this.comments;
+                    }
+                    return this.comments.slice(0, 4);
+                },
+
+                hasMoreComments() {
+                    return this.comments.length > 4;
+                }
+            },
+
+            async mounted() {
+                this.modal = new bootstrap.Modal(this.$el);
+                this.modal.show();
+                this.$el.addEventListener('hidden.bs.modal', () => {
+                    this.$emit('close');
+                });
+                await this.fetchComments();
+            },
+
+            methods: {
+                
+                calculateTimeSince(timestamp) {
+                    if (!timestamp) return 'Just now';
+
+                    let date;
+                    if (timestamp._seconds) {
+                        date = new Date(timestamp._seconds * 1000);
+                    } else if (typeof timestamp === 'string' || timestamp instanceof Date) {
+                        date = new Date(timestamp);
+                    } else {
+                        return 'Just now';
+                    }
+
+                    const now = new Date();
+                    const diffInSeconds = Math.floor((now - date) / 1000);
+                    const intervals = [
+                        { label: 'year', seconds: 31536000 },
+                        { label: 'month', seconds: 2592000 },
+                        { label: 'day', seconds: 86400 },
+                        { label: 'hour', seconds: 3600 },
+                        { label: 'minute', seconds: 60 },
+                        { label: 'second', seconds: 1 }
+                    ];
+
+                    for (const interval of intervals) {
+                        const count = Math.floor(diffInSeconds / interval.seconds);
+                        if (count >= 1) {
+                            return count === 1 
+                                ? `1 ${interval.label} ago` 
+                                : `${count} ${interval.label}s ago`;
+                        }
+                    }
+                    return 'Just now';
+                },
+
+                async fetchComments() {
+                    this.isLoading = true;
+                    try {
+                        const response = await axios.get(
+                            `https://app-907670644284.us-central1.run.app/api/posts/${this.activity.id}/comments`
+                        );
+                        this.comments = response.data.map(comment => ({
+                            ...comment,
+                            timeAgo: this.calculateTimeSince(comment.createdAt)
+                        }));
+                        // Sort comments by date (newest first)
+                        this.comments.sort((a, b) => {
+                            const dateA = a.createdAt._seconds || new Date(a.createdAt).getTime() / 1000;
+                            const dateB = b.createdAt._seconds || new Date(b.createdAt).getTime() / 1000;
+                            return dateB - dateA;
+                        });
+                    } catch (error) {
+                        console.error('Error fetching comments:', error);
+                        this.error = 'Failed to load comments';
+                        if (error.response?.status === 404) {
+                            this.comments = [];
+                        }
+                    } finally {
+                        this.isLoading = false;
                     }
                 },
 
-                data() {
-                    return {
-                        newComment: '',
-                        modal: null,
-                        showAllComments: false,
-                        disabledActions: {},
-                        lastApiCallTime: 0
+                async submitComment() {
+                    if (!this.newComment.trim()) return;
+
+                    const currentTime = Date.now();
+                    if (currentTime - this.lastApiCallTime < 1000) {
+                        return;
                     }
-                },
-
-                computed: {
-                    isLiked() {
-                        return this.activity.isLiked || false;
-                    }
-                },
-
-                mounted() {
-                    this.modal = new bootstrap.Modal(this.$el)
-                    this.modal.show()
-                    this.$el.addEventListener('hidden.bs.modal', () => {
-                        this.$emit('close')
-                    })
-                },
-
-                methods: {
-
-                    useRoute() {
-                        window.location.href = `addMaps.html?id=${this.activity.id}`;
-                    },
-                    handleShare() {
-                        window.location.href = `homepage.html?id=${this.activity.id}`;
-                    },
-
-                    submitComment() {
-                        if (!this.newComment.trim()) return;
-
-                        const currentTime = Date.now();
-                        if (currentTime - this.lastApiCallTime < 1000) {
-                            alert('Please wait a moment before performing another action.');
-                            return;
-                    }
-
                     this.lastApiCallTime = currentTime;
                     this.disabledActions.comment = true;
 
-                    if (!this.activity.comments) {
-                        this.activity.comments = [];
-                    }
-                    
-                    this.activity.comments.push({
-                        name: 'You',
-                        text: this.newComment
-                    });
-                    
-                    this.newComment = '';
+                    try {
+                        const response = await axios.post(
+                            `https://app-907670644284.us-central1.run.app/api/posts/${this.activity.id}/comments`,
+                            {
+                                userID: window.currentUser.id,
+                                text: this.newComment
+                            }
+                        );
 
-                    setTimeout(() => {
+                        // Add the new comment to the list
+                        const newComment = {
+                            id: response.data.id,
+                            userID: window.currentUser.id,
+                            text: this.newComment,
+                            username: window.currentUser.username,
+                            createdAt: response.data.createdAt,
+                            timeAgo: 'Just now'
+                        };
+
+                        this.comments.unshift(newComment);
+                        this.newComment = '';
+                        
+                        // Update the comment count in the parent activity
+                        if (this.activity.commentsList) {
+                            this.activity.commentsList.unshift(newComment);
+                        } else {
+                            this.activity.commentsList = [newComment];
+                        }
+                    } catch (error) {
+                        console.error('Error posting comment:', error);
+                        alert('Failed to post comment. Please try again.');
+                    } finally {
                         this.disabledActions.comment = false;
-                    }, 1000);
+                    }
                 },
 
                 toggleShowAllComments() {
                     this.showAllComments = !this.showAllComments;
                 },
 
-                limitedComments() {
-                    if (this.showAllComments) {
-                        return this.activity.comments;
-                    } else {
-                        return this.activity.comments ? this.activity.comments.slice(0, 4) : [];
+                async likePost(postId) {
+                    if (this.disabledActions.like) return;
+                    
+                    this.disabledActions.like = true;
+                    try {
+                        const endpoint = this.isLiked
+                            ? 'https://app-907670644284.us-central1.run.app/api/posts/unlike'
+                            : 'https://app-907670644284.us-central1.run.app/api/posts/like';
+
+                        await axios.post(endpoint, {
+                            postID: postId,
+                            userID: window.currentUser.id
+                        });
+
+                        this.$emit('like', this.activity);
+                    } catch (error) {
+                        console.error('Error updating like:', error);
+                    } finally {
+                        this.disabledActions.like = false;
                     }
                 },
-                
+
+                useRoute() {
+                    window.location.href = `addMaps.html?id=${this.activity.id}`;
+                },
+                handleShare() {
+                    window.location.href = `homepage.html?id=${this.activity.id}`;
+                },
+            
             },
 
             template: `
                 <div class="modal fade" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <!-- Modal Header -->
-                        <div class="modal-header d-flex justify-content-between align-items-start">
-                            <div>
-                                <h5 class="modal-title" :id="'modalLabel'">{{ activity.title }}</h5>
-                                <h6 class="modal-author text-muted">by {{ activity.user }}</h6>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-
-                        <!-- Modal Body -->
-                        <div class="modal-body">
-                            <div id="modal-pic">
-                                <img :src="activity.mapImg" alt="Activity Map" class="img-fluid">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <!-- Modal Header -->
+                            <div class="modal-header d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="modal-title">{{ activity.title }}</h5>
+                                    <h6 class="modal-author text-muted">by {{ activity.user }}</h6>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
 
-                            <!-- Modal Content -->
-                            <p class="text-muted">Posted {{ activity.date }}</p>
-                            <p class="text-muted">{{ activity.likes || 0 }} Likes | {{ activity.comments ? activity.comments.length : 0 }} Comments</p>
-                            
-                            <!-- Stats Row -->
-                            <div class="d-flex mb-3">
-                                <p class="me-4"><strong>Distance:</strong> {{ activity.distance }}</p>
-                                <p><strong>Time:</strong> {{ activity.time }}</p>
-                            </div>
-                            
-                            <p>{{ activity.description }}</p>
+                            <!-- Modal Body -->
+                            <div class="modal-body">
+                                <div id="modal-pic">
+                                    <img :src="activity.mapImg" alt="Activity Map" class="img-fluid">
+                                </div>
 
-                            <!-- Action Buttons -->
-                            <div class="d-flex border-top border-bottom py-3">
-                                <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
-                                    <button class="btn btn-link p-0 action-button" 
-                                            @click="$emit('like', activity)"
-                                            :class="{ 'liked': isLiked }"
-                                            :disabled="activity.likeDisabled">
-                                        <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
-                                        <span>Like</span>
-                                    </button>
+                                <!-- Modal Content -->
+                                <p class="text-muted">Posted {{ activity.date }}</p>
+                                <p class="text-muted">{{ activity.likes || 0 }} Likes | {{ comments.length }} Comments</p>
+                                
+                                <!-- Stats Row -->
+                                <div class="d-flex mb-3">
+                                    <p class="me-4"><strong>Distance:</strong> {{ activity.distance }}</p>
+                                    <p><strong>Time:</strong> {{ activity.time }}</p>
+                                </div>
+                                
+                                <p>{{ activity.description }}</p>
 
-                                    <button class="btn btn-link p-0 action-button"
-                                            @click="useRoute"
-                                            :disabled="disabledActions.use">
-                                        <i class="far fa-map me-1"></i>
-                                        <span>Use</span>
-                                    </button>
+                                <!-- Action Buttons -->
+                                <div class="d-flex border-top border-bottom py-3">
+                                    <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
+                                        <button class="btn btn-link p-0 action-button" 
+                                                @click="likePost(activity.id)"
+                                                :class="{ 'liked': isLiked }"
+                                                :disabled="disabledActions.like">
+                                            <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
+                                            <span>Like</span>
+                                        </button>
 
-                                    <button class="btn btn-link p-0 action-button"
-                                            @click="handleShare"
-                                            :disabled="disabledActions.share">
-                                        <i class="far fa-share-square me-1"></i>
-                                        <span>Share</span>
-                                    </button>
+                                        <button class="btn btn-link p-0 action-button"
+                                                @click="useRoute"
+                                                :disabled="disabledActions.use">
+                                            <i class="far fa-map me-1"></i>
+                                            <span>Use</span>
+                                        </button>
+
+                                        <button class="btn btn-link p-0 action-button"
+                                                @click="handleShare"
+                                                :disabled="disabledActions.share">
+                                            <i class="far fa-share-square me-1"></i>
+                                            <span>Share</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Comments Section -->
+                                <div class="mt-4">
+                                    <h6>Comments ({{ comments.length }})</h6>
+                                    
+                                    <!-- New Comment Input -->
+                                    <div class="mb-3">
+                                        <textarea class="form-control mb-2"
+                                                placeholder="Add a comment..."
+                                                rows="2"
+                                                v-model="newComment"
+                                                :disabled="disabledActions.comment"></textarea>
+                                        <button class="btn btn-primary"
+                                                @click="submitComment"
+                                                :disabled="disabledActions.comment">
+                                            <span v-if="!disabledActions.comment">Post Comment</span>
+                                            <span v-else>
+                                                <i class="fas fa-spinner fa-spin"></i> Posting...
+                                            </span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Loading State -->
+                                    <div v-if="isLoading" class="text-center my-3">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading comments...</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Error State -->
+                                    <div v-else-if="error" class="alert alert-danger" role="alert">
+                                        {{ error }}
+                                    </div>
+
+                                    <!-- Comments List -->
+                                    <div v-else>
+                                        <div v-if="comments.length === 0" class="text-center text-muted my-3">
+                                            No comments yet. Be the first to comment!
+                                        </div>
+                                        
+                                        <div v-else class="comments-list">
+                                            <div v-for="comment in displayedComments" 
+                                                :key="comment.id" 
+                                                class="mb-3">
+                                                <div class="comment-bubble">
+                                                    <strong>{{ comment.username }}</strong>
+                                                    <p>{{ comment.text }}</p>
+                                                </div>
+                                                <div class="comment-time text-muted">
+                                                    {{ comment.timeAgo }}
+                                                </div>
+                                            </div>
+
+                                            <!-- Load More Comments Button -->
+                                            <button v-if="hasMoreComments"
+                                                    @click="toggleShowAllComments"
+                                                    class="btn btn-link p-0">
+                                                {{ showAllComments ? 'Show Less Comments' : 'Load More Comments' }}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <!-- Comments Section -->
-                            <br>
-                            <h6>Comments</h6>
-                            <div class="mb-3">
-                                <textarea class="form-control mb-2"
-                                        placeholder="Add a comment..."
-                                        rows="2"
-                                        v-model="newComment"></textarea>
-                                <button class="btn btn-primary"
-                                        @click="submitComment"
-                                        :disabled="disabledActions.comment">
-                                    <span v-if="!disabledActions.comment">Post Comment</span>
-                                    <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
-                                </button>
-                            </div>
-
-                            <ul class="list-unstyled">
-                                <li v-for="comment in limitedComments()" class="mb-2">
-                                    <strong>{{ comment.name }}:</strong> {{ comment.text }}
-                                </li>
-                            </ul>
-
-                            <button v-if="activity.comments && activity.comments.length > 4"
-                                    @click="toggleShowAllComments"
-                                    class="btn btn-link p-0">
-                                {{ showAllComments ? 'Show Less Comments' : 'Load More Comments' }}
-                            </button>
                         </div>
                     </div>
                 </div>
-            </div>`
+            `
         }
 
         // vue app with axios data fetching
@@ -561,6 +751,7 @@
                     ],
                     trendingRoutes: [],
                     activities: [],
+                    commentUserData: {} // Cache user data for comments
                 }
             },
             created() {
@@ -606,40 +797,59 @@
                 async fetchPosts() {
                     this.isLoading = true;
                     try {
-                        // get user ID from window.currentUser
                         const currentUserId = window.currentUser.id;
                         console.log('Current user ID:', currentUserId);
 
-                        // api call to call to get all following posts
-                        
-                        //debugging console stuffz
                         console.log('Fetching posts for current user...');
                         const response = await axios.get(`${this.API_ENDPOINT}/api/allposts/user/${currentUserId}`);
                         const allPosts = response.data;
                         console.log(`Total posts fetched: ${allPosts.length}`);
 
-                        // Process the posts for activities feed
-                        this.activities = allPosts.map(post => ({
-                            id: post.postID,
-                            user: post.username || 'Unknown User',
-                            userImg: post.profilePicture || this.userProfile.avatar,
-                            date: this.formatDate(post.createdAt),
-                            location: post.waypoints[0].address,
-                            title: this.generateRunTitle(post.createdAt),
-                            routeTitle: post.title,
-                            description: post.description,
-                            distance: `${post.distance} km`,
-                            time: this.generatePlaceholderTime(),
-                            mapImg: post.image,
-                            likes: post.likeCount,
-                            comments: [],
-                            isLiked: this.currentUser.postsLiked?.includes(post.postID) || false
+                        // Process posts and fetch comments for each
+                        const processedPosts = await Promise.all(allPosts.map(async post => {
+                            try {
+                                // Attempt to fetch comments, but don't throw error if none exist
+                                let commentsList = [];
+                                try {
+                                    const commentsResponse = await axios.get(
+                                        `${this.API_ENDPOINT}/api/posts/${post.postID}/comments`
+                                    );
+                                    commentsList = commentsResponse.data;
+                                } catch (error) {
+                                    if (error.response?.status !== 404) {
+                                        console.error(`Error fetching comments for post ${post.postID}:`, error);
+                                    }
+                                }
+                                
+                                return {
+                                    id: post.postID,
+                                    user: post.username || 'Unknown User',
+                                    userImg: post.profilePicture || this.userProfile.avatar,
+                                    date: this.formatDate(post.createdAt),
+                                    location: post.waypoints[0].address,
+                                    title: this.generateRunTitle(post.createdAt),
+                                    routeTitle: post.title,
+                                    description: post.description,
+                                    distance: `${post.distance} km`,
+                                    time: this.generatePlaceholderTime(),
+                                    mapImg: post.image,
+                                    likes: post.likeCount,
+                                    commentsList: commentsList,
+                                    isLiked: this.currentUser.postsLiked?.includes(post.postID) || false
+                                };
+                            } catch (error) {
+                                console.error(`Error processing post ${post.postID}:`, error);
+                                throw error;
+                            }
                         }));
+
+                        // Assign the processed posts to activities
+                        this.activities = processedPosts;
 
                         // Sort activities by date (most recent first)
                         this.activities.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-                        // Set trending routes (most liked posts)
+                        // Set trending routes
                         this.trendingRoutes = allPosts
                             .sort((a, b) => b.likeCount - a.likeCount)
                             .slice(0, 2)
@@ -687,6 +897,7 @@
                     return `${timeOfDay} Run`;
                 },
 
+                // maybe dunnit
                 generatePlaceholderTime() {
                     return "30m 00s";
                 },
@@ -695,28 +906,30 @@
                     this.selectedActivity = activity;
                 },
                 
-                likeActivity(activity) {
+                async likeActivity(activity) {
                     const currentTime = Date.now();
                     if (currentTime - this.lastApiCallTime < 1000) {
-                        alert('Please wait a moment before performing another action.');
                         return;
                     }
 
                     this.lastApiCallTime = currentTime;
-                    activity.likeDisabled = true;
+                    try {
+                        const endpoint = activity.isLiked
+                            ? `${this.API_ENDPOINT}/api/posts/unlike`
+                            : `${this.API_ENDPOINT}/api/posts/like`;
 
-                    if (!activity.isLiked) {
-                        if (!activity.likes) activity.likes = 0;
-                        activity.likes++;
-                        activity.isLiked = true;
-                    } else {
-                        activity.likes--;
-                        activity.isLiked = false;
+                        await axios.post(endpoint, {
+                            postID: activity.id,
+                            userID: this.currentUserId
+                        });
+
+                        activity.likes += activity.isLiked ? -1 : 1;
+                        activity.isLiked = !activity.isLiked;
+
+                    } catch (error) {
+                        console.error('Error updating like:', error);
+                        alert('Failed to update like. Please try again.');
                     }
-
-                    setTimeout(() => {
-                        activity.likeDisabled = false;
-                    }, 1000);
                 }
             }
         });
