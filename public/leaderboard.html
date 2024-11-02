@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Meta and Title -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapPalette - Feed</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Updated CSS Styles -->
+    <link rel="stylesheet" href="search.css">
+
+    <!-- Firebase -->
+    <script type="module" src="firebase.js"></script>
+
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Axios for HTTP Requests -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f5f5f5;
+            color: #333333;
+            min-height: 100vh;
+        }
+
+        /* Add padding to account for fixed navbar */
+        .content-wrapper {
+            padding-top: 80px;  /* Increased padding to prevent navbar overlay */
+        }
+
+        .page-title {
+            color: #333;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .leaderboard-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .player-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            padding: 1.5rem;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .player-card:hover {
+            transform: translateX(5px);
+            background-color: #f8f9fa;
+        }
+
+        .profile-pic {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 2rem;
+            color: #666666;
+
+        }
+
+        .rank-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .rank-champion {
+            background-color: #01d8dc;
+            color: white;
+        }
+
+        .rank-master {
+            background-color: #c33c3c;
+            color: white;
+        }
+
+        .rank-pro {
+            background-color: #9c3cc3;
+            color: white;
+        }
+
+        .rank-elite {
+            background-color: #544ac3;
+            color: white;
+        }
+
+        .rank-newbie {
+            background-color: #6c3702;
+            color: white;
+        }
+
+        .trophy-icon {
+            color: #ffd700;
+            margin-right: 0.5rem;
+        }
+
+        .silver-trophy {
+            color: #c0c0c0;
+        }
+
+        .bronze-trophy {
+            color: #cd7f32;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.875rem;
+        }
+
+        .stat-value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .table-header {
+            color: #333;
+            font-size: 0.95rem;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #dee2e6;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Navbar -->
+        <nav-bar></nav-bar>
+
+
+<!-- Main Content Wrapper -->
+<div class="content-wrapper">
+    <div class="leaderboard-container">
+        <h1 class="page-title">Leaderboard</h1>
+        
+        <!-- Top Players Section -->
+        <div class="row mb-5">
+            <template v-for="(user, index) in topPlayers" :key="user.id">
+                <div class="col-md-4">
+                    <div class="player-card">
+                        <div class="d-flex align-items-center mb-3">
+                            <img :src="user.profilePicture" :alt="user.username" class="profile-pic me-3" 
+                                 @click="goToProfile(user.userID)">
+                            <div>
+                                <h5 class="mb-1">{{ user.username }}</h5>
+                                <span :class="'rank-badge rank-' + user.rank.toLowerCase()">{{ user.rank }}</span>
+                            </div>
+                            <div class="ms-auto">
+                                <i class="fas fa-trophy trophy-icon" 
+                                   :class="{'silver-trophy': index === 1, 'bronze-trophy': index === 2}" style="font-size:55px; margin-right: 20px; margin-top: 20px;"></i>
+                            </div>
+                        </div>
+                        <div class="stats-container">
+                            <div>
+                                <div class="stat-label" style="margin-left:65px;">Points</div>
+                                <div class="stat-value"  style="margin-left:63px;">{{ user.points }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Leaderboard Table -->
+        <div class="table-header d-flex">
+            <div style="width: 150px">#</div>
+            <div style="width: 220px">Player Name</div>
+            <div style="width: 170px">Points</div>
+            <div>Rank</div>
+        </div>
+
+        <template v-for="(user, index) in remainingUsers" :key="user.id">
+            <div class="player-card d-flex align-items-center">
+                <div style="width: 77px">{{ index + 4 }}</div>
+                <div style="width: 288px" class="d-flex align-items-center">
+                    <img :src="user.profilePicture" :alt="user.username" class="profile-pic me-3" 
+                         @click="goToProfile(user.userID)">
+                    {{ user.username }}
+                </div>
+                <div style="width: 163px">{{ user.points }}</div>
+                <div>
+                    <span :class="'rank-badge rank-' + user.rank.toLowerCase()">{{ user.rank }}</span>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+
+<button @click="scrollToTop" class="btn back-to-top">
+    <i class="fas fa-chevron-up"></i>
+</button>
+
+<!-- Footer -->
+<site-footer></site-footer>
+
+
+
+
+</body>
+
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                users: [ // DOES NOT CURRENTLY INCLUDE USERID
+                    { id: 1, username: "MapMaster", points: 15420, profilePic: "/api/placeholder/50/50", rank: "Champion" },
+                    { id: 2, username: "RouteExplorer", points: 12350, profilePic: "/api/placeholder/50/50", rank: "Master" },
+                    { id: 3, username: "TrailBlazer", points: 10890, profilePic: "/api/placeholder/50/50", rank: "Pro"},
+                    { id: 4, username: "PathFinder", points: 9870, profilePic: "/api/placeholder/50/50", rank: "Elite" },
+                    { id: 5, username: "WandererPro", points: 8760, profilePic: "/api/placeholder/50/50", rank: "Elite" },
+                    { id: 6, username: "MapExplorer", points: 7650, profilePic: "/api/placeholder/50/50", rank: "Elite" },
+                    { id: 7, username: "RouteMaster", points: 6540, profilePic: "/api/placeholder/50/50", rank: "Elite" },
+                    { id: 8, username: "NavigatorPro", points: 5430, profilePic: "/api/placeholder/50/50", rank: "Elite" },
+                    { id: 9, username: "RunsEverywhere", points: 5120, profilePic: "/api/placeholder/50/50", rank: "Elite" },
+                    { id: 10, username: "LovesJogging", points: 4980, profilePic: "/api/placeholder/50/50", rank: "Elite" },
+                    { id: 11, username: "HaltsSometimes", points: 4670, profilePic: "/api/placeholder/50/50", rank: "Newbie" },
+                    { id: 12, username: "WaterBoy", points: 4420, profilePic: "/api/placeholder/50/50", rank: "Newbie" },
+                    { id: 13, username: "GaitWalker", points: 5430, profilePic: "/api/placeholder/50/50", rank: "Newbie" },
+                    { id: 14, username: "BackTracker", points: 999, profilePic: "/api/placeholder/50/50", rank: "Newbie" }
+                ]
+            }
+        },
+        computed: {
+            topPlayers() {
+                return this.users.slice(0, 3);
+            },
+            remainingUsers() {
+                return this.users.slice(3);
+            }
+        },
+        methods: {
+            goToProfile(userId) {
+                window.location.href = `./profile_page.html?id=${userId}`;
+            },
+            scrollToTop() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth',
+                });
+            }
+        },
+        mounted() {
+            // Fetch leaderboard data from the API
+            axios.get('https://app-907670644284.us-central1.run.app/api/challenge/leaderboard')
+                .then(response => {
+                    this.users = response.data; // NEED TO IMPLEMENT RANK
+                })
+                .catch(error => {
+                    console.error('Error fetching leaderboard data:', error);
+                });
+        },  
+    });
+</script>
+
+<script src="navbar/navbar.js"></script>
+
+<!-- import footer from footer.js -->
+<script src="footer/footer.js"></script>
+
+<script>
+    app.mount('#app')
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
