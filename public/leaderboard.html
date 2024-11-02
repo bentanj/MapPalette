@@ -269,7 +269,7 @@
         },
         mounted() {
             // Fetch leaderboard data from the API
-            axios.get('https://app-907670644284.us-central1.run.app/api/leaderboard')
+            axios.get('https://app-907670644284.us-central1.run.app/api/challenge/leaderboard')
                 .then(response => {
                     this.users = response.data; // NEED TO IMPLEMENT RANK
                 })
