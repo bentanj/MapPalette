@@ -227,37 +227,9 @@
                 window.location.href = `homepage.html?id=${this.activity.id}`;
             },
             async likePost(postId) {
-                const currentTime = Date.now();
-                if (currentTime - this.lastApiCallTime < 1000) {
-                    return;
-                }
-                this.lastApiCallTime = currentTime;
-                this.disabledActions.like = true;
-
-                try {
-                    const endpoint = this.isLiked 
-                        ? 'https://app-907670644284.us-central1.run.app/api/posts/unlike'
-                        : 'https://app-907670644284.us-central1.run.app/api/posts/like';
-                    
-                    const response = await axios.post(endpoint, {
-                        postID: postId,
-                        userID: window.currentUser.id
-                    });
-
-                    // Update local state
-                    this.activity.isLiked = !this.isLiked;
-                    this.activity.likes += this.isLiked ? -1 : 1;
-                    
-                    console.log("Like/unlike updated successfully:", response.data);
-                    } catch (error) {
-                        console.error("Error updating like/unlike:", error);
-                        if (error.response) {
-                            console.error("Server response:", error.response.data);
-                        }
-                    } finally {
-                        this.disabledActions.like = false;
-                }
-            }
+            // Emit the like event to parent instead of handling API call directly
+                this.$emit('like', this.activity);
+            },
         },
         template: `
             <article class="post">
@@ -325,6 +297,11 @@
                             <div class="me-3">
                                 <small class="text-muted">
                                     <i class="bi bi-heart"></i> {{ activity.likes || 0 }}
+                                </small>
+                            </div>
+                            <div class="me-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-share"></i> {{ activity.shares || 0 }}
                                 </small>
                             </div>
                             <div>
@@ -421,7 +398,11 @@
             },
 
             methods: {
-                
+                async likePost(postId) {
+                    // Emit the like event to parent instead of handling API call directly
+                    this.$emit('like', this.activity);
+                },
+
                 calculateTimeSince(timestamp) {
                     if (!timestamp) return 'Just now';
 
@@ -557,28 +538,6 @@
                     this.showAllComments = !this.showAllComments;
                 },
 
-                async likePost(postId) {
-                    if (this.disabledActions.like) return;
-                    
-                    this.disabledActions.like = true;
-                    try {
-                        const endpoint = this.isLiked
-                            ? 'https://app-907670644284.us-central1.run.app/api/posts/unlike'
-                            : 'https://app-907670644284.us-central1.run.app/api/posts/like';
-
-                        await axios.post(endpoint, {
-                            postID: postId,
-                            userID: window.currentUser.id
-                        });
-
-                        this.$emit('like', this.activity);
-                    } catch (error) {
-                        console.error('Error updating like:', error);
-                    } finally {
-                        this.disabledActions.like = false;
-                    }
-                },
-
                 useRoute() {
                     window.location.href = `addMaps.html?id=${this.activity.id}`;
                 },
@@ -609,8 +568,11 @@
 
                                 <!-- Modal Content -->
                                 <p class="text-muted">Posted {{ activity.date }}</p>
-                                <p class="text-muted">{{ activity.likes || 0 }} Likes | {{ comments.length }} Comments</p>
-                                
+                                <p class="text-muted">
+                                    {{ activity.likes || 0 }} Likes | 
+                                    {{ activity.shares || 0 }} Shares | 
+                                    {{ comments.length }} Comments
+                                </p>                                
                                 <!-- Stats Row -->
                                 <div class="d-flex mb-3">
                                     <p class="me-4"><strong>Distance:</strong> {{ activity.distance }}</p>
@@ -775,13 +737,20 @@
                     ],
                     trendingRoutes: [],
                     activities: [],
-                    commentUserData: {} // Cache user data for comments
+                    commentUserData: {}, // Cache user data for comments
+                    isLoading: true,
+                    postID: null //share url param
+
                 }
             },
             created() {
                 const loadingSpinner = document.getElementById('loading-spinner');
                 const appContainer = document.getElementById('app-container');
-                
+
+                // Get postId from URL 
+                const urlParams = new URLSearchParams(window.location.search);
+                this.postId = urlParams.get('id');
+    
                 // Check for window.currentUser
                 const checkUser = setInterval(() => {
                     if (window.currentUser) {
@@ -792,9 +761,13 @@
                         this.currentUserId = window.currentUser.id;
                         this.updateUserProfile(window.currentUser);
                         
-                        // Fetch posts for feed
-                        this.fetchPosts();
-                        
+                    // Fetch posts based on whether we have a postId
+                        if (this.postId) {
+                            this.fetchSinglePost(this.postId);
+                        } else {
+                            this.fetchPosts();
+                        }
+
                         // Hide loading spinner and show content
                         if (loadingSpinner && appContainer) {
                             loadingSpinner.style.display = 'none';
@@ -804,7 +777,85 @@
                 }, 100);
             },
 
-            methods: {       
+            methods: {
+                async fetchSinglePost(postId) {
+                    this.isLoading = true;
+                    try {
+                        // Fetch the specific post
+                        const response = await axios.get(`${this.API_ENDPOINT}/api/posts/${postId}`);
+                        const post = response.data;
+
+                        // Fetch comments for the post
+                        let commentsList = [];
+                        try {
+                            const commentsResponse = await axios.get(
+                                `${this.API_ENDPOINT}/api/posts/${postId}/comments`
+                            );
+                            commentsList = commentsResponse.data;
+                        } catch (error) {
+                            if (error.response?.status !== 404) {
+                                console.error(`Error fetching comments:`, error);
+                            }
+                        }
+
+                        // Update share count
+                        try {
+                            await axios.put(`${this.API_ENDPOINT}/api/posts/share?id=${postId}`);
+                        } catch (error) {
+                            console.error('Error updating share count:', error);
+                        }
+
+                        // Process the post
+                        const processedPost = {
+                            id: post.postID,
+                            user: post.username || 'Unknown User',
+                            userImg: post.profilePicture || this.userProfile.avatar,
+                            date: this.calculateTimeSince(post.createdAt),
+                            location: post.waypoints[0].address,
+                            title: this.generateRunTitle(post.createdAt),
+                            routeTitle: post.title,
+                            description: post.description,
+                            distance: `${post.distance} km`,
+                            time: this.generatePlaceholderTime(),
+                            mapImg: post.image,
+                            likes: post.likeCount,
+                            shares: post.shareCount,
+                            commentsList: commentsList,
+                            isLiked: this.currentUser.postsLiked?.includes(post.postID) || false
+                        };
+
+                        // Set as only activity
+                        this.activities = [processedPost];
+
+                        // Set as trending route
+                        this.trendingRoutes = [{
+                            id: post.postID,
+                            title: post.title,
+                            distance: `${post.distance} km`,
+                            saves: `${post.shareCount || 0} saves`,
+                            image: post.image
+                        }];
+
+                    } catch (error) {
+                        console.error('Error fetching single post:', error);
+                        this.activities = [];
+                        this.trendingRoutes = [];
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                async handleShare(activity) {
+                    try {
+                        const response = await axios.put(`${this.API_ENDPOINT}/api/posts/share?id=${activity.id}`);
+                        if (response.status === 200) {
+                            activity.shares = (activity.shares || 0) + 1;
+                        }
+                    } catch (error) {
+                        console.error('Error updating share count:', error);
+                    }
+                },
+
                 calculateTimeSince(dateObj) {
                     if (!dateObj) return 'Just Now';
 
@@ -890,6 +941,7 @@
                                     mapImg: post.image,
                                     likes: post.likeCount,
                                     commentsList: commentsList,
+                                    shares: post.shareCount,
                                     isLiked: this.currentUser.postsLiked?.includes(post.postID) || false
                                 };
                             } catch (error) {
@@ -962,28 +1014,70 @@
                 },
                 
                 async likeActivity(activity) {
+                    // Rate limiting check
                     const currentTime = Date.now();
                     if (currentTime - this.lastApiCallTime < 1000) {
                         return;
                     }
-
                     this.lastApiCallTime = currentTime;
+
                     try {
-                        const endpoint = activity.isLiked
-                            ? `${this.API_ENDPOINT}/api/posts/unlike`
-                            : `${this.API_ENDPOINT}/api/posts/like`;
-
-                        await axios.post(endpoint, {
-                            postID: activity.id,
+                        // Construct the endpoint URL based on current like status
+                        const endpoint = `${this.API_ENDPOINT}/api/posts/${activity.isLiked ? 'unlike' : 'like'}?id=${activity.id}`;
+                        
+                        // Prepare the request payload
+                        const payload = {
                             userID: this.currentUserId
-                        });
+                        };
 
-                        activity.likes += activity.isLiked ? -1 : 1;
-                        activity.isLiked = !activity.isLiked;
+                        // Make the PUT request
+                        const response = await axios.put(endpoint, payload);
 
+                        if (response.status === 200) {
+                            // Update like count
+                            activity.likes += activity.isLiked ? -1 : 1;
+                            
+                            // Toggle like status
+                            activity.isLiked = !activity.isLiked;
+
+                            // Update the current user's liked posts array
+                            if (!this.currentUser.postsLiked) {
+                                this.currentUser.postsLiked = [];
+                            }
+
+                            if (activity.isLiked) {
+                                // Add post ID to liked posts if not already present
+                                if (!this.currentUser.postsLiked.includes(activity.id)) {
+                                    this.currentUser.postsLiked.push(activity.id);
+                                }
+                            } else {
+                                // Remove post ID from liked posts
+                                const index = this.currentUser.postsLiked.indexOf(activity.id);
+                                if (index > -1) {
+                                    this.currentUser.postsLiked.splice(index, 1);
+                                }
+                            }
+                        }
                     } catch (error) {
                         console.error('Error updating like:', error);
-                        alert('Failed to update like. Please try again.');
+                        
+                        // Handle different types of errors
+                        if (error.response) {
+                            console.error('Server responded with error:', error.response.data);
+                            alert(`Failed to update like: ${error.response.data.message || 'Server error'}`);
+                        } else if (error.request) {
+                            console.error('No response received:', error.request);
+                            alert('Failed to update like: No response from server');
+                        } else {
+                            console.error('Error setting up request:', error.message);
+                            alert('Failed to update like: Network error');
+                        }
+
+                        // Revert optimistic updates if they were made
+                        if (activity.isLiked !== undefined) {
+                            activity.likes += activity.isLiked ? 1 : -1;
+                            activity.isLiked = !activity.isLiked;
+                        }
                     }
                 }
             }
