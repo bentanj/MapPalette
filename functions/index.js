@@ -253,8 +253,8 @@ app.get('/api/allposts', async (req, res) => {
   }
 });
 
-// Retrieve all posts made by users that the current user follows
-app.get('/api/allposts/:userID', async (req, res) => {
+// Retrieve all posts made by users that the current user follows without an index
+app.get('/api/allposts/user/:userID', async (req, res) => {
   const { userID } = req.params;
 
   if (!userID) {
@@ -272,46 +272,50 @@ app.get('/api/allposts/:userID', async (req, res) => {
     const followedUserIDs = followingSnap.docs.map(doc => doc.id);
     console.log('Followed User IDs:', followedUserIDs);
 
-    // Check if followedUserIDs length is greater than 10 (Firestore limitation)
-    if (followedUserIDs.length > 10) {
-      console.error(`Too many followed users. Only 10 are allowed.`);
-      return res.status(400).json({ message: 'Too many followed users. Limit is 10.' });
+    // Step 2: Retrieve all posts (without filtering in Firestore) and filter manually
+    const allPostsSnap = await db.collection('posts').get();
+
+    if (allPostsSnap.empty) {
+      return res.status(404).json({ message: 'No posts found.' });
     }
 
-    // Step 2: Retrieve posts created by users that `userID` is following
-    const postsSnap = await db.collection('posts')
-      .where('userID', 'in', followedUserIDs)
-      .orderBy('createdAt', 'desc')
-      .get();
-
-    if (postsSnap.empty) {
-      console.log(`No posts found for followed users of user ${userID}.`);
-      return res.status(404).json({ message: 'No posts found from followed users.' });
-    }
-
-    const posts = await Promise.all(postsSnap.docs.map(async (doc) => {
+    // Filter posts by the followed users
+    const filteredPosts = [];
+    allPostsSnap.forEach(doc => {
       const postData = doc.data();
+      if (followedUserIDs.includes(postData.userID)) {
+        filteredPosts.push({
+          ...postData,
+          id: doc.id
+        });
+      }
+    });
 
-      const userRef = db.collection('users').doc(postData.userID);
-      const userSnap = await userRef.get();
-      const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
+    // Sort the filtered posts by `createdAt` in descending order
+    filteredPosts.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
 
-      return {
-        ...postData,
-        id: doc.id,
-        username: userData.username || 'Unknown User',
-        profilePicture: userData.profilePicture || 'default-profile-picture-url'
-      };
-    }));
+    // Fetch additional user details for each post
+    const postsWithUserData = await Promise.all(
+      filteredPosts.map(async (post) => {
+        const userRef = db.collection('users').doc(post.userID);
+        const userSnap = await userRef.get();
+        const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
 
-    console.log('Posts found:', posts.length);
-    return res.status(200).json(posts);
+        return {
+          ...post,
+          username: userData.username || 'Unknown User',
+          profilePicture: userData.profilePicture || 'default-profile-picture-url'
+        };
+      })
+    );
+
+    console.log('Posts found:', postsWithUserData.length);
+    return res.status(200).json(postsWithUserData);
   } catch (error) {
-    console.error('Error fetching followed users posts:', error);
-    return res.status(500).json({ message: 'Error fetching posts.' });
+    console.error('Error fetching followed users posts:', error.message, error.stack);
+    return res.status(500).json({ message: `Error fetching posts: ${error.message}` });
   }
 });
-
 
 // 
 // POST LIKING API
