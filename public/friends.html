@@ -168,9 +168,8 @@
                 unfollowModal.hide();
 
                 // Send API request for unfollow with required data in the body
-                axios.post('https://app-907670644284.us-central1.run.app/api/unfollow', {
-                    userID: currentUserId,
-                    followUserID: friendId
+                axios.post(`https://app-907670644284.us-central1.run.app/api/unfollow?id=${friendId}`, {
+                    userID: currentUserId
                 })
                     .then(response => {
                         console.log(`Successfully unfollowed user with ID: ${friendId}`);
@@ -195,9 +194,8 @@
                 this.friends.unshift(user);
 
                 // Send API request for follow with required data in the body
-                axios.post('https://app-907670644284.us-central1.run.app/api/follow', {
-                    userID: currentUserId,
-                    followUserID: friendId
+                axios.post(`https://app-907670644284.us-central1.run.app/api/follow?id=${friendId}`, {
+                    userID: currentUserId
                 })
                     .then(response => {
                         console.log(`Successfully followed user with ID: ${friendId}`);
