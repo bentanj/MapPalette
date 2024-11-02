@@ -5,7 +5,7 @@ const endPointURL = "https://app-907670644284.us-central1.run.app";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { auth } from "./firebase.js"; // Ensure this path matches where firebase.js is located
 import { getStorage, ref, uploadString, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
-import { driver } from "../node_modules/driver.js/dist/driver.js.mjs";
+import { driver } from "./node_modules/driver.js/dist/driver.js.mjs";
 
 const app = Vue.createApp({
     data() {

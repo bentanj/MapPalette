@@ -205,7 +205,7 @@
                 </div>
                 <div style="width: 163px">{{ user.points }}</div>
                 <div>
-                    <span :class="'rank-badge rank-' + user.rank.toLowerCase()">{{ user.rank }}</span>
+                    <span :class="'rank-badge ' + (user.rank ? 'rank-' + user.rank.toLowerCase() : '')">{{ user.rank || 'Unranked' }}</span>
                 </div>
             </div>
         </template>
@@ -271,6 +271,7 @@
             // Fetch leaderboard data from the API
             axios.get('https://app-907670644284.us-central1.run.app/api/challenge/leaderboard')
                 .then(response => {
+                    console.log(response.data); // Check data structure here
                     this.users = response.data; // NEED TO IMPLEMENT RANK
                 })
                 .catch(error => {
