@@ -138,7 +138,7 @@ onAuthStateChanged(auth, async (user) => {
               const postsCreated = await fetchSubcollectionIds(user.uid, 'postsCreated');
               const postsLiked = await fetchSubcollectionIds(user.uid, 'postsLiked');
               const followers = await fetchSubcollectionIds(user.uid, 'followers');
-              const following = await fetchSubcollectionIds(user.uid, 'followed');
+              const following = await fetchSubcollectionIds(user.uid, 'following');
 
               // Set `window.currentUser` with user data and subcollection IDs
               window.currentUser = {
