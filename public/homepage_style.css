@@ -227,14 +227,19 @@ body {
 
 /* Post content and footer */
 .post .content {
-    padding: 2em 2em 1em 2em;  
+    padding: 1.5em 2em 1em 2em;  
     margin: 0;
 }
 
 .post .content p {
-    margin: 1rem 0 0 0;
+    margin: 0.5rem 0 0 0;
     word-wrap: break-word;
     overflow: hidden;
+}
+
+/* Stats spacing adjustment */
+.post .content .d-flex {
+    margin-bottom: 1rem; /* Consistent spacing with routes */
 }
 
 .post footer {
@@ -247,12 +252,18 @@ body {
 
 .post footer .actions {
     flex-grow: 1;
+    width: 100%;
 }
 
 .post footer .stats {
     list-style: none;
     padding: 0;
     margin: 0;
+}
+
+.post footer .actions .d-flex {
+    justify-content: space-around;
+    padding: 0 10%;
 }
 
 .post footer .stats li {
@@ -306,6 +317,20 @@ body {
     padding: 30px;
 }
 
+.modal-body textarea.form-control {
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    resize: none;
+}
+
+/* Comment section headers */
+.modal-body h6 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
 #modal-pic {
     width: 100%;
     height: 300px;
@@ -329,6 +354,45 @@ body {
     padding: 1rem;
     resize: none;
     border: 1px solid var(--border-color);
+}
+
+/* Comment section styling*/
+.comment-bubble {
+    background-color: #f1f0f0;
+    padding: 10px;
+    border-radius: 15px;
+    max-width: 100%;
+    word-wrap: break-word;
+    margin-bottom: 5px;
+}
+
+.comment-bubble strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #000;
+}
+
+.comment-time {
+    font-size: 0.9em;
+    margin-left: 10px;
+    color: #6c757d;
+}
+
+.modal-body .comments-list {
+    margin-top: 1rem;
+}
+
+.modal-body .comment-bubble {
+    background-color: #f1f0f0;
+    padding: 10px 15px;
+    border-radius: 15px;
+    margin-bottom: 0.5rem;
+}
+
+/* timestamp */
+.post > header .meta time.published {
+    color: #6c757d;
+    font-size: 0.9em;
 }
 
 /* Primary Button */
