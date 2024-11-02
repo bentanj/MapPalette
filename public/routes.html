@@ -28,125 +28,135 @@
 
 <body>
     <div id="app">
-        <!-- Navbar -->
-        <nav-bar></nav-bar>
-
-        <!-- Feed Header -->
-        <div class="sample-header">
-            <div class="sample-header-section">
-                <h1>Routes</h1>
-                <h2>Discover, share, and engage with creative running routes.</h2>
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="text-center"
+            style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
         </div>
 
-        <!-- Main Content Wrapper -->
-        <div class="sample-section-wrap">
-            <div class="container-fluid sample-section">
-                <!-- Your main content (Vue components) -->
-                <div>
-                    <!-- Filter, Search, and Badge Row -->
-                    <div class="row align-items-center mb-2">
+        <!-- Main Content, Hidden Initially -->
+        <div id="app-container" style="display: none;">
+            <!-- Navbar -->
+            <nav-bar></nav-bar>
 
-                        <!-- Search Input -->
-                        <div class="col-4">
-                            <p>Search for a route:</p>
-                            <input type="text" class="form-control" v-model="searchQuery" @input="applyFilters"
-                                placeholder="Route Name">
-                        </div>
+            <!-- Feed Header -->
+            <div class="sample-header">
+                <div class="sample-header-section">
+                    <h1>Routes</h1>
+                    <h2>Discover, share, and engage with creative running routes.</h2>
+                </div>
+            </div>
+
+            <!-- Main Content Wrapper -->
+            <div class="sample-section-wrap">
+                <div class="container-fluid sample-section">
+                    <!-- Your main content (Vue components) -->
+                    <div>
+                        <!-- Filter, Search, and Badge Row -->
+                        <div class="row align-items-center mb-2">
+
+                            <!-- Search Input -->
+                            <div class="col-4">
+                                <p>Search for a route:</p>
+                                <input type="text" class="form-control" v-model="searchQuery" @input="applyFilters"
+                                    placeholder="Route Name">
+                            </div>
 
 
-                        <!-- Badge (Positioned to the left of Filter Button) -->
-                        <div class="col-auto ms-auto">
-                            <span v-if="filters.sortOption" class="badge">
-                                {{ filters.sortOption }}
-                                <span @click="removeFilter()" class="ms-1">&times;</span>
-                            </span>
-                        </div>
+                            <!-- Badge (Positioned to the left of Filter Button) -->
+                            <div class="col-auto ms-auto">
+                                <span v-if="filters.sortOption" class="badge">
+                                    {{ filters.sortOption }}
+                                    <span @click="removeFilter()" class="ms-1">&times;</span>
+                                </span>
+                            </div>
 
-                        <!-- Filter Options Button -->
-                        <div class="col-auto">
-                            <div class="dropdown">
-                                <button class="btn filter-btn dropdown-toggle" type="button" id="filterDropdown"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    Sort By
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
-                                    <!-- Sort by Distance -->
-                                    <li>
-                                        <h6 class="dropdown-header">Distance</h6>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Shortest')">Shortest to
-                                            Longest</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Longest')">Longest to
-                                            Shortest</a>
-                                    </li>
+                            <!-- Filter Options Button -->
+                            <div class="col-auto">
+                                <div class="dropdown">
+                                    <button class="btn filter-btn dropdown-toggle" type="button" id="filterDropdown"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        Sort By
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                                        <!-- Sort by Distance -->
+                                        <li>
+                                            <h6 class="dropdown-header">Distance</h6>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Shortest')">Shortest to
+                                                Longest</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Longest')">Longest to
+                                                Shortest</a>
+                                        </li>
 
-                                    <!-- Sort by Popularity -->
-                                    <li>
-                                        <h6 class="dropdown-header">Popularity</h6>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Most Popular')">Most
-                                            Popular</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Least Popular')">Least
-                                            Popular</a>
-                                    </li>
+                                        <!-- Sort by Popularity -->
+                                        <li>
+                                            <h6 class="dropdown-header">Popularity</h6>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Most Popular')">Most
+                                                Popular</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Least Popular')">Least
+                                                Popular</a>
+                                        </li>
 
-                                    <!-- Sort by Time Created -->
-                                    <li>
-                                        <h6 class="dropdown-header">Time Created</h6>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Newest')">Newest</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" @click="setFilter('Oldest')">Oldest</a>
-                                    </li>
+                                        <!-- Sort by Time Created -->
+                                        <li>
+                                            <h6 class="dropdown-header">Time Created</h6>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Newest')">Newest</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Oldest')">Oldest</a>
+                                        </li>
 
-                                    <!-- Reset Button -->
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item text-danger" href="#" @click="resetFilters()">Reset
-                                            Filters</a>
-                                    </li>
-                                </ul>
+                                        <!-- Reset Button -->
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" href="#" @click="resetFilters()">Reset
+                                                Filters</a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <hr>
-                    <!-- Modals -->
-                    <route-modals :routes="filteredRoutes"></route-modals>
+                        <hr>
+                        <!-- Modals -->
+                        <route-modals :routes="filteredRoutes"></route-modals>
 
-                    <!-- Cards -->
-                    <div class="row mt-4">
-                        <route-cards :routes="filteredRoutes"></route-cards>
-                    </div>
+                        <!-- Cards -->
+                        <div class="row mt-4">
+                            <route-cards :routes="filteredRoutes"></route-cards>
+                        </div>
 
-                    <!-- Load More Button -->
-                    <div class="text-center mt-4" v-if="displayedRoutes < routes.length">
-                        <button class="btn btn-outline-primary" @click="loadMoreRoutes">Load More</button>
+                        <!-- Load More Button -->
+                        <div class="text-center mt-4" v-if="displayedRoutes < routes.length">
+                            <button class="btn btn-outline-primary" @click="loadMoreRoutes">Load More</button>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <button @click="scrollToTop" class="btn back-to-top">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+
+            <!-- Footer -->
+            <site-footer></site-footer>
+
         </div>
 
-        <button @click="scrollToTop" class="btn back-to-top">
-            <i class="fas fa-chevron-up"></i>
-        </button>
-
-        <!-- Footer -->
-        <site-footer></site-footer>
-
     </div>
-
-
 
 
 </body>
@@ -189,13 +199,14 @@
                         ...route,
                         modalId: 'modal-' + route.postID,
                         timeSince: this.calculateTimeSince(new Date(route.createdAt._seconds * 1000)),
-                        username: '', // Placeholder for now
+                        username: '', // Placeholder for route creator's username
+                        commentsList: [] // Initialize comments list
                     }));
 
                     // Extract unique user IDs from routes
                     const userIDs = [...new Set(this.routes.map(route => route.userID))];
 
-                    // Fetch user data for each unique userID
+                    // Fetch user data for each unique userID (route creators)
                     const userPromises = userIDs.map(id =>
                         axios.get(`https://app-907670644284.us-central1.run.app/api/${id}`)
                             .then(userResponse => ({
@@ -204,15 +215,78 @@
                             }))
                     );
 
-                    // Populate routes with user data once all user data is fetched
                     Promise.all(userPromises).then(users => {
-                        this.routes.forEach(route => {
-                            const user = users.find(user => user.id === route.userID);
-                            if (user) {
-                                route.username = user.username;
-                            }
+                        // Create a userMap for userID to username
+                        const userMap = {};
+                        users.forEach(user => {
+                            userMap[user.id] = user.username;
                         });
-                        this.applyFilters();
+
+                        // Assign usernames to routes
+                        this.routes.forEach(route => {
+                            route.username = userMap[route.userID] || 'Unknown User';
+                        });
+
+                        // Now fetch comments for each route
+                        const commentPromises = this.routes.map(route =>
+                            axios.get(`https://app-907670644284.us-central1.run.app/api/posts/${route.postID}/comments`)
+                                .then(commentsResponse => {
+                                    route.commentsList = commentsResponse.data;
+                                })
+                                .catch(error => {
+                                    if (error.response && error.response.status === 404) {
+                                        // No comments found for this post
+                                        route.commentsList = [];
+                                    } else {
+                                        console.error(`Error fetching comments for post ${route.postID}:`, error);
+                                    }
+                                })
+                        );
+
+                        // Wait for all comments to be fetched
+                        Promise.all(commentPromises).then(() => {
+                            // Collect unique userIDs from comments that are not already in userMap
+                            const commentUserIDs = [];
+                            this.routes.forEach(route => {
+                                if (route.commentsList) {
+                                    route.commentsList.forEach(comment => {
+                                        if (!userMap[comment.userID]) {
+                                            commentUserIDs.push(comment.userID);
+                                        }
+                                    });
+                                }
+                            });
+
+                            // Remove duplicates
+                            const uniqueCommentUserIDs = [...new Set(commentUserIDs)];
+
+                            // Fetch usernames for comment userIDs
+                            const commenterUserPromises = uniqueCommentUserIDs.map(id =>
+                                axios.get(`https://app-907670644284.us-central1.run.app/api/${id}`)
+                                    .then(userResponse => {
+                                        userMap[id] = userResponse.data.username;
+                                    })
+                                    .catch(error => {
+                                        console.error(`Error fetching username for userID ${id}:`, error);
+                                        userMap[id] = 'Unknown User';
+                                    })
+                            );
+
+                            // Wait for all usernames to be fetched
+                            Promise.all(commenterUserPromises).then(() => {
+                                // Assign usernames to comments
+                                this.routes.forEach(route => {
+                                    if (route.commentsList) {
+                                        route.commentsList.forEach(comment => {
+                                            comment.username = userMap[comment.userID] || 'Unknown User';
+                                        });
+                                    }
+                                });
+
+                                // Now, we can proceed to apply filters and update UI
+                                this.applyFilters();
+                            });
+                        });
                     }).catch(error => {
                         console.error("Error fetching user data:", error);
                     });
@@ -221,6 +295,8 @@
                     console.error("Error fetching routes data:", error);
                 });
         },
+
+
 
         computed: {
             activeFilters() {
@@ -333,18 +409,16 @@
       </div>
       <div class="text-content">
         <h5 class="card-title">{{ route.title }}</h5>
-        <p class="card-text">{{ route.description }}</p>
+        <p class="card-text truncate-2-lines">{{ route.description }}</p> <!-- Description truncated to 2 lines -->
         <p><strong>Distance:</strong> {{ route.distance }} km</p>
-        <p><strong>Location:</strong> {{ route.waypoints.length > 0 ? route.waypoints[0].address : 'N/A' }}</p>
+        <p class="truncate-1-line"><strong>Location:</strong> {{ route.waypoints.length > 0 ? route.waypoints[0].address : 'N/A' }}</p> <!-- Apply truncate class here -->
       </div>
     </div>
     <div class="card-footer text-muted">
-      {{ route.timeSince }} | {{ route.likeCount }} Likes
+      {{ route.timeSince }} | {{ route.likeCount }} Likes | {{ route.commentsList.length }} Comments
     </div>
   </div>
 </div>
-
-
             `
     });
 
@@ -395,17 +469,56 @@
                         alert("Failed to update like/unlike. Please try again.");
                     });
             }
+
+            ,
+            calculateTimeSince(timestamp) {
+                if (!timestamp) return 'Just Now';
+
+                let commentDate;
+                if (timestamp._seconds) {
+                    // Firestore timestamp format
+                    commentDate = new Date(timestamp._seconds * 1000);
+                } else if (typeof timestamp === 'string' || timestamp instanceof Date) {
+                    commentDate = new Date(timestamp);
+                } else {
+                    // Handle immediate new comments with a simple "Just Now" label
+                    return 'Just Now';
+                }
+
+                const currentDate = new Date();
+                const diffInSeconds = Math.floor((currentDate - commentDate) / 1000);
+                const intervals = [
+                    { label: 'year', seconds: 31536000 },
+                    { label: 'month', seconds: 2592000 },
+                    { label: 'day', seconds: 86400 },
+                    { label: 'hour', seconds: 3600 },
+                    { label: 'minute', seconds: 60 },
+                    { label: 'second', seconds: 1 },
+                ];
+                for (const interval of intervals) {
+                    const count = Math.floor(diffInSeconds / interval.seconds);
+                    if (count >= 1) {
+                        return count === 1
+                            ? `1 ${interval.label} ago`
+                            : `${count} ${interval.label}s ago`;
+                    }
+                }
+                return 'Just Now';
+            }
             ,
             submitComment(route) {
                 const commentText = this.newCommentText[route.postID];
-                if (!commentText) return;  // Exit if no comment text
+                if (!commentText) return; // Exit if no comment text
 
-                const currentUserID = window.currentUser?.id || 'defaultUserID';  // Replace with actual user ID logic
+                const currentUserID = window.currentUser.id;
 
                 // Disable the comment button while posting
-                this.disabledActions[route.postID] = { comment: true };
+                if (!this.disabledActions[route.postID]) {
+                    this.disabledActions[route.postID] = {};
+                }
+                this.disabledActions[route.postID].comment = true;
 
-                // POST request to submit the comment - backend issue need to fix
+                // POST request to submit the comment
                 axios.post(`https://app-907670644284.us-central1.run.app/api/posts/${route.postID}/comments`, {
                     userID: currentUserID,
                     text: commentText
@@ -413,18 +526,24 @@
                     .then(response => {
                         console.log('Comment posted successfully:', response.data);
 
-                        // Add the new comment locally to the route's comments list
-                        if (!route.commentsList) {
-                            route.commentsList = [];
-                        }
-                        route.commentsList.push({
-                            commenterName: 'You',  // Display name for the current user
-                            commentText: commentText,
-                            timestamp: new Date().toISOString()  // Current timestamp
-                        });
+                        // Create the new comment object
+                        const newComment = {
+                            id: response.data.id,
+                            userID: currentUserID,
+                            text: commentText,
+                            likes: 0,
+                            createdAt: response.data.createdAt, // Use createdAt from response
+                            username: window.currentUser?.username || 'You'
+                        };
+
+                        // Ensure Vue detects the change by using Vue's reactive methods
+                        route.commentsList = [newComment, ...route.commentsList]; // Create a new array to trigger reactivity
 
                         // Clear the input field after posting
                         this.newCommentText[route.postID] = '';
+
+                        // Re-enable the comment button
+                        this.disabledActions[route.postID].comment = false;
                     })
                     .catch(error => {
                         console.error('Error posting comment:', error);
@@ -437,10 +556,25 @@
                         this.disabledActions[route.postID].comment = false;
                     });
             }
+
             ,
             formatTime(timestamp) {
-                const date = new Date(timestamp);
-                return date.toLocaleString();  // Adjust formatting as needed
+                if (!timestamp) return 'Unknown date';
+
+                let date;
+                if (timestamp._seconds) {
+                    // Firestore timestamp format
+                    date = new Date(timestamp._seconds * 1000);
+                } else {
+                    // ISO string or Date object
+                    date = new Date(timestamp);
+                }
+
+                if (isNaN(date.getTime())) {
+                    return 'Invalid date';
+                }
+
+                return date.toLocaleString(); // Adjust formatting as needed
             },
             disableAction(route, actionType) {
                 if (!this.disabledActions[route.postID]) {
@@ -487,67 +621,82 @@
                         alert("Failed to share route.");
                     });
                 this.disableAction(route, 'share')
+            },
+            sortCommentsByDate(commentsList) {
+                return commentsList.sort((a, b) => {
+                    const dateA = a.createdAt && a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
+                    const dateB = b.createdAt && b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
+                    return dateB - dateA; // Newest first
+                });
             }
         },
         template: `
-    <div v-for="route in routes" :key="route.postID">
-      <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-          <div class="modal-content">
-            <div class="modal-header d-flex justify-content-between align-items-start">
-              <div>
-                <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
-                <h6 class="modal-author text-muted">by {{ route.username }}</h6>
-              </div>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div id="modal-pic">
-                <img :src="route.image" alt="Route Image" class="img-fluid">
-              </div>
-              <p class="text-muted">Posted {{ route.timeSince }}</p>
-              <p class="text-muted">{{ route.likeCount }} Likes | {{ route.commentCount }} Comments</p>
-              <p><strong>Distance:</strong> {{ route.distance }} km</p>
-              <p>{{ route.description }}</p>
-              <div class="d-flex justify-content-around border-top border-bottom py-3">
-                <!-- Action Buttons (Like, Use, Share) -->
-                <button class="btn btn-link p-0 action-button" @click="likeRoute(route)">
-                  <i class="far fa-thumbs-up me-1"></i>
-                  <span>Like</span>
-                </button>
-                <button class="btn btn-link p-0 action-button" @click="useRoute(route)">
-                  <i class="fas fa-route me-1"></i>
-                  <span>Use</span>
-                </button>
-                <button class="btn btn-link p-0 action-button" @click="shareRoute(route)">
-                  <i class="far fa-share-square me-1"></i>
-                  <span>Share</span>
-                </button>
-              </div>
-              <br>
-              <h6>Comments ({{ route.commentsList ? route.commentsList.length : 0 }})</h6>
-              <div v-if="route.commentsList && route.commentsList.length">
-                <div v-for="(comment, index) in route.commentsList" :key="index" class="mb-3">
-                  <strong>{{ comment.commenterName }}</strong>
-                  <span class="text-muted">{{ formatTime(comment.timestamp) }}</span>
-                  <p>{{ comment.commentText }}</p>
-                </div>
-              </div>
-              <div v-else>
-                <p>No comments yet. Be the first to comment!</p>
-              </div>
-              <div class="mb-3">
-                <textarea class="form-control mb-2" placeholder="Add a comment..." rows="2" v-model="newCommentText[route.postID]"></textarea>
-                <button class="btn btn-primary" @click="submitComment(route)" :disabled="disabledActions[route.postID]?.comment">
-                  <span v-if="!disabledActions[route.postID]?.comment">Post Comment</span>
-                  <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
-                </button>
-              </div>
-            </div>
-          </div>
+        <div v-for="route in routes" :key="route.postID">
+            <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
+                                <h6 class="modal-author text-muted">by {{ route.username }}</h6>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="modal-pic">
+                                <img :src="route.image" alt="Route Image" class="img-fluid">
+                            </div>
+                            <p class="text-muted">Posted {{ route.timeSince }}</p>
+                            <p class="text-muted">{{ route.likeCount }} Likes | {{ route.commentsList.length }} Comments</p>
+                            <p><strong>Distance:</strong> {{ route.distance }} km</p>
+                            <p>{{ route.description }}</p>
+
+                            <div class="d-flex justify-content-around border-top border-bottom py-3">
+                                <!-- Action Buttons (Like, Use, Share) -->
+                                <button class="btn btn-link p-0 action-button" @click="likeRoute(route)">
+                                    <i class="far fa-thumbs-up me-1"></i>
+                                    <span>Like</span>
+                                </button>
+                                <button class="btn btn-link p-0 action-button" @click="useRoute(route)">
+                                    <i class="fas fa-route me-1"></i>
+                                    <span>Use</span>
+                                </button>
+                                <button class="btn btn-link p-0 action-button" @click="shareRoute(route)">
+                                    <i class="far fa-share-square me-1"></i>
+                                    <span>Share</span>
+                                </button>
+                            </div>
+                            <br>
+
+                            <!-- Move the Comment Input Area Above the Comments -->
+                            <div class="mb-3 mt-3">
+                                <textarea class="form-control mb-2" placeholder="Add a comment..." rows="2" v-model="newCommentText[route.postID]"></textarea>
+                                <button class="btn btn-primary" @click="submitComment(route)" :disabled="disabledActions[route.postID]?.comment">
+                                    <span v-if="!disabledActions[route.postID]?.comment">Post Comment</span>
+                                    <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
+                                </button>
+                            </div>
+
+<h6>Comments ({{ route.commentsList.length }})</h6>
+<div v-if="route.commentsList && route.commentsList.length > 0">
+    <div v-for="(comment, index) in sortCommentsByDate(route.commentsList)" :key="index" class="mb-3">
+        <div class="comment-bubble">
+            <strong>{{ comment.username }}</strong>
+            <p>{{ comment.text }}</p>
         </div>
-      </div>
+        <div class="comment-time text-muted">
+            {{ calculateTimeSince(comment.createdAt) }}
+        </div>
     </div>
+</div>
+<div v-else>
+    <p>No comments yet. Be the first to comment!</p>
+</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
   `
     });
 </script>

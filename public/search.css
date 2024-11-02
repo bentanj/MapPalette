@@ -181,6 +181,16 @@ body {
     max-height: 3em;
     min-height: 3em;
 }
+/*truncates the location*/
+.truncate-1-line {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 1.5em; /* Adjust as needed */
+}
 
 /* Optional Card Height */
 .post-card {
@@ -329,6 +339,27 @@ body {
 .action-button:active i {
     transform: scale(0.9);
 }
+
+.comment-bubble {
+    background-color: #f1f0f0;
+    padding: 10px;
+    border-radius: 15px;
+    max-width: 100%;
+    word-wrap: break-word;
+    margin-bottom: 5px;
+}
+
+.comment-bubble strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.comment-time {
+    font-size: 0.9em;
+    margin-left: 10px;
+}
+
+
 
 
 /* for friends.html */
