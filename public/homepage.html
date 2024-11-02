@@ -459,17 +459,41 @@
                 async fetchComments() {
                     this.isLoading = true;
                     try {
-                        const response = await axios.get(
+                        // Fetch comments
+                        const commentsResponse = await axios.get(
                             `https://app-907670644284.us-central1.run.app/api/posts/${this.activity.id}/comments`
                         );
-                        this.comments = response.data.map(comment => ({
+                        
+                        // Get unique userIDs from comments
+                        const userIDs = [...new Set(commentsResponse.data.map(comment => comment.userID))];
+                        
+                        // Create a map to store usernames
+                        const userMap = {};
+                        
+                        // Fetch user data for each unique userID
+                        await Promise.all(userIDs.map(async (userID) => {
+                            try {
+                                const userResponse = await axios.get(
+                                    `https://app-907670644284.us-central1.run.app/api/${userID}`
+                                );
+                                userMap[userID] = userResponse.data.username;
+                            } catch (error) {
+                                console.error(`Error fetching user data for ${userID}:`, error);
+                                userMap[userID] = 'Unknown User';
+                            }
+                        }));
+                        
+                        // Attach usernames to comments
+                        this.comments = commentsResponse.data.map(comment => ({
                             ...comment,
+                            username: userMap[comment.userID] || 'Unknown User',
                             timeAgo: this.calculateTimeSince(comment.createdAt)
                         }));
+                        
                         // Sort comments by date (newest first)
                         this.comments.sort((a, b) => {
-                            const dateA = a.createdAt._seconds || new Date(a.createdAt).getTime() / 1000;
-                            const dateB = b.createdAt._seconds || new Date(b.createdAt).getTime() / 1000;
+                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
+                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
                             return dateB - dateA;
                         });
                     } catch (error) {
@@ -623,9 +647,7 @@
                                 </div>
 
                                 <!-- Comments Section -->
-                                <div class="mt-4">
-                                    <h6>Comments ({{ comments.length }})</h6>
-                                    
+                                <div class="mt-4">                                    
                                     <!-- New Comment Input -->
                                     <div class="mb-3">
                                         <textarea class="form-control mb-2"
@@ -642,6 +664,8 @@
                                             </span>
                                         </button>
                                     </div>
+
+                                    <h6>Comments ({{ comments.length }})</h6>
 
                                     <!-- Loading State -->
                                     <div v-if="isLoading" class="text-center my-3">
@@ -780,7 +804,38 @@
                 }, 100);
             },
 
-            methods: {
+            methods: {       
+                calculateTimeSince(dateObj) {
+                    if (!dateObj) return 'Just Now';
+
+                    let date;
+                    if (dateObj._seconds) {
+                        date = new Date(dateObj._seconds * 1000);
+                    } else {
+                        date = new Date(dateObj);
+                    }
+
+                    const currentDate = new Date();
+                    const diffInSeconds = Math.floor((currentDate - date) / 1000);
+                    const intervals = [
+                        { label: 'year', seconds: 31536000 },
+                        { label: 'month', seconds: 2592000 },
+                        { label: 'day', seconds: 86400 },
+                        { label: 'hour', seconds: 3600 },
+                        { label: 'minute', seconds: 60 },
+                        { label: 'second', seconds: 1 }
+                    ];
+
+                    for (const interval of intervals) {
+                        const count = Math.floor(diffInSeconds / interval.seconds);
+                        if (count >= 1) {
+                            return count === 1
+                                ? `1 ${interval.label} ago`
+                                : `${count} ${interval.label}s ago`;
+                        }
+                    }
+                    return 'Just Now';
+                },
                 updateUserProfile(userData) {
                     this.userProfile = {
                         name: userData.username,
@@ -825,7 +880,7 @@
                                     id: post.postID,
                                     user: post.username || 'Unknown User',
                                     userImg: post.profilePicture || this.userProfile.avatar,
-                                    date: this.formatDate(post.createdAt),
+                                    date: this.calculateTimeSince(post.createdAt), 
                                     location: post.waypoints[0].address,
                                     title: this.generateRunTitle(post.createdAt),
                                     routeTitle: post.title,
