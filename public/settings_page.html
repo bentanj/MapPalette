@@ -238,12 +238,53 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Privacy Section --> 
+                            <div v-if="currentTab === 'privacy'" class="settings-section">
+                                <h3 class="mb-4">Privacy</h3>
+                                
+                                <!-- Keep Profile Private Checkbox -->
+                                <div class="form-check mb-3">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        v-model="privacySettings.keepProfilePrivate" 
+                                        id="keepProfilePrivate"
+                                    >
+                                    <label class="form-check-label" for="keepProfilePrivate">
+                                        Keep Profile Private
+                                    </label>
+                                </div>
+
+                                <!-- Keep Post Private Checkbox -->
+                                <div class="form-check mb-3">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        v-model="privacySettings.keepPostPrivate" 
+                                        id="keepPostPrivate"
+                                    >
+                                    <label class="form-check-label" for="keepPostPrivate">
+                                        Keep Post Private
+                                    </label>
+                                </div>
+
+                                <!-- Save Button -->
+                                <button @click="savePrivacySettings" class="btn btn-primary mt-3">Save Changes</button>
+
+                                <!-- Success Alert -->
+                                <div v-if="showAlert" class="alert alert-success mt-3" role="alert">
+                                    Privacy settings saved successfully!
+                                </div>
+                            </div>
+
+
                         </div>
                     </div>
-                    <div class="col-lg-1"></div>
-                </div>
+                <div class="col-lg-1"></div>
             </div>
         </div>
+    </div>
         
         <!-- Footer Section -->
         <site-footer></site-footer>
@@ -291,26 +332,25 @@
                         icon: 'bi bi-eye',
                         label: 'Privacy',
                         description: 'Control your privacy settings'
-                    },
-                    {
-                        id: 'notifications',
-                        icon: 'bi bi-bell',
-                        label: 'Notifications',
-                        description: 'Manage your notifications'
-                    },
-                    {
-                        id: 'connected',
-                        icon: 'bi bi-link-45deg',
-                        label: 'Connected Apps',
-                        description: 'Manage your connected applications'
                     }
-                ]
+                ],
+                privacySettings: {
+                    keepProfilePrivate: false,
+                    keepPostPrivate: false
+                },
+                showAlert: false // Alert visibility control
             }
         },
         created() {
+            if (window.currentUser) {
+                this.currentUserId = window.currentUser.id;
+                this.privacySettings.keepProfilePrivate = window.currentUser.isProfilePrivate;
+                this.privacySettings.keepPostPrivate = window.currentUser.isPostPrivate;
+            }
+
             const postsPromise = axios.get('./databaseTemplateFolder/postTemplate.json');
             const usersPromise = axios.get('./databaseTemplateFolder/userTemplate.json');
-
+            
             Promise.all([postsPromise, usersPromise])
                 .then(([postsResponse, usersResponse]) => {
                     console.log('Posts Data:', postsResponse.data);
@@ -394,7 +434,27 @@
             
             removeProfilePicture() {
                 this.userProfile.avatar = 'resources/default-avatar.png';
-            }
+            },
+
+
+            // Method to update privacy settings and show alert
+            savePrivacySettings() {
+                axios.put(`/api/users/${this.currentUserId}/privacy`, {
+                    isProfilePrivate: this.privacySettings.keepProfilePrivate,
+                    isPostPrivate: this.privacySettings.keepPostPrivate
+                })
+                .then(() => {
+                    this.showAlert = true;
+                    setTimeout(() => {
+                        this.showAlert = false;
+                    }, 3000);
+                })
+                .catch(error => {
+                    console.error('Error saving privacy settings:', error);
+                    alert('An error occurred while saving privacy settings. Please try again.');
+                });
+            },
+
         }
     });
     </script>
