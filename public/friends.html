@@ -139,7 +139,7 @@
             },
             filteredOtherUsers() {
                 return this.otherUsers.filter(user =>
-                    user.username.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    user.username.toLowerCase().includes(this.searchQuery.toLowerCase())&&(!user.isProfilePrivate || user.isFollowing)
                 );
             }
         },

@@ -851,30 +851,29 @@ app.get('/api/users/getcondensed/:currentUserID', async (req, res) => {
   }
 
   try {
-    // Fetch all user documents in the "users" collection
     const usersSnap = await db.collection('users').get();
 
     // Get all user IDs that the current user is following
     const followingSnap = await db.collection('users').doc(currentUserID).collection('following').get();
     const followingIDs = followingSnap.docs.map(doc => doc.id);
 
-    // Map through each user document and create the condensed user object
     const condensedUsers = usersSnap.docs.map(doc => {
       const userData = doc.data();
+      const isFollowing = followingIDs.includes(doc.id);
 
-      if (userData.isProfilePrivate) return undefined;
+      // Only return private users if the current user is following them
+      if (userData.isProfilePrivate && !isFollowing) return undefined;
 
       return {
         userID: doc.id,
         username: userData.username || null,
         profilePicture: userData.profilePicture || null,
-        isFollowing: followingIDs.includes(doc.id) // Check if the user is in the current user's "following" list
+        isFollowing: isFollowing
       };
     });
 
-    // Filter out undefined results before sending the response
     const filteredCondensedUsers = condensedUsers.filter(user => user !== undefined);
-    return res.status(200).json(filteredCondensedUsers);    
+    return res.status(200).json(filteredCondensedUsers);
   } catch (error) {
     console.error('Error fetching condensed user data:', error);
     return res.status(500).json({ message: 'Error fetching condensed user data.' });

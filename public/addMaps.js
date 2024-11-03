@@ -915,9 +915,12 @@ const app = Vue.createApp({
         },
         
         showPublicPostReminder() {
-            // Display a warning to remind users that the post will be public
-            this.setAlert('error', 'This post will be publicly visible once posted.');
-        },
+            // Check if the post is private before showing the public visibility alert
+            if (!window.currentUser.isPostPrivate) {
+                // Display a warning to remind users that the post will be public
+                this.setAlert('error', 'This post will be publicly visible once posted.');
+            }
+        },        
     },
     created() {
         // Assign initMap as a global function to initialize the map once the API loads
