@@ -142,6 +142,7 @@
                                 :activity="activity"
                                 :current-user="currentUser"
                                 @like="likeActivity"
+                                @share="handleActivityShare"  
                                 @open-modal="openActivityModal"
                                 @edit="handleActivityEdit">
                             </activity-card>
@@ -154,6 +155,7 @@
                         :activity="selectedActivity"
                         @close="selectedActivity = null"
                         @like="likeActivity"
+                        @share="handleActivityShare" 
                     ></comment-modal>
                 </div>
             </div>
@@ -207,7 +209,10 @@
                 window.location.href = `addMaps.html?id=${this.activity.id}`;
             },
             handleShare() {
-                window.location.href = `homepage.html?id=${this.activity.id}`;
+                // Update API and redirect
+                const shareUrl = `homepage.html?id=${this.activity.id}`;
+                this.$emit('share', this.activity); // Emit share event to parent
+                window.location.href = shareUrl;
             },
             async likePost(postId) {
             // Emit the like event to parent instead of handling API call directly
@@ -525,8 +530,12 @@
                     window.location.href = `addMaps.html?id=${this.activity.id}`;
                 },
                 handleShare() {
-                    window.location.href = `homepage.html?id=${this.activity.id}`;
+                    // Update API and redirect
+                    const shareUrl = `homepage.html?id=${this.activity.id}`;
+                    this.$emit('share', this.activity); // Emit share event to parent
+                    window.location.href = shareUrl;
                 },
+
             
             },
 
@@ -736,9 +745,15 @@
                 async fetchSinglePost(postId) {
                     this.isLoading = true;
                     try {
-                        // Fetch the specific post
+                        // Fetch the specific shared post
                         const response = await axios.get(`${this.API_ENDPOINT}/api/posts/?id=${postId}`);
                         const post = response.data;
+                        
+                        if (!post) {
+                            console.error('No post data received');
+                            this.activities = [];
+                            return;
+                        }
 
                         // Fetch comments for the post
                         let commentsList = [];
@@ -760,34 +775,46 @@
                             console.error('Error updating share count:', error);
                         }
 
-                        // Process the post
+                        // Process the shared post
                         const processedPost = {
                             id: post.postID,
+                            title: post.title,
                             user: post.username || 'Unknown User',
                             userImg: post.profilePicture || this.userProfile.avatar,
                             date: this.calculateTimeSince(post.createdAt),
                             location: post.waypoints[0].address,
-                            routeTitle: post.title,
                             description: post.description,
                             distance: `${post.distance} km`,
+                            time: post.time || '',
                             mapImg: post.image,
                             likes: post.likeCount,
                             shares: post.shareCount,
                             commentsList: commentsList,
                             isLiked: this.currentUser.postsLiked?.includes(post.postID) || false
                         };
-
+                        
                         // Set as only activity
                         this.activities = [processedPost];
 
-                        // Set as trending route
-                        this.trendingRoutes = [{
-                            id: post.postID,
-                            title: post.title,
-                            distance: `${post.distance} km`,
-                            saves: `${post.shareCount || 0} saves`,
-                            image: post.image
-                        }];
+                        // Fetch trending routes separately
+                        const allPostsResponse = await axios.get(`${this.API_ENDPOINT}/api/allposts/user/${this.currentUser.id}`);
+                        const allPosts = allPostsResponse.data;
+
+                        this.trendingRoutes = allPosts
+                            .sort((a, b) => {
+                                // Primary sort by likes
+                                const likesDiff = (b.likeCount || 0) - (a.likeCount || 0);
+                                // If likes are equal, use shares as secondary sort
+                                return likesDiff !== 0 ? likesDiff : (b.shareCount || 0) - (a.shareCount || 0);
+                            })
+                            .slice(0, 2)
+                            .map(post => ({
+                                id: post.postID,
+                                title: post.title,
+                                distance: `${post.distance} km`,
+                                saves: `${post.likeCount || 0} likes`,  // Changed from shareCount to likeCount
+                                image: post.image
+                            }));
 
                     } catch (error) {
                         console.error('Error fetching single post:', error);
@@ -798,12 +825,10 @@
                     }
                 },
 
-                async handleShare(activity) {
+                async handleActivityShare(activity) {
                     try {
-                        const response = await axios.put(`${this.API_ENDPOINT}/api/posts/share?id=${activity.id}`);
-                        if (response.status === 200) {
-                            activity.shares = (activity.shares || 0) + 1;
-                        }
+                        await axios.put(`${this.API_ENDPOINT}/api/posts/share?id=${activity.id}`);
+                        activity.shares = (activity.shares || 0) + 1;
                     } catch (error) {
                         console.error('Error updating share count:', error);
                     }
@@ -910,13 +935,18 @@
 
                         // Set trending routes
                         this.trendingRoutes = allPosts
-                            .sort((a, b) => b.likeCount - a.likeCount)
+                            .sort((a, b) => {
+                                // Primary sort by likes
+                                const likesDiff = (b.likeCount || 0) - (a.likeCount || 0);
+                                // If likes are equal, use shares as secondary sort
+                                return likesDiff !== 0 ? likesDiff : (b.shareCount || 0) - (a.shareCount || 0);
+                            })
                             .slice(0, 2)
                             .map(post => ({
                                 id: post.postID,
                                 title: post.title,
                                 distance: `${post.distance} km`,
-                                saves: `${post.shareCount || 0} saves this week`,
+                                saves: `${post.likeCount || 0} likes`,  
                                 image: post.image
                             }));
 
