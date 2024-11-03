@@ -274,47 +274,31 @@ app.get('/api/allposts/user/:userID', async (req, res) => {
     // Include the current user's own posts by adding their ID to the followedUserIDs array
     followedUserIDs.push(userID);
 
-    // Step 2: Retrieve all posts
-    const allPostsSnap = await db.collection('posts').get();
+    // Step 2: Retrieve all posts from the main "posts" collection where userID matches any of the followedUserIDs
+    const postsSnap = await db.collection('posts').where('userID', 'in', followedUserIDs).get();
 
-    if (allPostsSnap.empty) {
+    if (postsSnap.empty) {
       return res.status(404).json({ message: 'No posts found for this user or their followed users.' });
     }
 
-    // Filter posts by the followed users or the user themselves
-    const filteredPosts = [];
-    allPostsSnap.forEach(doc => {
-      const postData = doc.data();
-      if (followedUserIDs.includes(postData.userID)) {
-        filteredPosts.push({
-          ...postData,
-          id: doc.id
-        });
-      }
-    });
-
-    // Check if no posts were found for the user and their followed users
-    if (filteredPosts.length === 0) {
-      return res.status(404).json({ message: 'No posts found for this user or their followed users.' });
-    }
-
-    // Sort the filtered posts by `createdAt` in descending order
-    filteredPosts.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
-
-    // Fetch additional user details for each post
+    // Step 3: Map through each post document, fetch user data, and return post data with additional user info
     const postsWithUserData = await Promise.all(
-      filteredPosts.map(async (post) => {
-        const userRef = db.collection('users').doc(post.userID);
+      postsSnap.docs.map(async (doc) => {
+        const postData = { id: doc.id, ...doc.data() };
+        const userRef = db.collection('users').doc(postData.userID);
         const userSnap = await userRef.get();
         const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
 
         return {
-          ...post,
+          ...postData,
           username: userData.username || 'Unknown User',
-          profilePicture: userData.profilePicture || 'default-profile-picture-url'
+          profilePicture: userData.profilePicture || 'default-profile-picture-url',
         };
       })
     );
+
+    // Sort the posts by `createdAt` in descending order
+    postsWithUserData.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
 
     console.log('Posts found:', postsWithUserData.length);
     return res.status(200).json(postsWithUserData);
