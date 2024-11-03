@@ -142,7 +142,6 @@
                                 :activity="activity"
                                 :current-user="currentUser"
                                 @like="likeActivity"
-                                @share="handleActivityShare"  
                                 @open-modal="openActivityModal"
                                 @edit="handleActivityEdit">
                             </activity-card>
@@ -195,7 +194,7 @@
                 return this.activity.isLiked || false;
             },
             isOwnPost() {  
-                return window.currentUser && this.activity.user === window.currentUser.username;
+                return window.currentUser && this.activity.id === window.currentUser.id;
             },
             commentCount() {
                 return this.activity.commentsList ? this.activity.commentsList.length : 0;
@@ -209,10 +208,7 @@
                 window.location.href = `addMaps.html?id=${this.activity.id}`;
             },
             handleShare() {
-                // Update API and redirect
-                const shareUrl = `homepage.html?id=${this.activity.id}`;
-                this.$emit('share', this.activity); // Emit share event to parent
-                window.location.href = shareUrl;
+                window.location.href = `homepage.html?id=${this.activity.id}`;
             },
             async likePost(postId) {
             // Emit the like event to parent instead of handling API call directly
@@ -243,7 +239,7 @@
                                 </ul>
                             </div>
                         </div>
-                        <p>by {{ activity.user }}</p>
+                        <p>{{ activity.user }}</p>
                     </div>
                     <div class="meta">
                         <time class="published">{{ activity.date }}</time>
@@ -355,7 +351,7 @@
                     comments: [],
                     isLoading: false,
                     error: null,
-                    API_ENDPOINT: 'https://app-907670644284.us-central1.run.app'
+                    API_ENDPOINT: 'https://app-907670644284.us-central1.run.app',
                 }
             },
 
@@ -427,6 +423,7 @@
 
                 async fetchComments() {
                     this.isLoading = true;
+                    this.error = null; // Reset error message
 
                     try {
                         // Fetch comments
@@ -434,18 +431,14 @@
                             `${this.API_ENDPOINT}/api/posts/${this.activity.id}/comments`
                         );
 
-                        // Get unique userIDs from comments
+                        // Process user IDs and fetch usernames as needed
                         const userIDs = [...new Set(commentsResponse.data.map(comment => comment.userID))];
-                        
-                        // Create a map to store usernames
                         const userMap = {};
                         
-                        // Fetch user data for each unique userID
+                        // Fetch usernames for each unique userID
                         await Promise.all(userIDs.map(async (userID) => {
                             try {
-                                const userResponse = await axios.get(
-                                    `${this.API_ENDPOINT}/api/${userID}`
-                                );
+                                const userResponse = await axios.get(`${this.API_ENDPOINT}/api/${userID}`);
                                 userMap[userID] = userResponse.data.username;
                             } catch (error) {
                                 console.error(`Error fetching user data for ${userID}:`, error);
@@ -453,7 +446,7 @@
                             }
                         }));
                         
-                        // Attach usernames to comments
+                        // Map usernames to comments
                         this.comments = commentsResponse.data.map(comment => ({
                             ...comment,
                             username: userMap[comment.userID] || 'Unknown User',
@@ -466,10 +459,14 @@
                             const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
                             return dateB - dateA;
                         });
+
                     } catch (error) {
-                        console.error('Error fetching comments:', error);
-                        if (error.response?.status === 404) {
-                            this.comments = [];
+                        // Handle 404 specifically, which means "No comments found for this post."
+                        if (error.response && error.response.status === 404) {
+                            this.comments = []; // No comments, but no error to display
+                        } else {
+                            console.error('Error fetching comments:', error);
+                            this.error = 'Failed to load comments';
                         }
                     } finally {
                         this.isLoading = false;
@@ -481,7 +478,7 @@
 
                     const currentTime = Date.now();
                     if (currentTime - this.lastApiCallTime < 1000) {
-                        return; // Rate limiting to prevent rapid submissions
+                        return;
                     }
                     this.lastApiCallTime = currentTime;
                     this.disabledActions.comment = true;
@@ -495,29 +492,28 @@
                             }
                         );
 
-                        // Add the new comment to the local list immediately
+                        // Add the new comment to the list
                         const newComment = {
                             id: response.data.id,
                             userID: window.currentUser.id,
                             text: this.newComment,
                             username: window.currentUser.username,
-                            createdAt: new Date().toISOString(),
+                            createdAt: response.data.createdAt,
                             timeAgo: 'Just now'
                         };
 
                         this.comments.unshift(newComment);
-                        this.newComment = ''; // Clear the comment input field
-
-                        // Update comment count if this is being tracked in the parent activity
+                        this.newComment = '';
+                        
+                        // Update the comment count in the parent activity
                         if (this.activity.commentsList) {
                             this.activity.commentsList.unshift(newComment);
                         } else {
                             this.activity.commentsList = [newComment];
                         }
-
                     } catch (error) {
-                        console.error('Error submitting comment:', error);
-                        alert('Failed to submit comment. Please try again.');
+                        console.error('Error posting comment:', error);
+                        alert('Failed to post comment. Please try again.');
                     } finally {
                         this.disabledActions.comment = false;
                     }
@@ -526,21 +522,18 @@
                 toggleShowAllComments() {
                     this.showAllComments = !this.showAllComments;
                 },
+
                 useRoute() {
                     window.location.href = `addMaps.html?id=${this.activity.id}`;
                 },
                 handleShare() {
-                    // Update API and redirect
-                    const shareUrl = `homepage.html?id=${this.activity.id}`;
-                    this.$emit('share', this.activity); // Emit share event to parent
-                    window.location.href = shareUrl;
+                    window.location.href = `homepage.html?id=${this.activity.id}`;
                 },
-
             
             },
 
             template: `
-                <div class="modal fade" tabindex="-1">
+                <div class="modal fade" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <!-- Modal Header -->
@@ -623,7 +616,7 @@
                                     
                                     <!-- Display comments if they exist -->
                                     <div v-if="comments && comments.length > 0">
-                                        <div v-for="comment in displayedComments" :key="comment.id" class="mb-3">
+                                        <div v-for="(comment, index) in sortCommentsByDate(comments)" :key="index" class="mb-3">
                                             <div class="comment-bubble">
                                                 <strong>{{ comment.username }}</strong>
                                                 <p>{{ comment.text }}</p>
@@ -696,7 +689,7 @@
                             id: 2, 
                             icon: 'bi bi-trophy', 
                             text: 'Leaderboard', 
-                            route: 'leaderboard.html' 
+                            route: 'routes.html' 
                         }
                     ],
                     trendingRoutes: [],
@@ -745,15 +738,9 @@
                 async fetchSinglePost(postId) {
                     this.isLoading = true;
                     try {
-                        // Fetch the specific shared post
+                        // Fetch the specific post
                         const response = await axios.get(`${this.API_ENDPOINT}/api/posts/?id=${postId}`);
                         const post = response.data;
-                        
-                        if (!post) {
-                            console.error('No post data received');
-                            this.activities = [];
-                            return;
-                        }
 
                         // Fetch comments for the post
                         let commentsList = [];
@@ -775,46 +762,35 @@
                             console.error('Error updating share count:', error);
                         }
 
-                        // Process the shared post
+                        // Process the post
                         const processedPost = {
                             id: post.postID,
-                            title: post.title,
                             user: post.username || 'Unknown User',
                             userImg: post.profilePicture || this.userProfile.avatar,
                             date: this.calculateTimeSince(post.createdAt),
                             location: post.waypoints[0].address,
+                            title: this.generateRunTitle(post.createdAt),
+                            routeTitle: post.title,
                             description: post.description,
                             distance: `${post.distance} km`,
-                            time: post.time || '',
                             mapImg: post.image,
                             likes: post.likeCount,
                             shares: post.shareCount,
                             commentsList: commentsList,
                             isLiked: this.currentUser.postsLiked?.includes(post.postID) || false
                         };
-                        
+
                         // Set as only activity
                         this.activities = [processedPost];
 
-                        // Fetch trending routes separately
-                        const allPostsResponse = await axios.get(`${this.API_ENDPOINT}/api/allposts/user/${this.currentUser.id}`);
-                        const allPosts = allPostsResponse.data;
-
-                        this.trendingRoutes = allPosts
-                            .sort((a, b) => {
-                                // Primary sort by likes
-                                const likesDiff = (b.likeCount || 0) - (a.likeCount || 0);
-                                // If likes are equal, use shares as secondary sort
-                                return likesDiff !== 0 ? likesDiff : (b.shareCount || 0) - (a.shareCount || 0);
-                            })
-                            .slice(0, 2)
-                            .map(post => ({
-                                id: post.postID,
-                                title: post.title,
-                                distance: `${post.distance} km`,
-                                saves: `${post.likeCount || 0} likes`,  // Changed from shareCount to likeCount
-                                image: post.image
-                            }));
+                        // Set as trending route
+                        this.trendingRoutes = [{
+                            id: post.postID,
+                            title: post.title,
+                            distance: `${post.distance} km`,
+                            saves: `${post.shareCount || 0} saves`,
+                            image: post.image
+                        }];
 
                     } catch (error) {
                         console.error('Error fetching single post:', error);
@@ -825,10 +801,12 @@
                     }
                 },
 
-                async handleActivityShare(activity) {
+                async handleShare(activity) {
                     try {
-                        await axios.put(`${this.API_ENDPOINT}/api/posts/share?id=${activity.id}`);
-                        activity.shares = (activity.shares || 0) + 1;
+                        const response = await axios.put(`${this.API_ENDPOINT}/api/posts/share?id=${activity.id}`);
+                        if (response.status === 200) {
+                            activity.shares = (activity.shares || 0) + 1;
+                        }
                     } catch (error) {
                         console.error('Error updating share count:', error);
                     }
@@ -935,18 +913,13 @@
 
                         // Set trending routes
                         this.trendingRoutes = allPosts
-                            .sort((a, b) => {
-                                // Primary sort by likes
-                                const likesDiff = (b.likeCount || 0) - (a.likeCount || 0);
-                                // If likes are equal, use shares as secondary sort
-                                return likesDiff !== 0 ? likesDiff : (b.shareCount || 0) - (a.shareCount || 0);
-                            })
+                            .sort((a, b) => b.likeCount - a.likeCount)
                             .slice(0, 2)
                             .map(post => ({
                                 id: post.postID,
                                 title: post.title,
                                 distance: `${post.distance} km`,
-                                saves: `${post.likeCount || 0} likes`,  
+                                saves: `${post.shareCount || 0} shares this week`,
                                 image: post.image
                             }));
 
@@ -1043,7 +1016,21 @@
                             activity.isLiked = !activity.isLiked;
                         }
                     }
-                }
+                },
+
+                viewRoute(route) {
+                    // Find the activity in `activities` that matches the route ID
+                    const matchedActivity = this.activities.find(activity => activity.id === route.id);
+
+                    if (matchedActivity) {
+                        // Open the activity modal with the matched activity data
+                        this.openActivityModal(matchedActivity);
+                    } else {
+                        // Optional: fallback if no match found
+                        console.warn(`No matching activity found for route ID: ${route.id}`);
+                        alert('Activity details are currently unavailable.');
+                    }
+                },
             }
         });
     </script>
