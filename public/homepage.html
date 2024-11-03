@@ -264,7 +264,6 @@
                         </div>
                         <div>
                             <h6 class="mb-0 fw-bold">{{ activity.time }}</h6>
-                            <small class="text-muted">Time</small>
                         </div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
@@ -284,12 +283,12 @@
                             </div>
                             <div class="me-3">
                                 <small class="text-muted">
-                                    <i class="bi bi-share"></i> {{ activity.shares || 0 }}
+                                    <i class="bi bi-chat"></i> {{ commentCount }}
                                 </small>
                             </div>
                             <div>
                                 <small class="text-muted">
-                                    <i class="bi bi-chat"></i> {{ commentCount }}
+                                    <i class="bi bi-share"></i> {{ activity.shares || 0 }}
                                 </small>
                             </div>
                         </div>
@@ -386,85 +385,47 @@
                     this.$emit('like', this.activity);
                 },
 
-                calculateTimeSince(timestamp) {
-                    if (!timestamp) return 'Just now';
-
-                    let date;
-                    if (timestamp._seconds) {
-                        date = new Date(timestamp._seconds * 1000);
-                    } else if (typeof timestamp === 'string' || timestamp instanceof Date) {
-                        date = new Date(timestamp);
-                    } else {
-                        return 'Just now';
-                    }
-
-                    const now = new Date();
-                    const diffInSeconds = Math.floor((now - date) / 1000);
-                    const intervals = [
-                        { label: 'year', seconds: 31536000 },
-                        { label: 'month', seconds: 2592000 },
-                        { label: 'day', seconds: 86400 },
-                        { label: 'hour', seconds: 3600 },
-                        { label: 'minute', seconds: 60 },
-                        { label: 'second', seconds: 1 }
-                    ];
-
-                    for (const interval of intervals) {
-                        const count = Math.floor(diffInSeconds / interval.seconds);
-                        if (count >= 1) {
-                            return count === 1 
-                                ? `1 ${interval.label} ago` 
-                                : `${count} ${interval.label}s ago`;
-                        }
-                    }
-                    return 'Just now';
-                },
-
                 async fetchComments() {
                     this.isLoading = true;
+                    this.error = null; // Reset error message
+
                     try {
                         // Fetch comments
                         const commentsResponse = await axios.get(
-                            `https://app-907670644284.us-central1.run.app/api/posts/${this.activity.id}/comments`
+                            `${this.API_ENDPOINT}/api/posts/${this.activity.id}/comments`
                         );
-                        
-                        // Get unique userIDs from comments
+
+                        // Extract unique user IDs from comments
                         const userIDs = [...new Set(commentsResponse.data.map(comment => comment.userID))];
-                        
-                        // Create a map to store usernames
                         const userMap = {};
-                        
-                        // Fetch user data for each unique userID
+
+                        // Fetch usernames for each unique userID
                         await Promise.all(userIDs.map(async (userID) => {
                             try {
-                                const userResponse = await axios.get(
-                                    `https://app-907670644284.us-central1.run.app/api/${userID}`
-                                );
+                                const userResponse = await axios.get(`${this.API_ENDPOINT}/api/${userID}`);
                                 userMap[userID] = userResponse.data.username;
                             } catch (error) {
                                 console.error(`Error fetching user data for ${userID}:`, error);
                                 userMap[userID] = 'Unknown User';
                             }
                         }));
-                        
-                        // Attach usernames to comments
+
+                        // Map usernames and format comments
                         this.comments = commentsResponse.data.map(comment => ({
                             ...comment,
                             username: userMap[comment.userID] || 'Unknown User',
                             timeAgo: this.calculateTimeSince(comment.createdAt)
                         }));
-                        
+
                         // Sort comments by date (newest first)
-                        this.comments.sort((a, b) => {
-                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
-                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
-                            return dateB - dateA;
-                        });
+                        this.comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
                     } catch (error) {
-                        console.error('Error fetching comments:', error);
-                        this.error = 'Failed to load comments';
-                        if (error.response?.status === 404) {
-                            this.comments = [];
+                        if (error.response && error.response.status === 404) {
+                            this.comments = []; // Handle case where no comments exist
+                        } else {
+                            console.error('Error fetching comments:', error);
+                            this.error = 'Failed to load comments';
                         }
                     } finally {
                         this.isLoading = false;
@@ -476,42 +437,43 @@
 
                     const currentTime = Date.now();
                     if (currentTime - this.lastApiCallTime < 1000) {
-                        return;
+                        return; // Rate limiting to prevent rapid submissions
                     }
                     this.lastApiCallTime = currentTime;
                     this.disabledActions.comment = true;
 
                     try {
                         const response = await axios.post(
-                            `https://app-907670644284.us-central1.run.app/api/posts/${this.activity.id}/comments`,
+                            `${this.API_ENDPOINT}/api/posts/${this.activity.id}/comments`,
                             {
-                                userID: window.currentUser.id,
+                                userID: this.currentUser.id,
                                 text: this.newComment
                             }
                         );
 
-                        // Add the new comment to the list
+                        // Add the new comment to the local list immediately
                         const newComment = {
                             id: response.data.id,
-                            userID: window.currentUser.id,
+                            userID: this.currentUser.id,
                             text: this.newComment,
-                            username: window.currentUser.username,
-                            createdAt: response.data.createdAt,
+                            username: this.currentUser.username,
+                            createdAt: new Date().toISOString(),
                             timeAgo: 'Just now'
                         };
 
                         this.comments.unshift(newComment);
-                        this.newComment = '';
-                        
-                        // Update the comment count in the parent activity
+                        this.newComment = ''; // Clear the comment input field
+
+                        // Update comment count if this is being tracked in the parent activity
                         if (this.activity.commentsList) {
                             this.activity.commentsList.unshift(newComment);
                         } else {
                             this.activity.commentsList = [newComment];
                         }
+
                     } catch (error) {
-                        console.error('Error posting comment:', error);
-                        alert('Failed to post comment. Please try again.');
+                        console.error('Error submitting comment:', error);
+                        alert('Failed to submit comment. Please try again.');
                     } finally {
                         this.disabledActions.comment = false;
                     }
@@ -553,13 +515,12 @@
                                 <p class="text-muted">Posted {{ activity.date }}</p>
                                 <p class="text-muted">
                                     {{ activity.likes || 0 }} Likes | 
-                                    {{ activity.shares || 0 }} Shares | 
-                                    {{ comments.length }} Comments
+                                    {{ comments.length }} Comments |
+                                    {{ activity.shares || 0 }} Shares
                                 </p>                                
                                 <!-- Stats Row -->
                                 <div class="d-flex mb-3">
                                     <p class="me-4"><strong>Distance:</strong> {{ activity.distance }}</p>
-                                    <p><strong>Time:</strong> {{ activity.time }}</p>
                                 </div>
                                 
                                 <p>{{ activity.description }}</p>
@@ -612,44 +573,23 @@
 
                                     <h6>Comments ({{ comments.length }})</h6>
 
-                                    <!-- Loading State -->
-                                    <div v-if="isLoading" class="text-center my-3">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Loading comments...</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Error State -->
-                                    <div v-else-if="error" class="alert alert-danger" role="alert">
-                                        {{ error }}
-                                    </div>
-
-                                    <!-- Comments List -->
-                                    <div v-else>
-                                        <div v-if="comments.length === 0" class="text-center text-muted my-3">
-                                            No comments yet. Be the first to comment!
-                                        </div>
-                                        
-                                        <div v-else class="comments-list">
-                                            <div v-for="comment in displayedComments" 
-                                                :key="comment.id" 
-                                                class="mb-3">
-                                                <div class="comment-bubble">
-                                                    <strong>{{ comment.username }}</strong>
-                                                    <p>{{ comment.text }}</p>
-                                                </div>
-                                                <div class="comment-time text-muted">
-                                                    {{ comment.timeAgo }}
-                                                </div>
+                                    
+                                    <!-- Display comments if they exist -->
+                                    <div v-if="comments && comments.length > 0">
+                                        <div v-for="(comment, index) in sortCommentsByDate(comments)" :key="index" class="mb-3">
+                                            <div class="comment-bubble">
+                                                <strong>{{ comment.username }}</strong>
+                                                <p>{{ comment.text }}</p>
                                             </div>
-
-                                            <!-- Load More Comments Button -->
-                                            <button v-if="hasMoreComments"
-                                                    @click="toggleShowAllComments"
-                                                    class="btn btn-link p-0">
-                                                {{ showAllComments ? 'Show Less Comments' : 'Load More Comments' }}
-                                            </button>
+                                            <div class="comment-time text-muted">
+                                                {{ calculateTimeSince(comment.createdAt) }}
+                                            </div>
                                         </div>
+                                    </div>
+                                    
+                                    <!-- Display prompt if no comments -->
+                                    <div v-else>
+                                        <p>No comments yet. Be the first to comment!</p>
                                     </div>
                                 </div>
                             </div>
@@ -707,14 +647,8 @@
                         },
                         { 
                             id: 2, 
-                            icon: 'bi bi-map', 
-                            text: 'Saved Routes', 
-                            route: 'saved-routes' 
-                        },
-                        { 
-                            id: 3, 
                             icon: 'bi bi-trophy', 
-                            text: 'Challenges', 
+                            text: 'Leaderboard', 
                             route: 'challenges' 
                         }
                     ],
@@ -722,8 +656,8 @@
                     activities: [],
                     commentUserData: {}, // Cache user data for comments
                     isLoading: true,
-                    postID: null //share url param
-
+                    postID: null, //share url param
+                    error: null // For handling errors in loading comments
                 }
             },
             created() {
@@ -765,7 +699,7 @@
                     this.isLoading = true;
                     try {
                         // Fetch the specific post
-                        const response = await axios.get(`${this.API_ENDPOINT}/api/posts/${postId}`);
+                        const response = await axios.get(`${this.API_ENDPOINT}/api/posts/?id=${postId}`);
                         const post = response.data;
 
                         // Fetch comments for the post
@@ -799,7 +733,6 @@
                             routeTitle: post.title,
                             description: post.description,
                             distance: `${post.distance} km`,
-                            time: this.generatePlaceholderTime(),
                             mapImg: post.image,
                             likes: post.likeCount,
                             shares: post.shareCount,
@@ -916,11 +849,10 @@
                                     userImg: post.profilePicture || this.userProfile.avatar,
                                     date: this.calculateTimeSince(post.createdAt), 
                                     location: post.waypoints[0].address,
-                                    title: this.generateRunTitle(post.createdAt),
+                                    title: post.title,
                                     routeTitle: post.title,
                                     description: post.description,
                                     distance: `${post.distance} km`,
-                                    time: this.generatePlaceholderTime(),
                                     mapImg: post.image,
                                     likes: post.likeCount,
                                     commentsList: commentsList,
@@ -972,24 +904,6 @@
                         hour: '2-digit',
                         minute: '2-digit'
                     }).replace('at', 'at');
-                },
-
-                generateRunTitle(dateString) {
-                    const date = new Date(dateString);
-                    const hour = date.getHours();
-                    let timeOfDay;
-                    
-                    if (hour < 12) timeOfDay = "Morning";
-                    else if (hour < 17) timeOfDay = "Afternoon";
-                    else if (hour < 20) timeOfDay = "Evening";
-                    else timeOfDay = "Night";
-                    
-                    return `${timeOfDay} Run`;
-                },
-
-                // maybe dunnit
-                generatePlaceholderTime() {
-                    return "30m 00s";
                 },
 
                 openActivityModal(activity) {
