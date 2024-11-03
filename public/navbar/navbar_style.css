@@ -64,6 +64,10 @@
     transition: width 0.3s ease;
 }
 
+.nav-item.dropdown .nav-link.active.profile-link::before {
+    display: none;
+}
+
 .nav-item:not(.dropdown) .nav-link:hover::before {
     width: 100%;
 }

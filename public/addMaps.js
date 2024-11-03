@@ -984,6 +984,9 @@ app.component('nav-bar', {
         },
         isProfileRelatedPage() {
             return ['profile_page.html', 'settings_page.html'].includes(this.currentPage);
+        },
+        isLeaderboardsPage() {
+            return this.currentPage === 'leaderboard.html';
         }
     },
 
@@ -1036,6 +1039,11 @@ app.component('nav-bar', {
                             <a class="nav-link" 
                                :class="{ 'active': isCurrentPage('addMaps.html') }"
                                href="addMaps.html">Draw</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               :class="{ 'active': isCurrentPage('leaderboard.html') }"
+                               href="leaderboard.html">Leaderboard</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center profile-link"
