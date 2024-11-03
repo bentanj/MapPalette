@@ -107,7 +107,7 @@
                                 <div class="list-group list-group-flush">
                                     <a v-for="item in menuItems" 
                                     :key="item.id" 
-                                    href="#" 
+                                    :href="item.route" 
                                     class="list-group-item list-group-item-action d-flex align-items-center">
                                         <i :class="item.icon + ' me-3'"></i>
                                         {{ item.text }}
@@ -193,7 +193,7 @@
                 return this.activity.isLiked || false;
             },
             isOwnPost() {  
-                return this.currentUser === this.activity.user;
+                return window.currentUser && this.activity.user === window.currentUser.username;
             },
             commentCount() {
                 return this.activity.commentsList ? this.activity.commentsList.length : 0;
@@ -238,7 +238,7 @@
                                 </ul>
                             </div>
                         </div>
-                        <p>{{ activity.user }}</p>
+                        <p>by {{ activity.user }}</p>
                     </div>
                     <div class="meta">
                         <time class="published">{{ activity.date }}</time>
@@ -349,7 +349,8 @@
                     lastApiCallTime: 0,
                     comments: [],
                     isLoading: false,
-                    error: null
+                    error: null,
+                    API_ENDPOINT: 'https://app-907670644284.us-central1.run.app'
                 }
             },
 
@@ -385,9 +386,42 @@
                     this.$emit('like', this.activity);
                 },
 
+                calculateTimeSince(timestamp) {
+                    if (!timestamp) return 'Just now';
+
+                    let date;
+                    if (timestamp._seconds) {
+                        date = new Date(timestamp._seconds * 1000);
+                    } else if (typeof timestamp === 'string' || timestamp instanceof Date) {
+                        date = new Date(timestamp);
+                    } else {
+                        return 'Just now';
+                    }
+
+                    const now = new Date();
+                    const diffInSeconds = Math.floor((now - date) / 1000);
+                    const intervals = [
+                        { label: 'year', seconds: 31536000 },
+                        { label: 'month', seconds: 2592000 },
+                        { label: 'day', seconds: 86400 },
+                        { label: 'hour', seconds: 3600 },
+                        { label: 'minute', seconds: 60 },
+                        { label: 'second', seconds: 1 }
+                    ];
+
+                    for (const interval of intervals) {
+                        const count = Math.floor(diffInSeconds / interval.seconds);
+                        if (count >= 1) {
+                            return count === 1 
+                                ? `1 ${interval.label} ago` 
+                                : `${count} ${interval.label}s ago`;
+                        }
+                    }
+                    return 'Just now';
+                },
+
                 async fetchComments() {
                     this.isLoading = true;
-                    this.error = null; // Reset error message
 
                     try {
                         // Fetch comments
@@ -395,37 +429,42 @@
                             `${this.API_ENDPOINT}/api/posts/${this.activity.id}/comments`
                         );
 
-                        // Extract unique user IDs from comments
+                        // Get unique userIDs from comments
                         const userIDs = [...new Set(commentsResponse.data.map(comment => comment.userID))];
+                        
+                        // Create a map to store usernames
                         const userMap = {};
-
-                        // Fetch usernames for each unique userID
+                        
+                        // Fetch user data for each unique userID
                         await Promise.all(userIDs.map(async (userID) => {
                             try {
-                                const userResponse = await axios.get(`${this.API_ENDPOINT}/api/${userID}`);
+                                const userResponse = await axios.get(
+                                    `${this.API_ENDPOINT}/api/${userID}`
+                                );
                                 userMap[userID] = userResponse.data.username;
                             } catch (error) {
                                 console.error(`Error fetching user data for ${userID}:`, error);
                                 userMap[userID] = 'Unknown User';
                             }
                         }));
-
-                        // Map usernames and format comments
+                        
+                        // Attach usernames to comments
                         this.comments = commentsResponse.data.map(comment => ({
                             ...comment,
                             username: userMap[comment.userID] || 'Unknown User',
                             timeAgo: this.calculateTimeSince(comment.createdAt)
                         }));
-
+                        
                         // Sort comments by date (newest first)
-                        this.comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
+                        this.comments.sort((a, b) => {
+                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
+                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
+                            return dateB - dateA;
+                        });
                     } catch (error) {
-                        if (error.response && error.response.status === 404) {
-                            this.comments = []; // Handle case where no comments exist
-                        } else {
-                            console.error('Error fetching comments:', error);
-                            this.error = 'Failed to load comments';
+                        console.error('Error fetching comments:', error);
+                        if (error.response?.status === 404) {
+                            this.comments = [];
                         }
                     } finally {
                         this.isLoading = false;
@@ -446,7 +485,7 @@
                         const response = await axios.post(
                             `${this.API_ENDPOINT}/api/posts/${this.activity.id}/comments`,
                             {
-                                userID: this.currentUser.id,
+                                userID: window.currentUser.id,
                                 text: this.newComment
                             }
                         );
@@ -454,9 +493,9 @@
                         // Add the new comment to the local list immediately
                         const newComment = {
                             id: response.data.id,
-                            userID: this.currentUser.id,
+                            userID: window.currentUser.id,
                             text: this.newComment,
-                            username: this.currentUser.username,
+                            username: window.currentUser.username,
                             createdAt: new Date().toISOString(),
                             timeAgo: 'Just now'
                         };
@@ -482,7 +521,6 @@
                 toggleShowAllComments() {
                     this.showAllComments = !this.showAllComments;
                 },
-
                 useRoute() {
                     window.location.href = `addMaps.html?id=${this.activity.id}`;
                 },
@@ -493,7 +531,7 @@
             },
 
             template: `
-                <div class="modal fade" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal fade" tabindex="-1">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <!-- Modal Header -->
@@ -576,7 +614,7 @@
                                     
                                     <!-- Display comments if they exist -->
                                     <div v-if="comments && comments.length > 0">
-                                        <div v-for="(comment, index) in sortCommentsByDate(comments)" :key="index" class="mb-3">
+                                        <div v-for="comment in displayedComments" :key="comment.id" class="mb-3">
                                             <div class="comment-bubble">
                                                 <strong>{{ comment.username }}</strong>
                                                 <p>{{ comment.text }}</p>
@@ -643,13 +681,13 @@
                             id: 1, 
                             icon: 'bi bi-activity', 
                             text: 'My Activities', 
-                            route: 'activities' 
+                            route: 'profile_page.html' 
                         },
                         { 
                             id: 2, 
                             icon: 'bi bi-trophy', 
                             text: 'Leaderboard', 
-                            route: 'challenges' 
+                            route: 'leaderboard.html' 
                         }
                     ],
                     trendingRoutes: [],
@@ -729,7 +767,6 @@
                             userImg: post.profilePicture || this.userProfile.avatar,
                             date: this.calculateTimeSince(post.createdAt),
                             location: post.waypoints[0].address,
-                            title: this.generateRunTitle(post.createdAt),
                             routeTitle: post.title,
                             description: post.description,
                             distance: `${post.distance} km`,

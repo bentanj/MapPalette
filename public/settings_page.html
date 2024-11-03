@@ -8,6 +8,8 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- other css -->
     <link rel="stylesheet" href="homepage_style.css">
     <link rel="stylesheet" href="settings_style.css">
     
@@ -22,6 +24,7 @@
 
     <!-- axios -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
 </head>
 <body>
     <div id="app">
@@ -158,10 +161,8 @@
     </div>
 
     <!-- Vue App -->
-    <script type="module">
-        import { auth, storage, ref, uploadBytes, getDownloadURL, onAuthStateChanged } from './firebase.js';
-        import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
-    
+    <script>
+        const { createApp } = Vue;
         
         const app = createApp({
             data() {
@@ -192,7 +193,22 @@
                     },
                     showAlert: false
                 }
-            },
+            }
+        });
+    </script>
+    
+    <!-- import navbar from navbar.js -->
+    <script src="navbar/navbar.js"></script>
+    
+    <!-- import footer from footer.js -->
+    <script src="footer/footer.js"></script>
+    
+    <!-- Firebase functionality -->
+    <script type="module">
+        import { auth, storage, ref, uploadBytes, getDownloadURL, onAuthStateChanged } from './firebase.js';
+    
+        // Create the Vue app with all functionality
+        app.mixin({
             created() {
                 if (window.currentUser) {
                     this.initUserData();
@@ -204,6 +220,7 @@
                 switchTab(tabId) {
                     this.currentTab = tabId;
                 },
+                
                 updateUsername() {
                     const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
                     axios.put(`${API_ENDPOINT}/api/update/user/username/${this.currentUserId}`, {
@@ -217,6 +234,7 @@
                         alert('An error occurred while updating username.');
                     });
                 },
+    
                 async handleImageUpload(event) {
                     const file = event.target.files[0];
                     if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
@@ -237,6 +255,7 @@
                         alert('Please select a valid image file (JPEG/PNG).');
                     }
                 },
+    
                 async removeProfilePicture() {
                     this.userProfile.avatar = 'resources/default-avatar.png';
                     const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
@@ -250,6 +269,7 @@
                         alert('An error occurred while removing the profile picture.');
                     }
                 },
+    
                 savePrivacySettings() {
                     const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
                     axios.put(`${API_ENDPOINT}/api/users/${this.currentUserId}/privacy`, {
@@ -267,6 +287,7 @@
                         alert('An error occurred while saving privacy settings.');
                     });
                 },
+    
                 initUserData() {
                     if (window.currentUser) {
                         this.currentUserId = window.currentUser.id;
@@ -279,32 +300,25 @@
                         window.removeEventListener("userLoaded", this.initUserData);
                     }
                 },
+    
                 async updateUserProfilePicture(imageUrl) {
                     const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
                     try {
-                        await axios.put(`${API_ENDPOINT}/api/update/user/profilePicture/${this.currentUserId}`, { profilePicture: imageUrl });
+                        await axios.put(`${API_ENDPOINT}/api/update/user/profilePicture/${this.currentUserId}`, { 
+                            profilePicture: imageUrl 
+                        });
                         this.userProfile.avatar = imageUrl;
                         alert('Profile picture URL updated successfully!');
                     } catch (error) {
                         console.error('Error updating Firestore with new image URL:', error);
                     }
-                },
+                }
             }
         });
     
+        // Mount the app
         app.mount('#app');
     </script>
-    
-
-<!-- import navbar from navbar.js -->
-<script src="navbar/navbar.js"></script>
-
-<!-- import footer from footer.js -->
-<script src="footer/footer.js"></script>
-
-<script>
-    app.mount('#app')
-</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
