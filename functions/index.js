@@ -258,7 +258,7 @@ app.get('/api/allposts', async (req, res) => {
   }
 });
 
-// Retrieve all posts made by users that the current user follows without an index
+// Retrieve all posts made by users that the current user follows, including the user's own posts
 app.get('/api/allposts/user/:userID', async (req, res) => {
   const { userID } = req.params;
 
@@ -269,50 +269,36 @@ app.get('/api/allposts/user/:userID', async (req, res) => {
   try {
     // Step 1: Retrieve the list of user IDs that `userID` is following
     const followingSnap = await db.collection('users').doc(userID).collection('following').get();
-    if (followingSnap.empty) {
-      console.log(`User ${userID} follows no users.`);
-      return res.status(404).json({ message: 'No followed users found for this user.' });
-    }
-
     const followedUserIDs = followingSnap.docs.map(doc => doc.id);
-    console.log('Followed User IDs:', followedUserIDs);
 
-    // Step 2: Retrieve all posts (without filtering in Firestore) and filter manually
-    const allPostsSnap = await db.collection('posts').get();
+    // Include the current user's own posts by adding their ID to the followedUserIDs array
+    followedUserIDs.push(userID);
 
-    if (allPostsSnap.empty) {
-      return res.status(404).json({ message: 'No posts found.' });
+    // Step 2: Retrieve all posts from the main "posts" collection where userID matches any of the followedUserIDs
+    const postsSnap = await db.collection('posts').where('userID', 'in', followedUserIDs).get();
+
+    if (postsSnap.empty) {
+      return res.status(404).json({ message: 'No posts found for this user or their followed users.' });
     }
 
-    // Filter posts by the followed users
-    const filteredPosts = [];
-    allPostsSnap.forEach(doc => {
-      const postData = doc.data();
-      if (followedUserIDs.includes(postData.userID)) {
-        filteredPosts.push({
-          ...postData,
-          id: doc.id
-        });
-      }
-    });
-
-    // Sort the filtered posts by `createdAt` in descending order
-    filteredPosts.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
-
-    // Fetch additional user details for each post
+    // Step 3: Map through each post document, fetch user data, and return post data with additional user info
     const postsWithUserData = await Promise.all(
-      filteredPosts.map(async (post) => {
-        const userRef = db.collection('users').doc(post.userID);
+      postsSnap.docs.map(async (doc) => {
+        const postData = { id: doc.id, ...doc.data() };
+        const userRef = db.collection('users').doc(postData.userID);
         const userSnap = await userRef.get();
         const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
 
         return {
-          ...post,
+          ...postData,
           username: userData.username || 'Unknown User',
-          profilePicture: userData.profilePicture || 'default-profile-picture-url'
+          profilePicture: userData.profilePicture || 'default-profile-picture-url',
         };
       })
     );
+
+    // Sort the posts by `createdAt` in descending order
+    postsWithUserData.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
 
     console.log('Posts found:', postsWithUserData.length);
     return res.status(200).json(postsWithUserData);
@@ -321,6 +307,7 @@ app.get('/api/allposts/user/:userID', async (req, res) => {
     return res.status(500).json({ message: `Error fetching posts: ${error.message}` });
   }
 });
+
 
 // 
 // POST LIKING API
