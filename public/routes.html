@@ -185,126 +185,93 @@
             // Check every 100ms if window.currentUser is populated
             const userCheckInterval = setInterval(() => {
                 if (window.currentUser) {
-                    console.log(window.currentUser)
+                    console.log(window.currentUser);
                     loadingSpinner.style.display = 'none';
                     appContainer.style.display = 'block';
                     clearInterval(userCheckInterval); // Stop checking once loaded
+
+                    // Fetch all posts with userID once the currentUser is available
+                    this.fetchAllPosts(window.currentUser.id);
                 }
             }, 100);
         },
-
         created() {
-            axios.get('https://app-907670644284.us-central1.run.app/api/allposts')
-                .then(response => {
-                    this.routes = response.data.map(route => ({
-                        ...route,
-                        modalId: 'modal-' + route.postID,
-                        timeSince: this.calculateTimeSince(new Date(route.createdAt._seconds * 1000)),
-                        username: '', // Placeholder for route creator's username
-                        commentsList: [] // Initialize comments list
-                    }));
-
-                    // Extract unique user IDs from routes
-                    const userIDs = [...new Set(this.routes.map(route => route.userID))];
-
-                    // Fetch user data for each unique userID (route creators)
-                    const userPromises = userIDs.map(id =>
-                        axios.get(`https://app-907670644284.us-central1.run.app/api/${id}`)
-                            .then(userResponse => ({
-                                id,
-                                username: userResponse.data.username // Adjust property as needed
-                            }))
-                    );
-
-                    Promise.all(userPromises).then(users => {
-                        // Create a userMap for userID to username
-                        const userMap = {};
-                        users.forEach(user => {
-                            userMap[user.id] = user.username;
-                        });
-
-                        // Assign usernames to routes
-                        this.routes.forEach(route => {
-                            route.username = userMap[route.userID] || 'Unknown User';
-                        });
-
-                        // Now fetch comments for each route
-                        const commentPromises = this.routes.map(route =>
-                            axios.get(`https://app-907670644284.us-central1.run.app/api/posts/${route.postID}/comments`)
-                                .then(commentsResponse => {
-                                    route.commentsList = commentsResponse.data;
-                                })
-                                .catch(error => {
-                                    if (error.response && error.response.status === 404) {
-                                        // No comments found for this post
-                                        route.commentsList = [];
-                                    } else {
-                                        console.error(`Error fetching comments for post ${route.postID}:`, error);
-                                    }
-                                })
-                        );
-
-                        // Wait for all comments to be fetched
-                        Promise.all(commentPromises).then(() => {
-                            // Collect unique userIDs from comments that are not already in userMap
-                            const commentUserIDs = [];
-                            this.routes.forEach(route => {
-                                if (route.commentsList) {
-                                    route.commentsList.forEach(comment => {
-                                        if (!userMap[comment.userID]) {
-                                            commentUserIDs.push(comment.userID);
-                                        }
-                                    });
-                                }
-                            });
-
-                            // Remove duplicates
-                            const uniqueCommentUserIDs = [...new Set(commentUserIDs)];
-
-                            // Fetch usernames for comment userIDs
-                            const commenterUserPromises = uniqueCommentUserIDs.map(id =>
-                                axios.get(`https://app-907670644284.us-central1.run.app/api/${id}`)
-                                    .then(userResponse => {
-                                        userMap[id] = userResponse.data.username;
-                                    })
-                                    .catch(error => {
-                                        console.error(`Error fetching username for userID ${id}:`, error);
-                                        userMap[id] = 'Unknown User';
-                                    })
-                            );
-
-                            // Wait for all usernames to be fetched
-                            Promise.all(commenterUserPromises).then(() => {
-                                // Assign usernames to comments
-                                this.routes.forEach(route => {
-                                    if (route.commentsList) {
-                                        route.commentsList.forEach(comment => {
-                                            comment.username = userMap[comment.userID] || 'Unknown User';
-                                        });
-                                    }
-                                });
-
-                                // Now, we can proceed to apply filters and update UI
-                                this.applyFilters();
-                            });
-                        });
-                    }).catch(error => {
-                        console.error("Error fetching user data:", error);
-                    });
-                })
-                .catch(error => {
-                    console.error("Error fetching routes data:", error);
-                });
+            // Initial check if window.currentUser is already available
+            if (window.currentUser) {
+                this.fetchAllPosts(window.currentUser.id);
+            }
         },
-
-
-
         computed: {
             activeFilters() {
                 return this.filters.sortOption ? [{ key: 'Sort By', value: this.filters.sortOption }] : [];
             }
         },
         methods: {
+            // fetches all
+            fetchAllPosts(userID) {
+                axios.get(`https://app-907670644284.us-central1.run.app/api/allposts?userID=${userID}`)
+                    .then(response => {
+                        this.routes = response.data.map(route => ({
+                            ...route,
+                            modalId: 'modal-' + route.postID,
+                            timeSince: this.calculateTimeSince(new Date(route.createdAt._seconds * 1000)),
+                            username: route.username || 'Unknown User',
+                            commentsList: [] // Initialize comments list
+                        }));
+
+                        // Extract unique user IDs from routes
+                        const userIDs = [...new Set(this.routes.map(route => route.userID))];
+
+                        // Fetch user data for each unique userID (route creators)
+                        const userPromises = userIDs.map(id =>
+                            axios.get(`https://app-907670644284.us-central1.run.app/api/${id}`)
+                                .then(userResponse => ({
+                                    id,
+                                    username: userResponse.data.username // Adjust property as needed
+                                }))
+                        );
+
+                        Promise.all(userPromises).then(users => {
+                            // Create a userMap for userID to username
+                            const userMap = {};
+                            users.forEach(user => {
+                                userMap[user.id] = user.username;
+                            });
+
+                            // Assign usernames to routes
+                            this.routes.forEach(route => {
+                                route.username = userMap[route.userID] || 'Unknown User';
+                            });
+
+                            // Now fetch comments for each route
+                            const commentPromises = this.routes.map(route =>
+                                axios.get(`https://app-907670644284.us-central1.run.app/api/posts/${route.postID}/comments`)
+                                    .then(commentsResponse => {
+                                        route.commentsList = commentsResponse.data;
+                                    })
+                                    .catch(error => {
+                                        if (error.response && error.response.status === 404) {
+                                            // No comments found for this post
+                                            route.commentsList = [];
+                                        } else {
+                                            console.error(`Error fetching comments for post ${route.postID}:`, error);
+                                        }
+                                    })
+                            );
+
+                            // Wait for all comments to be fetched
+                            Promise.all(commentPromises).then(() => {
+                                // Apply filters and update UI
+                                this.applyFilters();
+                            });
+                        }).catch(error => {
+                            console.error("Error fetching user data:", error);
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Error fetching routes data:", error);
+                    });
+            },
             calculateTimeSince(dateString) {
                 const postDate = new Date(dateString);
                 const currentDate = new Date();
@@ -437,53 +404,41 @@
             };
         },
         mounted() {
-        if (window.currentUser) {
-            const currentUserID = window.currentUser.id;
+            if (window.currentUser) {
+                const currentUserID = window.currentUser.id;
 
-            // Fetch user's liked posts and populate `likedRoutes`
-            axios.get(`https://app-907670644284.us-central1.run.app/api/users/${currentUserID}/liked-posts`)
-                .then(response => {
-                    response.data.forEach(postID => {
-                        this.likedRoutes[postID] = true;
+                // Fetch user's liked posts and populate `likedRoutes`
+                axios.get(`https://app-907670644284.us-central1.run.app/api/users/${currentUserID}/likedPosts`)
+                    .then(response => {
+                        const likedPostIDs = response.data.likedPostIDs;
+                        likedPostIDs.forEach(postID => {
+                            this.likedRoutes[postID] = true; // Mark these posts as liked
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Error fetching liked posts:", error);
                     });
-                })
-                .catch(error => {
-                    console.error("Error fetching liked posts:", error);
-                });
-        }
-    },
+            }
+        },
         methods: {
             likeRoute(route) {
-                const currentUserID = window.currentUser?.id || 'defaultUserID'; // Replace with the actual way to get the current user ID.
+                const currentUserID = window.currentUser?.id || 'defaultUserID';
                 const isLiked = this.likedRoutes[route.postID];
 
-                // Set the appropriate endpoint based on the like/unlike status
                 const endpoint = isLiked
                     ? `https://app-907670644284.us-central1.run.app/api/posts/unlike?id=${route.postID}`
                     : `https://app-907670644284.us-central1.run.app/api/posts/like?id=${route.postID}`;
 
-                // Construct the request payload
-                const payload = {
-                    userID: currentUserID
-                };
-
-                // Make the PUT request with the correct syntax
-                axios.put(endpoint, payload)
+                axios.put(endpoint, { userID: currentUserID })
                     .then(response => {
                         console.log("Like/unlike updated successfully:", response.data);
 
-                        // Toggle the like status locally
+                        // Toggle like status and update like count
                         this.likedRoutes[route.postID] = !isLiked;
-                        route.likeCount += isLiked ? -1 : 1; // Update the like count accordingly
+                        route.likeCount += isLiked ? -1 : 1;
                     })
                     .catch(error => {
                         console.error("Error updating like/unlike:", error);
-
-                        // Log server response for better insights
-                        if (error.response) {
-                            console.error("Server response:", error.response.data);
-                        }
-
                         alert("Failed to update like/unlike. Please try again.");
                     });
             },
@@ -601,40 +556,35 @@
                     this.disabledActions[route.postID][actionType] = false;
                 }, 1000);
             },
-            // API call for "Use" button
-            useRoute(route) {
-                // Define the API endpoint and payload
-                const apiEndpoint = "https://api.example.com/use"; // Replace with your actual API endpoint
 
-                // Send POST request with route's ID
-                axios.post(apiEndpoint, { postID: route.postID })
-                    .then(response => {
-                        console.log("Route used:", response.data);
-                        // Optional: provide user feedback
-                    })
-                    .catch(error => {
-                        console.error("Error using route:", error);
-                        alert("Error using route.");
-                    });
-                this.disableAction(route, 'use')
+            // Method for "Use" button to redirect to `addMaps.html`
+            useRoute(route) {
+                // Construct the URL with the route's post ID
+                const mapId = route.postID;
+                window.location.href = `addMaps.html?id=${mapId}`;
             },
 
-            // API call for "Share" button
+            // Method for "Share" button to send a PUT request
             shareRoute(route) {
-                // Define the API endpoint and payload
-                const apiEndpoint = "https://api.example.com/share"; // Replace with your actual API endpoint
+                const currentUserID = window.currentUser?.id || 'defaultUserID';
+                if (!currentUserID) {
+                    alert('Please log in to share this route.');
+                    return;
+                }
 
-                // Send POST request with route's ID
-                axios.post(apiEndpoint, { postID: route.postID })
+                // Define the API endpoint for sharing the post
+                const apiEndpoint = `https://app-907670644284.us-central1.run.app/api/posts/share?id=${route.postID}`;
+
+                // Send PUT request to the endpoint
+                axios.put(apiEndpoint, { userID: currentUserID })
                     .then(response => {
-                        console.log("Route shared:", response.data);
+                        console.log("Route shared successfully:", response.data);
                         alert("Route shared successfully!");
                     })
                     .catch(error => {
                         console.error("Error sharing route:", error);
-                        alert("Failed to share route.");
+                        alert("Failed to share the route. Please try again.");
                     });
-                this.disableAction(route, 'share')
             },
             sortCommentsByDate(commentsList) {
                 return commentsList.sort((a, b) => {
@@ -642,10 +592,10 @@
                     const dateB = b.createdAt && b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
                     return dateB - dateA; // Newest first
                 });
-            },
+            }
         },
         template: `
-         <div v-for="route in routes" :key="route.postID">
+        <div v-for="route in routes" :key="route.postID">
             <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'" aria-hidden="true">
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
@@ -666,25 +616,27 @@
                             <p>{{ route.description }}</p>
 
                             <div class="d-flex justify-content-around border-top border-bottom py-3">
-                                <!-- Action Buttons (Like, Use, Share) -->
                                 <button 
                                     class="btn btn-link p-0 action-button" 
                                     @click="likeRoute(route)" 
                                     :class="{'text-primary': likedRoutes[route.postID]}">
-                                    <i class="far fa-thumbs-up me-1"></i>
-                                    <span>Like</span>
+                                    <i 
+                                        :class="likedRoutes[route.postID] ? 'fas fa-thumbs-up' : 'far fa-thumbs-up'" 
+                                        class="me-1">
+                                    </i>
+                                    <span>{{ likedRoutes[route.postID] ? 'Liked' : 'Like' }}</span>
                                 </button>
-                                <button class="btn btn-link p-0 action-button" @click="useRoute(route)">
-                                    <i class="fas fa-route me-1"></i>
-                                    <span>Use</span>
-                                </button>
-                                <button class="btn btn-link p-0 action-button" @click="shareRoute(route)">
-                                    <i class="far fa-share-square me-1"></i>
-                                    <span>Share</span>
-                                </button>
+<button class="btn btn-link p-0 action-button" @click="useRoute(route)">
+    <i class="fas fa-route me-1"></i>
+    <span>Use</span>
+</button>
+<button class="btn btn-link p-0 action-button" @click="shareRoute(route)">
+    <i class="far fa-share-square me-1"></i>
+    <span>Share</span>
+</button>
+
                             </div>
                             <br>
-
                             <!-- Comments Section -->
                             <div class="mb-3 mt-3">
                                 <textarea class="form-control mb-2" placeholder="Add a comment..." rows="2" v-model="newCommentText[route.postID]"></textarea>
@@ -693,7 +645,6 @@
                                     <span v-else><i class="fas fa-spinner fa-spin"></i> Posting...</span>
                                 </button>
                             </div>
-
                             <h6>Comments ({{ route.commentsList.length }})</h6>
                             <div v-if="route.commentsList && route.commentsList.length > 0">
                                 <div v-for="(comment, index) in sortCommentsByDate(route.commentsList)" :key="index" class="mb-3">
