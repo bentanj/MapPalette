@@ -8,8 +8,6 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <!-- existing CSS (included homepage for the nav bar css code) -->
     <link rel="stylesheet" href="homepage_style.css">
     <link rel="stylesheet" href="settings_style.css">
     
@@ -24,8 +22,6 @@
 
     <!-- axios -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
-
 </head>
 <body>
     <div id="app">
@@ -41,11 +37,11 @@
                             <h5 class="fw-bold mb-4">Settings</h5>
                             <div class="settings-nav">
                                 <a v-for="item in navItems" 
-                                :key="item.id"
-                                href="#"
-                                class="settings-nav-item mb-2 text-decoration-none"
-                                :class="{ 'active': currentTab === item.id }"
-                                @click.prevent="switchTab(item.id)">
+                                   :key="item.id"
+                                   href="#"
+                                   class="settings-nav-item mb-2 text-decoration-none"
+                                   :class="{ 'active': currentTab === item.id }"
+                                   @click.prevent="switchTab(item.id)">
                                     <div class="d-flex align-items-start w-100">
                                         <div class="me-3">
                                             <i :class="item.icon + ' fs-5'"></i>
@@ -53,9 +49,6 @@
                                         <div class="flex-grow-1">
                                             <div class="fw-medium">{{ item.label }}</div>
                                             <small class="text-muted">{{ item.description }}</small>
-                                        </div>
-                                        <div class="ms-2 d-flex align-items-center">
-                                            <i class="bi bi-chevron-right"></i>
                                         </div>
                                     </div>
                                 </a>
@@ -75,168 +68,44 @@
                                 <div class="text-center mb-4">
                                     <h6 class="fw-bold mb-0">Profile Picture</h6>
                                     <div class="profile-picture-container">
-                                        <img :src="userProfile.avatar" class="profile-picture" alt="Profile Picture">
-                                        <input 
-                                            type="file" 
-                                            ref="fileInput" 
-                                            @change="handleImageUpload" 
-                                            accept="image/*" 
-                                            style="display: none"
-                                        >
+                                        <!-- Profile picture preview container -->
+                                        <div id="file-preview-wrapper" style="display: flex; justify-content: center; margin-top: 20px;">
+                                            <div id="file-preview" class="profile-picture-preview" style="border-radius: 50%; width: 150px; height: 150px; border: 2px solid #ccc; overflow: hidden; position: relative;">
+                                                <img :src="userProfile.avatar || 'resources/default-avatar.png'" alt="Profile Picture" id="profile-pic-img" style="width: 100%; height: 100%; object-fit: cover; position: absolute;">
+                                            </div>
+                                        </div>
+                                
+                                        <!-- Hidden file input for image upload -->
+                                        <input type="file" ref="fileInput" @change="handleImageUpload" accept="image/*" style="display: none;">
+                                
+                                        <!-- Profile picture action buttons -->
                                         <div class="profile-picture-buttons mt-3">
                                             <button class="btn btn-primary me-2" @click="$refs.fileInput.click()">
                                                 <i class="bi bi-camera-fill me-1"></i>
                                                 Change Picture
                                             </button>
                                             <button v-if="userProfile.avatar !== 'resources/default-avatar.png'" 
-                                                    class="btn btn-outline-danger"
+                                                    class="btn btn-outline-danger" 
                                                     @click="removeProfilePicture">
                                                 <i class="bi bi-trash me-1"></i>
                                                 Remove
                                             </button>
                                         </div>
                                     </div>
-                                </div>
+                                </div>                                
 
-                                <!-- Profile Form -->
+                                <!-- Username Form -->
                                 <form class="profile-form">
                                     <div class="mb-3">
-                                        <label class="form-label">Name</label>
+                                        <label class="form-label">Username</label>
                                         <div class="input-group">
-                                            <input type="text" class="form-control" v-model="userProfile.name">
-                                            <button class="btn btn-outline-secondary" type="button">
+                                            <input type="text" class="form-control" v-model="userProfile.username">
+                                            <button class="btn btn-outline-secondary" type="button" @click="updateUsername">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
                                         </div>
-                                    </div>
-                                
-                                    <div class="mb-3">
-                                        <label class="form-label">Birthday</label>
-                                        <input type="date" class="form-control" v-model="userProfile.birthday">
-                                    </div>
-                                
-                                    <div class="mb-3">
-                                        <label class="form-label">Gender</label>
-                                        <select class="form-select" v-model="userProfile.gender">
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
-                                            <option value="Prefer not to say">Prefer not to say</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- to be added to api -->
-                                    <div class="mb-3">
-                                        <label class="form-label">Bio</label>
-                                        <div class="input-group">
-                                            <textarea 
-                                                class="form-control" 
-                                                v-model="userProfile.bio" 
-                                                rows="3" 
-                                                placeholder="🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time">
-                                            </textarea>
-                                            <button class="btn btn-outline-secondary" type="button" @click="updateBio">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                        </div>
-                                        <small class="text-muted">Share a little about yourself with the community</small>
                                     </div>
                                 </form>
-                            </div>
-                            <!-- Account Section -->
-                            <div v-if="currentTab === 'account'" class="settings-section">
-                                <h3 class="mb-4">My Account</h3>
-                                
-                                <!-- Email Section -->
-                                <div class="account-section mb-4">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h6 class="fw-bold mb-0">Email address</h6>
-                                    </div>
-                                    <div v-if="!showEmailChange" class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
-                                        <span class="text-muted">Your email address is <span class="fw-bold">{{ userProfile.email }}</span></span>
-                                        <button @click="showEmailChange = true" 
-                                                class="btn btn-link text-decoration-none">Change</button>
-                                    </div>
-                                    <!-- Email Change Form -->
-                                    <div v-if="showEmailChange" class="mt-3">
-                                        <form @submit.prevent="updateEmail" class="email-change-form bg-white">
-                                            <div class="mb-3">
-                                                <label class="form-label">New email address</label>
-                                                <input type="email" 
-                                                    class="form-control" 
-                                                    v-model="newEmail" 
-                                                    required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Current password</label>
-                                                <input type="password" 
-                                                    class="form-control" 
-                                                    v-model="currentPassword" 
-                                                    required>
-                                            </div>
-                                            <div class="d-flex gap-2">
-                                                <button type="submit" 
-                                                        class="btn btn-primary"
-                                                        :disabled="!newEmail || !currentPassword">
-                                                    Save changes
-                                                </button>
-                                                <button type="button" 
-                                                        class="btn btn-light"
-                                                        @click="cancelEmailChange">
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-
-                                <!-- Password section -->
-                                <div class="account-section mb-4">
-                                    <div class="d-flex justify-content-between align-items-center mb-4">
-                                        <h6 class="fw-bold mb-0">Password</h6>
-                                    </div>
-
-                                    <!-- Password Form -->
-                                    <div class="password-section bg-white p-4 rounded">
-                                        <div class="row g-4">
-                                            <div class="col-md-6">
-                                                <label class="form-label fw-medium">New password</label>
-                                                <div class="password-input-group">
-                                                    <input type="password" 
-                                                        class="form-control" 
-                                                        v-model="newPassword" 
-                                                        placeholder="Enter new password">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label fw-medium">Current password</label>
-                                                <div class="password-input-group">
-                                                    <input type="password" 
-                                                        class="form-control" 
-                                                        v-model="currentPassword" 
-                                                        placeholder="Enter current password">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex flex-column gap-3 mt-4">
-                                            <div>
-                                                <button @click="updatePassword" 
-                                                        class="btn btn-primary save-password-btn"
-                                                        :disabled="!newPassword || !currentPassword">
-                                                    Save password
-                                                </button>
-                                            </div>
-                                            
-                                            <div>
-                                                <a href="#" 
-                                                @click.prevent="resetPassword" 
-                                                class="text-primary text-decoration-none">
-                                                    Can't remember your current password? Reset your password
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
 
                             <!-- Privacy Section --> 
@@ -277,187 +146,155 @@
                                     Privacy settings saved successfully!
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
-                <div class="col-lg-1"></div>
+                    <div class="col-lg-1"></div>
+                </div>
             </div>
         </div>
-    </div>
         
         <!-- Footer Section -->
         <site-footer></site-footer>
     </div>
 
     <!-- Vue App -->
-    <script>
-    const { createApp } = Vue 
-
-    const app = createApp({
-        data() {
-            return {
-                currentTab: 'profile',
-                showEmailChange: false,    
-                newEmail: '',
-                newPassword: '',
-                currentPassword: '', 
-                users: [],
-                posts: [],
-                currentUserId: null,
-                userProfile: {
-                    name: '',
-                    username: '',
-                    avatar: '',
-                    birthday: '',
-                    gender: '',
-                    email: '',
-                    password: ''
+    <script type="module">
+        import { auth, storage, ref, uploadBytes, getDownloadURL, onAuthStateChanged } from './firebase.js';
+        import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+    
+        
+        const app = createApp({
+            data() {
+                return {
+                    currentTab: 'profile',
+                    currentUserId: null,
+                    userProfile: {
+                        username: '',
+                        avatar: 'resources/default-avatar.png',
+                    },
+                    navItems: [
+                        {
+                            id: 'profile',
+                            icon: 'bi bi-person',
+                            label: 'Profile Settings',
+                            description: 'Manage your personal information'
+                        },
+                        {
+                            id: 'privacy',
+                            icon: 'bi bi-eye',
+                            label: 'Privacy',
+                            description: 'Control your privacy settings'
+                        }
+                    ],
+                    privacySettings: {
+                        keepProfilePrivate: false,
+                        keepPostPrivate: false
+                    },
+                    showAlert: false
+                }
+            },
+            created() {
+                if (window.currentUser) {
+                    this.initUserData();
+                } else {
+                    window.addEventListener("userLoaded", this.initUserData);
+                }
+            },
+            methods: {
+                switchTab(tabId) {
+                    this.currentTab = tabId;
                 },
-                navItems: [
-                    {
-                        id: 'profile',
-                        icon: 'bi bi-person',
-                        label: 'Profile Settings',
-                        description: 'Manage your personal information'
-                    },
-                    {
-                        id: 'account',
-                        icon: 'bi bi-shield-lock',
-                        label: 'Account Settings',
-                        description: 'Security and account preferences'
-                    },
-                    {
-                        id: 'privacy',
-                        icon: 'bi bi-eye',
-                        label: 'Privacy',
-                        description: 'Control your privacy settings'
+                updateUsername() {
+                    const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
+                    axios.put(`${API_ENDPOINT}/api/update/user/username/${this.currentUserId}`, {
+                        username: this.userProfile.username
+                    })
+                    .then(() => {
+                        alert('Username updated successfully!');
+                    })
+                    .catch(error => {
+                        console.error('Error updating username:', error);
+                        alert('An error occurred while updating username.');
+                    });
+                },
+                async handleImageUpload(event) {
+                    const file = event.target.files[0];
+                    if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+                        const userId = this.currentUserId;
+                        const username = this.userProfile.username;
+                        const storageRef = ref(storage, `profile_pictures/${userId}/${username}.${file.type.split('/')[1]}`);
+                        try {
+                            await uploadBytes(storageRef, file);
+                            const imageUrl = await getDownloadURL(storageRef);
+                            this.userProfile.avatar = imageUrl;
+                            await this.updateUserProfilePicture(imageUrl);
+                            alert('Profile picture updated successfully!');
+                        } catch (error) {
+                            console.error('Error updating profile picture:', error);
+                            alert('An error occurred while updating the profile picture.');
+                        }
+                    } else {
+                        alert('Please select a valid image file (JPEG/PNG).');
                     }
-                ],
-                privacySettings: {
-                    keepProfilePrivate: false,
-                    keepPostPrivate: false
                 },
-                showAlert: false // Alert visibility control
+                async removeProfilePicture() {
+                    this.userProfile.avatar = 'resources/default-avatar.png';
+                    const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
+                    try {
+                        await axios.put(`${API_ENDPOINT}/api/update/user/profilePicture/${this.currentUserId}`, {
+                            profilePicture: 'resources/default-avatar.png'
+                        });
+                        alert('Profile picture removed successfully.');
+                    } catch (error) {
+                        console.error('Error removing profile picture:', error);
+                        alert('An error occurred while removing the profile picture.');
+                    }
+                },
+                savePrivacySettings() {
+                    const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
+                    axios.put(`${API_ENDPOINT}/api/users/${this.currentUserId}/privacy`, {
+                        isProfilePrivate: this.privacySettings.keepProfilePrivate,
+                        isPostPrivate: this.privacySettings.keepPostPrivate
+                    })
+                    .then(() => {
+                        this.showAlert = true;
+                        setTimeout(() => {
+                            this.showAlert = false;
+                        }, 3000);
+                    })
+                    .catch(error => {
+                        console.error('Error saving privacy settings:', error);
+                        alert('An error occurred while saving privacy settings.');
+                    });
+                },
+                initUserData() {
+                    if (window.currentUser) {
+                        this.currentUserId = window.currentUser.id;
+                        this.userProfile = {
+                            username: window.currentUser.username,
+                            avatar: window.currentUser.profilePicture || 'resources/default-avatar.png'
+                        };
+                        this.privacySettings.keepProfilePrivate = window.currentUser.isProfilePrivate;
+                        this.privacySettings.keepPostPrivate = window.currentUser.isPostPrivate;
+                        window.removeEventListener("userLoaded", this.initUserData);
+                    }
+                },
+                async updateUserProfilePicture(imageUrl) {
+                    const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
+                    try {
+                        await axios.put(`${API_ENDPOINT}/api/update/user/profilePicture/${this.currentUserId}`, { profilePicture: imageUrl });
+                        this.userProfile.avatar = imageUrl;
+                        alert('Profile picture URL updated successfully!');
+                    } catch (error) {
+                        console.error('Error updating Firestore with new image URL:', error);
+                    }
+                },
             }
-        },
-        created() {
-            if (window.currentUser) {
-                this.currentUserId = window.currentUser.id;
-                this.privacySettings.keepProfilePrivate = window.currentUser.isProfilePrivate;
-                this.privacySettings.keepPostPrivate = window.currentUser.isPostPrivate;
-            }
-
-            const postsPromise = axios.get('./databaseTemplateFolder/postTemplate.json');
-            const usersPromise = axios.get('./databaseTemplateFolder/userTemplate.json');
-            
-            Promise.all([postsPromise, usersPromise])
-                .then(([postsResponse, usersResponse]) => {
-                    console.log('Posts Data:', postsResponse.data);
-                    console.log('Users Data:', usersResponse.data);
-
-                    this.users = usersResponse.data.users;
-                    this.posts = postsResponse.data.posts;
-
-                    // use user1 
-                    const currentUserData = this.users[0];
-                    this.currentUserId = currentUserData.id;
-
-                    // user profile
-                    this.userProfile = {
-                        name: currentUserData.username,
-                        username: currentUserData.username,
-                        avatar: currentUserData.profilePicture,
-                        birthday: currentUserData.birthday,
-                        gender: currentUserData.gender,
-                        email: currentUserData.email,
-                        password: currentUserData.password,
-                        // hard coded
-                        bio: '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time', 
-                    };
-                })
-                .catch(error => {
-                    console.error("Error fetching data:", error);
-                });
-        },
-        methods: {
-            switchTab(tabId) {
-                this.currentTab = tabId;
-            },
-
-            updateBio() {
-                // API call to update the bio
-                alert('Bio updated successfully!');
-            },
-            
-            updateEmail() {
-                if (this.currentPassword === this.userProfile.password) {
-                    this.userProfile.email = this.newEmail;
-                    this.cancelEmailChange();
-                    alert('Email updated successfully!');
-                } else {
-                    alert('Incorrect password');
-                }
-            },
-
-            cancelEmailChange() {
-                this.showEmailChange = false;
-                this.newEmail = '';
-                this.currentPassword = '';
-            },
-
-            updatePassword() {
-                if (this.currentPassword === this.userProfile.password) {
-                    this.userProfile.password = this.newPassword;
-                    this.newPassword = '';
-                    this.currentPassword = '';
-                    alert('Password updated successfully!');
-                } else {
-                    alert('Incorrect current password');
-                }
-            },
-
-            resetPassword() {
-                alert('Password reset email sent to ' + this.userProfile.email);
-            },
-
-            handleImageUpload(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        this.userProfile.avatar = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            },
-            
-            removeProfilePicture() {
-                this.userProfile.avatar = 'resources/default-avatar.png';
-            },
-
-
-            // Method to update privacy settings and show alert
-            savePrivacySettings() {
-                axios.put(`/api/users/${this.currentUserId}/privacy`, {
-                    isProfilePrivate: this.privacySettings.keepProfilePrivate,
-                    isPostPrivate: this.privacySettings.keepPostPrivate
-                })
-                .then(() => {
-                    this.showAlert = true;
-                    setTimeout(() => {
-                        this.showAlert = false;
-                    }, 3000);
-                })
-                .catch(error => {
-                    console.error('Error saving privacy settings:', error);
-                    alert('An error occurred while saving privacy settings. Please try again.');
-                });
-            },
-
-        }
-    });
+        });
+    
+        app.mount('#app');
     </script>
+    
 
 <!-- import navbar from navbar.js -->
 <script src="navbar/navbar.js"></script>
@@ -468,6 +305,6 @@
 <script>
     app.mount('#app')
 </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
