@@ -86,7 +86,7 @@
                                         </div>
                                         <div class="about-item">
                                             <i class="bi bi-calendar3"></i>
-                                            <span>Joined {{ userProfile.joinDate }}</span>
+                                            <span>Birthday {{ userProfile.BirthdayDate }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -690,7 +690,7 @@
                         coverPhoto: 'resources/coverphoto_profile.jpg', 
                         bio: '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
                         location: 'Singapore',
-                        joinDate: '',
+                        BirthdayDate: '',
                         stats: {
                             routes: 0,
                             following: 0,
@@ -793,7 +793,7 @@
                         bio: '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
                         location: 'Singapore',
                         // Use actual user data
-                        joinDate: this.formatJoinDate(userData.birthday),
+                        BirthdayDate: this.formatBirthdayDate(userData.birthday),
                         stats: {
                             routes: userData.postsCreated.length,
                             following: userData.numFollowing,
@@ -803,7 +803,7 @@
                     };
                 },
 
-                formatJoinDate(dateString) {
+                formatBirthdayDate(dateString) {
                     const date = new Date(dateString);
                     return date.toLocaleDateString('en-US', {
                         year: 'numeric',
