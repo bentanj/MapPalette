@@ -185,6 +185,7 @@
             // Check every 100ms if window.currentUser is populated
             const userCheckInterval = setInterval(() => {
                 if (window.currentUser) {
+                    console.log(window.currentUser)
                     loadingSpinner.style.display = 'none';
                     appContainer.style.display = 'block';
                     clearInterval(userCheckInterval); // Stop checking once loaded
@@ -195,16 +196,13 @@
         created() {
             axios.get('https://app-907670644284.us-central1.run.app/api/allposts')
                 .then(response => {
-                    // Filter out any null entries before mapping
-                    this.routes = response.data
-                        .filter(route => route !== null) // Add this line
-                        .map(route => ({
-                            ...route,
-                            modalId: 'modal-' + route.postID,
-                            timeSince: this.calculateTimeSince(new Date(route.createdAt._seconds * 1000)),
-                            username: '', // Placeholder for route creator's username
-                            commentsList: [] // Initialize comments list
-                        }));
+                    this.routes = response.data.map(route => ({
+                        ...route,
+                        modalId: 'modal-' + route.postID,
+                        timeSince: this.calculateTimeSince(new Date(route.createdAt._seconds * 1000)),
+                        username: '', // Placeholder for route creator's username
+                        commentsList: [] // Initialize comments list
+                    }));
 
                     // Extract unique user IDs from routes
                     const userIDs = [...new Set(this.routes.map(route => route.userID))];
@@ -439,21 +437,21 @@
             };
         },
         mounted() {
-            if (window.currentUser) {
-                const currentUserID = window.currentUser.id;
+        if (window.currentUser) {
+            const currentUserID = window.currentUser.id;
 
-                // Fetch user's liked posts and populate `likedRoutes`
-                axios.get(`https://app-907670644284.us-central1.run.app/api/users/${currentUserID}/liked-posts`)
-                    .then(response => {
-                        response.data.forEach(postID => {
-                            this.likedRoutes[postID] = true;
-                        });
-                    })
-                    .catch(error => {
-                        console.error("Error fetching liked posts:", error);
+            // Fetch user's liked posts and populate `likedRoutes`
+            axios.get(`https://app-907670644284.us-central1.run.app/api/users/${currentUserID}/liked-posts`)
+                .then(response => {
+                    response.data.forEach(postID => {
+                        this.likedRoutes[postID] = true;
                     });
-            }
-        },
+                })
+                .catch(error => {
+                    console.error("Error fetching liked posts:", error);
+                });
+        }
+    },
         methods: {
             likeRoute(route) {
                 const currentUserID = window.currentUser?.id || 'defaultUserID'; // Replace with the actual way to get the current user ID.
