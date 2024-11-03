@@ -258,7 +258,7 @@ app.get('/api/allposts', async (req, res) => {
   }
 });
 
-// Retrieve all posts made by users that the current user follows without an index
+// Retrieve all posts made by users that the current user follows, including the user's own posts
 app.get('/api/allposts/user/:userID', async (req, res) => {
   const { userID } = req.params;
 
@@ -269,22 +269,19 @@ app.get('/api/allposts/user/:userID', async (req, res) => {
   try {
     // Step 1: Retrieve the list of user IDs that `userID` is following
     const followingSnap = await db.collection('users').doc(userID).collection('following').get();
-    if (followingSnap.empty) {
-      console.log(`User ${userID} follows no users.`);
-      return res.status(404).json({ message: 'No followed users found for this user.' });
-    }
-
     const followedUserIDs = followingSnap.docs.map(doc => doc.id);
-    console.log('Followed User IDs:', followedUserIDs);
 
-    // Step 2: Retrieve all posts (without filtering in Firestore) and filter manually
+    // Include the current user's own posts by adding their ID to the followedUserIDs array
+    followedUserIDs.push(userID);
+
+    // Step 2: Retrieve all posts
     const allPostsSnap = await db.collection('posts').get();
 
     if (allPostsSnap.empty) {
-      return res.status(404).json({ message: 'No posts found.' });
+      return res.status(404).json({ message: 'No posts found for this user or their followed users.' });
     }
 
-    // Filter posts by the followed users
+    // Filter posts by the followed users or the user themselves
     const filteredPosts = [];
     allPostsSnap.forEach(doc => {
       const postData = doc.data();
@@ -295,6 +292,11 @@ app.get('/api/allposts/user/:userID', async (req, res) => {
         });
       }
     });
+
+    // Check if no posts were found for the user and their followed users
+    if (filteredPosts.length === 0) {
+      return res.status(404).json({ message: 'No posts found for this user or their followed users.' });
+    }
 
     // Sort the filtered posts by `createdAt` in descending order
     filteredPosts.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
@@ -321,6 +323,7 @@ app.get('/api/allposts/user/:userID', async (req, res) => {
     return res.status(500).json({ message: `Error fetching posts: ${error.message}` });
   }
 });
+
 
 // 
 // POST LIKING API
