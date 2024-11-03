@@ -154,6 +154,7 @@
                         :activity="selectedActivity"
                         @close="selectedActivity = null"
                         @like="likeActivity"
+                        @share="handleActivityShare" 
                     ></comment-modal>
                 </div>
             </div>
@@ -193,7 +194,7 @@
                 return this.activity.isLiked || false;
             },
             isOwnPost() {  
-                return this.currentUser === this.activity.user;
+                return window.currentUser && this.activity.id === window.currentUser.id;
             },
             commentCount() {
                 return this.activity.commentsList ? this.activity.commentsList.length : 0;
