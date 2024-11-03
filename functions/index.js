@@ -947,44 +947,29 @@ app.put('/api/update/user/username/:userID', async (req, res) => {
 // const upload = multer({ storage });
 
 
-// Update user's profile picture with a URL that includes a token
-app.put('/api/update/user/profilePicture/:userID', upload.single('profilePicture'), async (req, res) => {
+// Update user's profile picture with a URL
+app.put('/api/update/user/profilePicture/:userID', async (req, res) => {
   const { userID } = req.params;
-  const { username } = req.body; // Retrieve the username from the request body
+  const { profilePicture } = req.body; // Only retrieve the profile picture URL
 
-  if (!req.file || !username) {
-    return res.status(400).json({ message: 'Profile picture file and username are required.' });
+  if (!profilePicture) {
+    return res.status(400).json({ message: 'Profile picture URL is required.' });
   }
 
   try {
-    const fileType = req.file.mimetype.split('/')[1]; // Get file extension (e.g., jpg or png)
-    const fileName = `profile_pictures/${userID}/${username}.${fileType}`; // Define the file path in Cloud Storage
-
-    // Define the file reference in Firebase Storage
-    const fileRef = bucket.file(fileName);
-
-    // Upload the new profile picture file
-    await fileRef.save(req.file.buffer, {
-      contentType: req.file.mimetype,
-      metadata: { cacheControl: 'public, max-age=31536000' },
-    });
-
-    // Get the URL of the uploaded file with a token
-    const newProfilePictureUrl = await fileRef.getSignedUrl({
-      action: 'read',
-      expires: '03-09-2491'  // Arbitrary far future date
-    });
-
-    // Update the user's profilePicture field in Firestore with the URL containing the token
+    // Reference the user document in Firestore
     const userRef = db.collection('users').doc(userID);
-    await userRef.update({ profilePicture: newProfilePictureUrl[0] });
 
-    return res.status(200).json({ message: 'Profile picture updated successfully!', profilePictureUrl: newProfilePictureUrl[0] });
+    // Update the profile picture field with the new URL
+    await userRef.update({ profilePicture });
+
+    return res.status(200).json({ message: 'Profile picture URL updated successfully!' });
   } catch (error) {
-    console.error('Error updating profile picture:', error);
-    return res.status(500).json({ message: 'Error updating profile picture.' });
+    console.error('Error updating profile picture URL:', error);
+    return res.status(500).json({ message: 'Error updating profile picture URL.' });
   }
 });
+
 
 // Get leaderboard data
 app.get('/api/challenge/leaderboard', async (req, res) => {

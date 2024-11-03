@@ -154,6 +154,7 @@ onAuthStateChanged(auth, async (user) => {
                 isProfilePrivate: userData.isProfilePrivate || false, // Default to false if not set
                 isPostPrivate: userData.isPostPrivate || false,  
             };
+            window.dispatchEvent(new Event("userLoaded"));
             // Check if user collection is imported correctly
             // console.log("User data loaded globally with subcollections:", window.currentUser);
           } else {
@@ -227,5 +228,5 @@ export async function displayUserData() {
 }
 
 // Export initialized services for use in other files
-export { auth };        // Named export for `auth`
 export default app;      // Default export for the Firebase app
+export { auth, db, storage, ref, uploadBytes, getDownloadURL, onAuthStateChanged };
