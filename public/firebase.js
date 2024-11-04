@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
@@ -224,6 +224,23 @@ export async function displayUserData() {
       return null;
   }
 }
+
+// Password reset functionality
+const resetPasswordForm = document.getElementById('reset-password-form');
+resetPasswordForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('reset-email').value;
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert('Password reset email sent! Please check your inbox.');
+    // Close the modal
+    document.getElementById('forgotPasswordModal').querySelector('.btn-close').click();
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    alert("Failed to send password reset email: " + error.message);
+  }
+});
 
 // Export initialized services for use in other files
 export default app;      // Default export for the Firebase app
