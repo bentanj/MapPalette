@@ -225,8 +225,7 @@
                         console.error("Failed to copy link: ", err);
                     });
             },
-            async likePost(postId) {
-            // Emit the like event to parent instead of handling API call directly
+            async likePost() {
                 this.$emit('like', this.activity);
             },
         },
@@ -317,11 +316,10 @@
                         <div class="d-flex justify-content-around border-top border-bottom py-3">
                             <button
                                 class="btn btn-link p-0 action-button"
-                                @click.stop="likePost(activity.id)"
-                                :class="{ 'liked': isLiked }"
-                                :disabled="disabledActions.like">
-                                <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
-                                <span>Like</span>
+                                @click.stop="likePost()"
+                                :class="{ 'liked': activity.isLiked }">
+                                <i :class="[activity.isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
+                                <span>{{ activity.isLiked ? 'Liked' : 'Like' }}</span>
                             </button>
                             <button
                                 class="btn btn-link p-0 action-button"
@@ -922,6 +920,9 @@
                                     }
                                 }
                                 
+                                // Check if the current user has liked this post
+                                const isLiked = post.likedBy.includes(currentUserId);
+
                                 return {
                                     id: post.postID,
                                     user: post.username || 'Unknown User',
@@ -936,7 +937,7 @@
                                     likes: post.likeCount,
                                     commentsList: commentsList,
                                     shares: post.shareCount,
-                                    isLiked: this.currentUser.postsLiked?.includes(post.postID) || false
+                                    isLiked: isLiked // Set isLiked status based on likedBy
                                 };
                             } catch (error) {
                                 console.error(`Error processing post ${post.postID}:`, error);
@@ -995,44 +996,39 @@
                 },
                 
                 async likeActivity(activity) {
-                    // Rate limiting check
+                    // Rate limit to prevent rapid toggling
                     const currentTime = Date.now();
                     if (currentTime - this.lastApiCallTime < 1000) {
                         return;
                     }
                     this.lastApiCallTime = currentTime;
 
-                    try {
-                        // Construct the endpoint URL based on current like status
-                        const endpoint = `${this.API_ENDPOINT}/api/posts/${activity.isLiked ? 'unlike' : 'like'}?id=${activity.id}`;
-                        
-                        // Prepare the request payload
-                        const payload = {
-                            userID: this.currentUserId
-                        };
+                    // Determine API endpoint based on current `isLiked` status
+                    const endpoint = `${this.API_ENDPOINT}/api/posts/${activity.isLiked ? 'unlike' : 'like'}?id=${activity.id}`;
+                    const payload = { userID: this.currentUserId };
 
-                        // Make the PUT request
+                    try {
+                        // Make the request to like or unlike
                         const response = await axios.put(endpoint, payload);
 
                         if (response.status === 200) {
-                            // Update like count
-                            activity.likes += activity.isLiked ? -1 : 1;
-                            
-                            // Toggle like status
+                            // Toggle the like status
                             activity.isLiked = !activity.isLiked;
+                            activity.likes += activity.isLiked ? 1 : -1;
 
-                            // Update the current user's liked posts array
-                            if (!this.currentUser.postsLiked) {
+                            // Ensure postsLiked is defined as an array
+                            if (!Array.isArray(this.currentUser.postsLiked)) {
                                 this.currentUser.postsLiked = [];
                             }
 
+                            // Update the `postsLiked` array for the current user
                             if (activity.isLiked) {
-                                // Add post ID to liked posts if not already present
+                                // Add activity ID if not already present
                                 if (!this.currentUser.postsLiked.includes(activity.id)) {
                                     this.currentUser.postsLiked.push(activity.id);
                                 }
                             } else {
-                                // Remove post ID from liked posts
+                                // Remove activity ID if it exists
                                 const index = this.currentUser.postsLiked.indexOf(activity.id);
                                 if (index > -1) {
                                     this.currentUser.postsLiked.splice(index, 1);
@@ -1040,25 +1036,10 @@
                             }
                         }
                     } catch (error) {
-                        console.error('Error updating like:', error);
-                        
-                        // Handle different types of errors
-                        if (error.response) {
-                            console.error('Server responded with error:', error.response.data);
-                            alert(`Failed to update like: ${error.response.data.message || 'Server error'}`);
-                        } else if (error.request) {
-                            console.error('No response received:', error.request);
-                            alert('Failed to update like: No response from server');
-                        } else {
-                            console.error('Error setting up request:', error.message);
-                            alert('Failed to update like: Network error');
-                        }
+                        console.error('Error toggling like:', error);
 
-                        // Revert optimistic updates if they were made
-                        if (activity.isLiked !== undefined) {
-                            activity.likes += activity.isLiked ? 1 : -1;
-                            activity.isLiked = !activity.isLiked;
-                        }
+                        // Optional error handling: display an alert or revert the like status
+                        alert('Failed to update like. Please try again.');
                     }
                 },
 

@@ -170,6 +170,13 @@ app.get('/api/posts', async (req, res) => {
       profilePicture: userData.profilePicture || 'default-profile-picture-url'
     };
 
+    // Fetch the list of users who liked this post
+    const likesSnap = await postRef.collection('likes').get();
+    const likedUsers = likesSnap.docs.map(doc => doc.id); // Collect user IDs of those who liked the post
+
+    // Add the liked users to the response
+    postWithUserData.likedBy = likedUsers;
+    
     return res.status(200).json(postWithUserData);
   } catch (error) {
     console.error('Error fetching post:', error);
@@ -241,11 +248,16 @@ app.get('/api/allposts', async (req, res) => {
       // Exclude posts if user has `isPostPrivate` set to true
       if (userData && userData.isPostPrivate) return undefined;
 
+      // Fetch the list of users who liked this post
+      const likesSnap = await doc.ref.collection('likes').get();
+      const likedUsers = likesSnap.docs.map(likeDoc => likeDoc.id);
+
       // Add username and profile picture to the post data
       return {
         ...postData,
         username: userData.username || 'Unknown User',
-        profilePicture: userData.profilePicture || 'default-profile-picture-url'
+        profilePicture: userData.profilePicture || 'default-profile-picture-url',
+        likedBy: likedUsers
       };
     }));
 
@@ -289,10 +301,15 @@ app.get('/api/allposts/user/:userID', async (req, res) => {
         const userSnap = await userRef.get();
         const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
 
+        // Fetch the list of users who liked this post
+        const likesSnap = await doc.ref.collection('likes').get();
+        const likedUsers = likesSnap.docs.map(likeDoc => likeDoc.id);
+
         return {
           ...postData,
           username: userData.username || 'Unknown User',
           profilePicture: userData.profilePicture || 'default-profile-picture-url',
+          likedBy: likedUsers
         };
       })
     );
@@ -896,11 +913,15 @@ app.get('/api/users/:userID/posts', async (req, res) => {
       postsCreatedSnap.docs.map(async (doc) => {
         const postRef = db.collection('posts').doc(doc.id);
         const postSnap = await postRef.get();
+        // Fetch the list of users who liked this post
+        const likesSnap = await postRef.collection('likes').get();
+        const likedUsers = likesSnap.docs.map(likeDoc => likeDoc.id);
         return postSnap.exists
           ? {
               ...postSnap.data(),
               username,
-              profilePicture
+              profilePicture,
+              likedBy: likedUsers
             }
           : null;
       })
