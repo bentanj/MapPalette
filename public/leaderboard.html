@@ -258,7 +258,17 @@
                 }
             },
             async mounted() {
-                await this.fetchLeaderboardData();
+                // Listen for `userLoaded` event before loading leaderboard
+                window.addEventListener('userLoaded', async () => {
+                    this.currentUser = window.currentUser; // Set local currentUser for use in template
+                    await this.fetchLeaderboardData();
+                });
+
+                // Check if currentUser is already loaded (e.g., returning visitor)
+                if (window.currentUser) {
+                    this.currentUser = window.currentUser;
+                    await this.fetchLeaderboardData();
+                }
             }
         });
     </script>
