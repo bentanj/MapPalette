@@ -1,0 +1,111 @@
+@import 'footer/footer_style.css';
+
+@import 'navbar-index/navbar_style.css';
+
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Back to Top Button */
+.back-to-top {
+    /* Positioning */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    
+    /* Perfect circle dimensions */
+    width: 50px;
+    height: 50px;
+    border-radius: 50% !important;
+    
+    /* Remove any default padding/margins that might affect shape */
+    padding: 0 !important;
+    margin: 0 !important;
+    
+    /* Center the content */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* Visual styles */
+    background: linear-gradient(90deg, #43cea2, #185a9d);
+    color: #fff;
+    border: none;
+    
+    /* Ensure no text decoration or outline affects the shape */
+    text-decoration: none;
+    outline: none;
+}
+
+.back-to-top:hover {
+    background: linear-gradient(90deg, #185a9d, #43cea2);
+}
+
+@media (max-width: 576px) {
+    .back-to-top {
+        width: 40px;
+        height: 40px;
+        bottom: 15px;
+        right: 15px;
+    }
+}
+
+/* Action Buttons */
+.btn-link {
+    color: #185a9d;
+    font-weight: bold;
+}
+
+.btn-link:hover {
+    color: #43cea2;
+    text-decoration: none;
+}
+
+/* Primary Buttons */
+.btn-primary {
+    background: linear-gradient(90deg, #43cea2, #185a9d);
+    border: none;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #185a9d, #43cea2);
+    color: #fff;
+}
+
+/* Comments Section */
+.list-unstyled li {
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.list-unstyled li:last-child {
+    border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .image-box img {
+        width: 100%;
+        height: auto;
+    }
+}
+
+
+
+
+/* for friends.html */
+.profile-pic {
+    width: 80px;
+    /* Set the desired width */
+    height: 80px;
+    /* Set the desired height */
+    object-fit: cover;
+    /* Ensure the image covers the container without stretching */
+    border-radius: 50%;
+    /* Make the image circular */
+    border: 2px solid #ddd;
+    /* Optional: Add a border around the image */
+}
