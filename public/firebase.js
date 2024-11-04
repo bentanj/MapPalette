@@ -86,7 +86,9 @@ signupForm?.addEventListener('submit', async (e) => {
       gender,
       profilePicture: profilePicURL,
       numFollowers: 0,  // Initialize numFollowers to 0
-      numFollowing: 0   // Initialize numFollowing to 0
+      numFollowing: 0,   // Initialize numFollowing to 0
+      isProfilePrivate: false, // Default privacy setting
+      isPostPrivate: false     // Default post privacy setting
     });
     startSessionTimeout(); // Start session timeout on signup
     alert("You've signed up successfully! Welcome to MapPalette :)");
@@ -134,23 +136,27 @@ onAuthStateChanged(auth, async (user) => {
           const userDoc = await getDoc(userDocRef);
 
           if (userDoc.exists()) {
-              // Fetch subcollection document IDs
-              const postsCreated = await fetchSubcollectionIds(user.uid, 'postsCreated');
-              const postsLiked = await fetchSubcollectionIds(user.uid, 'postsLiked');
-              const followers = await fetchSubcollectionIds(user.uid, 'followers');
-              const followed = await fetchSubcollectionIds(user.uid, 'followed');
+            const userData = userDoc.data(); // Extract data from user document
+            // Fetch subcollection document IDs
+            const postsCreated = await fetchSubcollectionIds(user.uid, 'postsCreated');
+            const postsLiked = await fetchSubcollectionIds(user.uid, 'postsLiked');
+            const followers = await fetchSubcollectionIds(user.uid, 'followers');
+            const following = await fetchSubcollectionIds(user.uid, 'following');
 
-              // Set `window.currentUser` with user data and subcollection IDs
-              window.currentUser = {
-                  id: user.uid,
-                  ...userDoc.data(),
-                  postsCreated: postsCreated || [], // Populate with IDs or empty array if not found
-                  postsLiked: postsLiked || [],
-                  followers: followers || [],
-                  followed: followed || []
-              };
-              // Check if user collection is imported correctly
-              // console.log("User data loaded globally with subcollections:", window.currentUser);
+            // Set `window.currentUser` with user data and subcollection IDs
+            window.currentUser = {
+                id: user.uid,
+                ...userDoc.data(),
+                postsCreated: postsCreated || [], // Populate with IDs or empty array if not found
+                postsLiked: postsLiked || [],
+                followers: followers || [],
+                following: following || [],
+                isProfilePrivate: userData.isProfilePrivate || false, // Default to false if not set
+                isPostPrivate: userData.isPostPrivate || false,  
+            };
+            window.dispatchEvent(new Event("userLoaded"));
+            // Check if user collection is imported correctly
+            // console.log("User data loaded globally with subcollections:", window.currentUser);
           } else {
               console.error("User document does not exist!");
           }
@@ -222,5 +228,5 @@ export async function displayUserData() {
 }
 
 // Export initialized services for use in other files
-export { auth };        // Named export for `auth`
 export default app;      // Default export for the Firebase app
+export { auth, db, storage, ref, uploadBytes, getDownloadURL, onAuthStateChanged };

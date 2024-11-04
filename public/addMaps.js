@@ -5,7 +5,7 @@ const endPointURL = "https://app-907670644284.us-central1.run.app";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { auth } from "./firebase.js"; // Ensure this path matches where firebase.js is located
 import { getStorage, ref, uploadString, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
-import { driver } from "../node_modules/driver.js/dist/driver.js.mjs";
+import { driver } from "./node_modules/driver.js/dist/driver.js.mjs";
 
 const app = Vue.createApp({
     data() {
@@ -20,7 +20,6 @@ const app = Vue.createApp({
                 followers: 198
             }
         },
-        
         // Map related
         map: null,
         directionsService: null,
@@ -46,6 +45,7 @@ const app = Vue.createApp({
         // Post related
         postTitle:'',
         postDescription:'',
+        minDescriptionLength: 50, // Minimum character requirement
         userID:'',
         username:'',
         submitting:false,
@@ -66,6 +66,14 @@ const app = Vue.createApp({
         tourStarted: false,
       };
 
+    },
+    computed:{
+        descriptionLength() {
+            return this.postDescription.length;
+        },
+        isSubmitDisabled() {
+            return this.descriptionLength < this.minDescriptionLength;
+        }
     },
     methods: {
 
@@ -469,7 +477,12 @@ const app = Vue.createApp({
         validateAndSubmit() {
             this.formValidated = true;
             const form = document.querySelector('form');
-        
+            
+            if (this.descriptionLength < this.minDescriptionLength) {
+                this.setAlert('error', `Description must be at least ${this.minDescriptionLength} characters.`);
+                return; // Prevent submission
+            }
+
             if (form.checkValidity()) {
                 if (!this.isEditing) {
                     // Not the owner, save as a new post
@@ -565,7 +578,7 @@ const app = Vue.createApp({
                     // User is not the owner, set as new map
                     this.postId = null; // Clears postId for new save
                     this.isEditing = false; // Switch to "create" mode
-                    this.setAlert('error', 'You are viewing a copy of this map. Changes will save as a new post.');
+                    this.setAlert('error', 'You are viewing a copy of this map. Changes will save as a new public post.');
                 }
         
                 // Load waypoints as viewable/editable data
@@ -899,8 +912,15 @@ const app = Vue.createApp({
                 console.error('Error fetching town name:', error);
                 return "Error Fetching Town";
             }
-        },        
+        },
         
+        showPublicPostReminder() {
+            // Check if the post is private before showing the public visibility alert
+            if (!window.currentUser.isPostPrivate) {
+                // Display a warning to remind users that the post will be public
+                this.setAlert('error', 'This post will be publicly visible once posted.');
+            }
+        },        
     },
     created() {
         // Assign initMap as a global function to initialize the map once the API loads
@@ -927,6 +947,7 @@ const app = Vue.createApp({
                     } else {
                         // Initialize new map for post creation
                         this.initMap();
+                        this.showPublicPostReminder();
                     }
                 } catch (error) {
                     console.error("Failed to load Google Maps API:", error);
@@ -936,7 +957,7 @@ const app = Vue.createApp({
                 window.location.href = "index.html";
             }
         });
-    }
+    },
 });
 
 app.component('nav-bar', {
@@ -963,6 +984,9 @@ app.component('nav-bar', {
         },
         isProfileRelatedPage() {
             return ['profile_page.html', 'settings_page.html'].includes(this.currentPage);
+        },
+        isLeaderboardsPage() {
+            return this.currentPage === 'leaderboard.html';
         }
     },
 
@@ -1016,9 +1040,14 @@ app.component('nav-bar', {
                                :class="{ 'active': isCurrentPage('addMaps.html') }"
                                href="addMaps.html">Draw</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               :class="{ 'active': isCurrentPage('leaderboard.html') }"
+                               href="leaderboard.html">Leaderboard</a>
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center profile-link"
-                               :class="{ 'active': isProfileRelatedPage() }"
+                               :class="{ 'active': false }"
                                href="#" 
                                id="profileDropdown" 
                                role="button" 
@@ -1043,7 +1072,7 @@ app.component('nav-bar', {
                                        href="settings_page.html">Settings</a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#">Log Out</a></li>
+                                <li><a class="dropdown-item" id='logout'>Log Out</a></li>
                             </ul>
                         </li>
                     </ul>

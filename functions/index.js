@@ -238,6 +238,9 @@ app.get('/api/allposts', async (req, res) => {
       const userSnap = await userRef.get();
       const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
 
+      // Exclude posts if user has `isPostPrivate` set to true
+      if (userData && userData.isPostPrivate) return undefined;
+
       // Add username and profile picture to the post data
       return {
         ...postData,
@@ -246,10 +249,62 @@ app.get('/api/allposts', async (req, res) => {
       };
     }));
 
-    return res.status(200).json(posts);
+    // Filter out any undefined results before sending the response
+    const filteredPosts = posts.filter(post => post !== undefined && post !== null);
+    return res.status(200).json(filteredPosts);    
   } catch (error) {
     console.error('Error fetching all posts:', error);
     return res.status(500).json({ message: 'Error fetching posts.' });
+  }
+});
+
+// Retrieve all posts made by users that the current user follows, including the user's own posts
+app.get('/api/allposts/user/:userID', async (req, res) => {
+  const { userID } = req.params;
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    // Step 1: Retrieve the list of user IDs that `userID` is following
+    const followingSnap = await db.collection('users').doc(userID).collection('following').get();
+    const followedUserIDs = followingSnap.docs.map(doc => doc.id);
+
+    // Include the current user's own posts by adding their ID to the followedUserIDs array
+    followedUserIDs.push(userID);
+
+    // Step 2: Retrieve all posts from the main "posts" collection where userID matches any of the followedUserIDs
+    const postsSnap = await db.collection('posts').where('userID', 'in', followedUserIDs).get();
+
+    if (postsSnap.empty) {
+      return res.status(404).json({ message: 'No posts found for this user or their followed users.' });
+    }
+
+    // Step 3: Map through each post document, fetch user data, and return post data with additional user info
+    const postsWithUserData = await Promise.all(
+      postsSnap.docs.map(async (doc) => {
+        const postData = { id: doc.id, ...doc.data() };
+        const userRef = db.collection('users').doc(postData.userID);
+        const userSnap = await userRef.get();
+        const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
+
+        return {
+          ...postData,
+          username: userData.username || 'Unknown User',
+          profilePicture: userData.profilePicture || 'default-profile-picture-url',
+        };
+      })
+    );
+
+    // Sort the posts by `createdAt` in descending order
+    postsWithUserData.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
+
+    console.log('Posts found:', postsWithUserData.length);
+    return res.status(200).json(postsWithUserData);
+  } catch (error) {
+    console.error('Error fetching followed users posts:', error.message, error.stack);
+    return res.status(500).json({ message: `Error fetching posts: ${error.message}` });
   }
 });
 
@@ -371,9 +426,9 @@ app.post('/api/posts/:postId/comments', async (req, res) => {
     const commentCheckDoc = await commentCheckRef.get();
     
     if (!commentCheckDoc.exists) {
-      await addPointsToCreator(postData.userID, 2); // Adjust points as desired
+      await addPointsToCreator(userID, 2); // Adjust points as desired
       await commentCheckRef.set({ createdAt: FieldValue.serverTimestamp() }); // Record that points were awarded
-    }
+   }   
 
     return res.status(201).json({ id: commentRef.id, message: 'Comment created successfully!' });
   } catch (error) {
@@ -678,6 +733,8 @@ app.get('/api/users/getallusers', async (req, res) => {
       // Base user data
       const userData = { id: doc.id, ...doc.data() };
 
+      if (userData.isProfilePrivate) return undefined;
+
       // Fetch all subcollections for the current user and add each as its own attribute in userData
       const subcollectionRefs = await db.collection('users').doc(doc.id).listCollections();
 
@@ -692,46 +749,48 @@ app.get('/api/users/getallusers', async (req, res) => {
       return userData;
     }));
 
-    // Respond with an array of all users, including their individual subcollections
-    return res.status(200).json(users);
+    // Filter out undefined results before sending the response
+    const filteredUsers = users.filter(user => user !== undefined);
+    return res.status(200).json(filteredUsers);
+    
   } catch (error) {
     console.error('Error fetching users:', error);
     return res.status(500).json({ message: 'Error fetching users' });
   }
 });
 
-// Get all user objects followed by the current user
-app.get('/api/users/getfollowed/:userID', async (req, res) => {
+// Get all user objects followers by the current user
+app.get('/api/users/getfollowers/:userID', async (req, res) => {
   const { userID } = req.params;
   
   if (!userID) {
     return res.status(400).json({ message: 'User ID is required.' });
-  }
+  } 
 
   try {
-    // Reference the 'followed' subcollection under the current user
-    const followedSnap = await db.collection('users').doc(userID).collection('followed').get();
+    // Reference the 'followers' subcollection under the current user
+    const followersSnap = await db.collection('users').doc(userID).collection('followers').get();
 
-    if (followedSnap.empty) {
-      return res.status(404).json({ message: 'No followed users found for this user.' });
+    if (followersSnap.empty) {
+      return res.status(404).json({ message: 'No followers users found for this user.' });
     }
 
-    // Collect all followed user IDs
-    const followedUserIDs = followedSnap.docs.map(doc => doc.id);
+    // Collect all followers user IDs
+    const followersUserIDs = followersSnap.docs.map(doc => doc.id);
 
-    // Fetch user data for each followed user ID from the main "users" collection
-    const followedUsersPromises = followedUserIDs.map(async (followedUserID) => {
-      const userDoc = await db.collection('users').doc(followedUserID).get();
-      return userDoc.exists ? { userID: followedUserID, ...userDoc.data() } : null;
+    // Fetch user data for each followers user ID from the main "users" collection
+    const followersUsersPromises = followersUserIDs.map(async (followersUserID) => {
+      const userDoc = await db.collection('users').doc(followersUserID).get();
+      return userDoc.exists ? { userID: followersUserID, ...userDoc.data() } : null;
     });
 
-    // Wait for all followed user data to be fetched
-    const followedUsers = (await Promise.all(followedUsersPromises)).filter(user => user !== null);
+    // Wait for all followers user data to be fetched
+    const followersUsers = (await Promise.all(followersUsersPromises)).filter(user => user !== null);
 
-    return res.status(200).json(followedUsers);
+    return res.status(200).json(followersUsers);
   } catch (error) {
-    console.error('Error fetching followed users:', error);
-    return res.status(500).json({ message: 'Error fetching followed users.' });
+    console.error('Error fetching followers users:', error);
+    return res.status(500).json({ message: 'Error fetching followers users.' });
   }
 });
 
@@ -779,25 +838,29 @@ app.get('/api/users/getcondensed/:currentUserID', async (req, res) => {
   }
 
   try {
-    // Fetch all user documents in the "users" collection
     const usersSnap = await db.collection('users').get();
 
     // Get all user IDs that the current user is following
     const followingSnap = await db.collection('users').doc(currentUserID).collection('following').get();
     const followingIDs = followingSnap.docs.map(doc => doc.id);
 
-    // Map through each user document and create the condensed user object
     const condensedUsers = usersSnap.docs.map(doc => {
       const userData = doc.data();
+      const isFollowing = followingIDs.includes(doc.id);
+
+      // Only return private users if the current user is following them
+      if (userData.isProfilePrivate && !isFollowing) return undefined;
+
       return {
         userID: doc.id,
         username: userData.username || null,
         profilePicture: userData.profilePicture || null,
-        isFollowing: followingIDs.includes(doc.id) // Check if the user is in the current user's "following" list
+        isFollowing: isFollowing
       };
     });
 
-    return res.status(200).json(condensedUsers);
+    const filteredCondensedUsers = condensedUsers.filter(user => user !== undefined);
+    return res.status(200).json(filteredCondensedUsers);
   } catch (error) {
     console.error('Error fetching condensed user data:', error);
     return res.status(500).json({ message: 'Error fetching condensed user data.' });
@@ -852,7 +915,7 @@ app.get('/api/users/:userID/posts', async (req, res) => {
 
 
 //
-// UPDATE USER PROFILE API
+// UPDATE USER PROFILE APIs
 //
 
 // Update username for a specific user
@@ -884,44 +947,29 @@ app.put('/api/update/user/username/:userID', async (req, res) => {
 // const upload = multer({ storage });
 
 
-// Update user's profile picture with a URL that includes a token
-app.put('/api/update/user/profilePicture/:userID', upload.single('profilePicture'), async (req, res) => {
+// Update user's profile picture with a URL
+app.put('/api/update/user/profilePicture/:userID', async (req, res) => {
   const { userID } = req.params;
-  const { username } = req.body; // Retrieve the username from the request body
+  const { profilePicture } = req.body; // Only retrieve the profile picture URL
 
-  if (!req.file || !username) {
-    return res.status(400).json({ message: 'Profile picture file and username are required.' });
+  if (!profilePicture) {
+    return res.status(400).json({ message: 'Profile picture URL is required.' });
   }
 
   try {
-    const fileType = req.file.mimetype.split('/')[1]; // Get file extension (e.g., jpg or png)
-    const fileName = `profile_pictures/${userID}/${username}.${fileType}`; // Define the file path in Cloud Storage
-
-    // Define the file reference in Firebase Storage
-    const fileRef = bucket.file(fileName);
-
-    // Upload the new profile picture file
-    await fileRef.save(req.file.buffer, {
-      contentType: req.file.mimetype,
-      metadata: { cacheControl: 'public, max-age=31536000' },
-    });
-
-    // Get the URL of the uploaded file with a token
-    const newProfilePictureUrl = await fileRef.getSignedUrl({
-      action: 'read',
-      expires: '03-09-2491'  // Arbitrary far future date
-    });
-
-    // Update the user's profilePicture field in Firestore with the URL containing the token
+    // Reference the user document in Firestore
     const userRef = db.collection('users').doc(userID);
-    await userRef.update({ profilePicture: newProfilePictureUrl[0] });
 
-    return res.status(200).json({ message: 'Profile picture updated successfully!', profilePictureUrl: newProfilePictureUrl[0] });
+    // Update the profile picture field with the new URL
+    await userRef.update({ profilePicture });
+
+    return res.status(200).json({ message: 'Profile picture URL updated successfully!' });
   } catch (error) {
-    console.error('Error updating profile picture:', error);
-    return res.status(500).json({ message: 'Error updating profile picture.' });
+    console.error('Error updating profile picture URL:', error);
+    return res.status(500).json({ message: 'Error updating profile picture URL.' });
   }
 });
+
 
 // Get leaderboard data
 app.get('/api/challenge/leaderboard', async (req, res) => {
@@ -971,6 +1019,61 @@ app.get('/api/challenge/leaderboard', async (req, res) => {
   }
 });
 
+// Get all liked posts for a specific user
+app.get('/api/users/:userID/likedPosts', async (req, res) => {
+  const { userID } = req.params;
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    // Reference all posts
+    const postsSnap = await db.collection('posts').get();
+
+    if (postsSnap.empty) {
+      return res.status(404).json({ message: 'No posts found.' });
+    }
+
+    const likedPosts = [];
+
+    // Iterate through each post and check if the user has liked it
+    await Promise.all(postsSnap.docs.map(async (postDoc) => {
+      const likeSnap = await postDoc.ref.collection('likes').doc(userID).get();
+      if (likeSnap.exists) {
+        likedPosts.push(postDoc.id); // Store the postID if liked by the user
+      }
+    }));
+
+    // Return the list of liked post IDs
+    return res.status(200).json({ likedPostIDs: likedPosts });
+  } catch (error) {
+    console.error('Error fetching liked posts:', error);
+    return res.status(500).json({ message: 'Error fetching liked posts.' });
+  }
+});
+
+// Update privacy settings for a user
+app.put('/api/users/:userID/privacy', async (req, res) => {
+  const { userID } = req.params;
+  const { isProfilePrivate, isPostPrivate } = req.body;
+
+  if (typeof isProfilePrivate === 'undefined' || typeof isPostPrivate === 'undefined') {
+      return res.status(400).json({ message: 'Both isProfilePrivate and isPostPrivate are required.' });
+  }
+
+  try {
+      const userRef = db.collection('users').doc(userID);
+      await userRef.update({
+          isProfilePrivate,
+          isPostPrivate
+      });
+      return res.status(200).json({ message: 'Privacy settings updated successfully!' });
+  } catch (error) {
+      console.error('Error updating privacy settings:', error);
+      return res.status(500).json({ message: 'Error updating privacy settings.' });
+  }
+});
 
 // // FUNCTION TO RESET LEADERBOARD
 // exports.resetLeaderboard = onSchedule('59 23 * * 0', async (context) => {

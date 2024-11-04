@@ -17,7 +17,10 @@
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
   <!-- Driver js -->
-  <link rel="stylesheet" href="../node_modules/driver.js/dist/driver.css">
+  <link rel="stylesheet" href="./node_modules/driver.js/dist/driver.css">
+
+  <script type="module" src="navbar/navbar.js"></script>
+
 </head>
 <body>
   <div id="app" class="container-fluid">
@@ -171,6 +174,9 @@
         <div class="col">
           <label for="description" class="form-label">Description</label>
           <textarea class="form-control" id="description" rows="4" placeholder="Enter description here" v-model="postDescription" required></textarea>
+          <div class="text-end">
+            <small>{{ descriptionLength }} / {{ minDescriptionLength }} characters minimum</small>
+          </div>
           <div class="invalid-feedback">
             Please provide a description.
           </div>
@@ -184,8 +190,8 @@
           <button v-else type="button" class="btn btn-danger w-100" @click="clearPost()">Clear Post</button>
         </div>
         <div class="col-6">
-          <button v-if="isEditing" class="btn btn-primary w-100" @click="editPost()">Save Changes</button>
-          <button v-else class="btn btn-primary w-100" @click="validateAndSubmit()">Create Post</button>
+          <button v-if="isEditing" class="btn btn-primary w-100" @click="editPost()" :disabled="isSubmitDisabled">Save Changes</button>
+          <button v-else class="btn btn-primary w-100" @click="validateAndSubmit()" :disabled="isSubmitDisabled">Create Post</button>
 
           <!-- Modal -->
           <div class="modal fade" id="editPost" tabindex="-1" aria-labelledby="editPostLabel">
