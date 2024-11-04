@@ -209,10 +209,21 @@
                 window.location.href = `addMaps.html?id=${this.activity.id}`;
             },
             handleShare() {
-                // Update API and redirect
-                const shareUrl = `homepage.html?id=${this.activity.id}`;
-                this.$emit('share', this.activity); // Emit share event to parent
-                window.location.href = shareUrl;
+                // Generate the share URL
+                const shareUrl = `${window.location.origin}/homepage.html?id=${this.activity.id}`;
+                
+                // Copy the URL to the clipboard
+                navigator.clipboard.writeText(shareUrl)
+                    .then(() => {
+                        // Emit the share event to parent component
+                        this.$emit('share', this.activity);
+                        
+                        // Notify the user that the link has been copied
+                        alert("Link copied to clipboard!");
+                    })
+                    .catch(err => {
+                        console.error("Failed to copy link: ", err);
+                    });
             },
             async likePost(postId) {
             // Emit the like event to parent instead of handling API call directly
@@ -826,12 +837,18 @@
                 },
 
                 async handleActivityShare(activity) {
-                    try {
-                        await axios.put(`${this.API_ENDPOINT}/api/posts/share?id=${activity.id}`);
-                        activity.shares = (activity.shares || 0) + 1;
-                    } catch (error) {
-                        console.error('Error updating share count:', error);
-                    }
+                    // Define the request URL and the payload with userID
+                    const requestUrl = `${this.API_ENDPOINT}/api/posts/share?id=${activity.id}`;
+                    const payload = {
+                        userID: this.currentUser.id // Assuming `this.currentUser.id` contains the user ID
+                    };
+
+                    // Send the PUT request with the userID payload
+                    const response = await axios.put(requestUrl, payload);
+
+                    // Increment the share count on the frontend if the request succeeds
+                    activity.shares = (activity.shares || 0) + 1;
+                    // console.log("Share count successfully updated in Firestore:", response.data);
                 },
 
                 calculateTimeSince(dateObj) {
@@ -1043,7 +1060,21 @@
                             activity.isLiked = !activity.isLiked;
                         }
                     }
-                }
+                },
+
+                viewRoute(route) {
+                    // Find the activity in `activities` that matches the route ID
+                    const matchedActivity = this.activities.find(activity => activity.id === route.id);
+
+                    if (matchedActivity) {
+                        // Open the activity modal with the matched activity data
+                        this.openActivityModal(matchedActivity);
+                    } else {
+                        // Optional: fallback if no match found
+                        console.warn(`No matching activity found for route ID: ${route.id}`);
+                        alert('Activity details are currently unavailable.');
+                    }
+                },
             }
         });
     </script>
