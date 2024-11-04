@@ -139,7 +139,6 @@ onAuthStateChanged(auth, async (user) => {
             const userData = userDoc.data(); // Extract data from user document
             // Fetch subcollection document IDs
             const postsCreated = await fetchSubcollectionIds(user.uid, 'postsCreated');
-            const postsLiked = await fetchSubcollectionIds(user.uid, 'postsLiked');
             const followers = await fetchSubcollectionIds(user.uid, 'followers');
             const following = await fetchSubcollectionIds(user.uid, 'following');
 
@@ -148,7 +147,6 @@ onAuthStateChanged(auth, async (user) => {
                 id: user.uid,
                 ...userDoc.data(),
                 postsCreated: postsCreated || [], // Populate with IDs or empty array if not found
-                postsLiked: postsLiked || [],
                 followers: followers || [],
                 following: following || [],
                 isProfilePrivate: userData.isProfilePrivate || false, // Default to false if not set
