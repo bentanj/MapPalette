@@ -1,5 +1,6 @@
 <!-- TODO:
-4. trending route -> when map clicked goes to route page with modal of map opened?
+1. trending route -> when map clicked goes to route page with modal of map opened?
+2. need to implement limit as to how many comments can show on the modal?
 -->
 
 <!DOCTYPE html>
@@ -31,7 +32,7 @@
     
 <body>
     <!-- Loading Spinner -->
-    <div id="loading-spinner" class="text-center" style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+    <div id="loading-spinner" class="text-center">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
@@ -384,13 +385,27 @@
                 }
             },
 
-            async mounted() {
+            mounted() {
+                // Initialize modal
                 this.modal = new bootstrap.Modal(this.$el);
                 this.modal.show();
                 this.$el.addEventListener('hidden.bs.modal', () => {
                     this.$emit('close');
                 });
-                await this.fetchComments();
+
+                // Use the preloaded comments
+                if (this.activity.commentsList && this.activity.commentsList.length > 0) {
+                    this.comments = this.activity.commentsList
+                        .map(comment => ({
+                            ...comment,
+                            timeAgo: this.calculateTimeSince(comment.createdAt)
+                        }))
+                        .sort((a, b) => {
+                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
+                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
+                            return dateB - dateA;
+                        });
+                }
             },
 
             methods: {
@@ -433,57 +448,6 @@
                     return 'Just now';
                 },
 
-                async fetchComments() {
-                    this.isLoading = true;
-
-                    try {
-                        // Fetch comments
-                        const commentsResponse = await axios.get(
-                            `${this.API_ENDPOINT}/api/posts/${this.activity.id}/comments`
-                        );
-
-                        // Get unique userIDs from comments
-                        const userIDs = [...new Set(commentsResponse.data.map(comment => comment.userID))];
-                        
-                        // Create a map to store usernames
-                        const userMap = {};
-                        
-                        // Fetch user data for each unique userID
-                        await Promise.all(userIDs.map(async (userID) => {
-                            try {
-                                const userResponse = await axios.get(
-                                    `${this.API_ENDPOINT}/api/${userID}`
-                                );
-                                userMap[userID] = userResponse.data.username;
-                            } catch (error) {
-                                console.error(`Error fetching user data for ${userID}:`, error);
-                                userMap[userID] = 'Unknown User';
-                            }
-                        }));
-                        
-                        // Attach usernames to comments
-                        this.comments = commentsResponse.data.map(comment => ({
-                            ...comment,
-                            username: userMap[comment.userID] || 'Unknown User',
-                            timeAgo: this.calculateTimeSince(comment.createdAt)
-                        }));
-                        
-                        // Sort comments by date (newest first)
-                        this.comments.sort((a, b) => {
-                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
-                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
-                            return dateB - dateA;
-                        });
-                    } catch (error) {
-                        console.error('Error fetching comments:', error);
-                        if (error.response?.status === 404) {
-                            this.comments = [];
-                        }
-                    } finally {
-                        this.isLoading = false;
-                    }
-                },
-
                 async submitComment() {
                     if (!this.newComment.trim()) return;
 
@@ -509,19 +473,15 @@
                             userID: window.currentUser.id,
                             text: this.newComment,
                             username: window.currentUser.username,
-                            createdAt: new Date().toISOString(),
+                            createdAt: response.data.createdAt || new Date(),
                             timeAgo: 'Just now'
                         };
 
+                        // Update both local comments and activity comments
                         this.comments.unshift(newComment);
-                        this.newComment = ''; // Clear the comment input field
+                        this.activity.commentsList.unshift(newComment);
 
-                        // Update comment count if this is being tracked in the parent activity
-                        if (this.activity.commentsList) {
-                            this.activity.commentsList.unshift(newComment);
-                        } else {
-                            this.activity.commentsList = [newComment];
-                        }
+                        this.newComment = ''; 
 
                     } catch (error) {
                         console.error('Error submitting comment:', error);
@@ -709,8 +669,6 @@
                     ],
                     trendingRoutes: [],
                     activities: [],
-                    commentUserData: {}, // Cache user data for comments
-                    isLoading: true,
                     postID: null, //share url param
                     error: null // For handling errors in loading comments
                 }
@@ -724,7 +682,7 @@
                 this.postId = urlParams.get('id');
     
                 // Check for window.currentUser
-                const checkUser = setInterval(() => {
+                const checkUser = setInterval(async () => {
                     if (window.currentUser) {
                         clearInterval(checkUser);
                         console.log('User data found:', window.currentUser);
@@ -733,17 +691,26 @@
                         this.currentUserId = window.currentUser.id;
                         this.updateUserProfile(window.currentUser);
                         
-                    // Fetch posts based on whether we have a postId
-                        if (this.postId) {
-                            this.fetchSinglePost(this.postId);
-                        } else {
-                            this.fetchPosts();
-                        }
+                        try {
+                            // Fetch posts based on whether we have a postId
+                            if (this.postId) {
+                                await this.fetchSinglePost(this.postId);
+                            } else {
+                                await this.fetchPosts();
+                            }
 
-                        // Hide loading spinner and show content
-                        if (loadingSpinner && appContainer) {
-                            loadingSpinner.style.display = 'none';
-                            appContainer.style.display = 'block';
+                            // hide loading spinner and show content after everything is loaded
+                            if (loadingSpinner && appContainer) {
+                                loadingSpinner.style.display = 'none';
+                                appContainer.style.display = 'block';
+                            }
+                        } catch (error) {
+                            console.error('Error loading content:', error);
+                            // show an error message to the user
+                            if (loadingSpinner && appContainer) {
+                                loadingSpinner.style.display = 'none';
+                                appContainer.style.display = 'block';
+                            }
                         }
                     }
                 }, 100);
@@ -763,28 +730,8 @@
                             return;
                         }
 
-                        // Fetch comments for the post
-                        let commentsList = [];
-                        try {
-                            const commentsResponse = await axios.get(
-                                `${this.API_ENDPOINT}/api/posts/${postId}/comments`
-                            );
-                            commentsList = commentsResponse.data;
-                        } catch (error) {
-                            if (error.response?.status !== 404) {
-                                console.error(`Error fetching comments:`, error);
-                            }
-                        }
-
-                        // Update share count
-                        try {
-                            await axios.put(`${this.API_ENDPOINT}/api/posts/share?id=${postId}`);
-                        } catch (error) {
-                            console.error('Error updating share count:', error);
-                        }
-
-                        // Process the shared post
-                        const processedPost = {
+                        // Initialize the activity with post data
+                        const activity = {
                             id: post.postID,
                             title: post.title,
                             user: post.username || 'Unknown User',
@@ -797,22 +744,68 @@
                             mapImg: post.image,
                             likes: post.likeCount,
                             shares: post.shareCount,
-                            commentsList: commentsList,
+                            commentsList: [], // Initialize empty comments list
                             isLiked: this.currentUser.postsLiked?.includes(post.postID) || false
                         };
-                        
-                        // Set as only activity
-                        this.activities = [processedPost];
 
-                        // Fetch trending routes separately
+                         // Fetch comments and their user data
+                        try {
+                            const commentsResponse = await axios.get(
+                                `${this.API_ENDPOINT}/api/posts/${post.postID}/comments`
+                            );
+                            const comments = commentsResponse.data;
+
+                            // Get unique user IDs from comments
+                            const commentUserIDs = [...new Set(comments.map(comment => comment.userID))];
+
+                            // Fetch user data for comment authors
+                            const commentUserPromises = commentUserIDs.map(userId =>
+                                axios.get(`${this.API_ENDPOINT}/api/${userId}`)
+                                    .then(response => ({
+                                        id: userId,
+                                        username: response.data.username
+                                    }))
+                                    .catch(() => ({
+                                        id: userId,
+                                        username: 'Unknown User'
+                                    }))
+                            );
+
+                            const commentUsers = await Promise.all(commentUserPromises);
+                            const commentUserMap = {};
+                            commentUsers.forEach(user => {
+                                commentUserMap[user.id] = user.username;
+                            });
+
+                            // Add usernames to comments
+                            activity.commentsList = comments.map(comment => ({
+                                ...comment,
+                                username: commentUserMap[comment.userID] || 'Unknown User'
+                            }));
+                        } catch (error) {
+                            if (error.response?.status !== 404) {
+                                console.error(`Error fetching comments:`, error);
+                            }
+                            activity.commentsList = [];
+                        }
+
+                        // Update share count
+                        try {
+                            await axios.put(`${this.API_ENDPOINT}/api/posts/share?id=${postId}`);
+                        } catch (error) {
+                            console.error('Error updating share count:', error);
+                        }
+
+                        // Set as only activity
+                        this.activities = [activity];
+
+                        // Fetch trending routes
                         const allPostsResponse = await axios.get(`${this.API_ENDPOINT}/api/allposts/user/${this.currentUser.id}`);
                         const allPosts = allPostsResponse.data;
 
                         this.trendingRoutes = allPosts
                             .sort((a, b) => {
-                                // Primary sort by likes
                                 const likesDiff = (b.likeCount || 0) - (a.likeCount || 0);
-                                // If likes are equal, use shares as secondary sort
                                 return likesDiff !== 0 ? likesDiff : (b.shareCount || 0) - (a.shareCount || 0);
                             })
                             .slice(0, 2)
@@ -820,7 +813,7 @@
                                 id: post.postID,
                                 title: post.title,
                                 distance: `${post.distance} km`,
-                                saves: `${post.likeCount || 0} likes`,  // Changed from shareCount to likeCount
+                                saves: `${post.likeCount || 0} likes`,
                                 image: post.image
                             }));
 
@@ -903,59 +896,110 @@
                         const allPosts = response.data;
                         console.log(`Total posts fetched: ${allPosts.length}`);
 
-                        // Process posts and fetch comments for each
-                        const processedPosts = await Promise.all(allPosts.map(async post => {
-                            try {
-                                // Attempt to fetch comments, but don't throw error if none exist
-                                let commentsList = [];
-                                try {
-                                    const commentsResponse = await axios.get(
-                                        `${this.API_ENDPOINT}/api/posts/${post.postID}/comments`
-                                    );
-                                    commentsList = commentsResponse.data;
-                                } catch (error) {
-                                    if (error.response?.status !== 404) {
-                                        console.error(`Error fetching comments for post ${post.postID}:`, error);
-                                    }
-                                }
-                                
-                                // Check if the current user has liked this post
-                                const isLiked = post.likedBy.includes(currentUserId);
-
-                                return {
-                                    id: post.postID,
-                                    user: post.username || 'Unknown User',
-                                    userImg: post.profilePicture || this.userProfile.avatar,
-                                    date: this.calculateTimeSince(post.createdAt), 
-                                    location: post.waypoints[0].address,
-                                    title: post.title,
-                                    routeTitle: post.title,
-                                    description: post.description,
-                                    distance: `${post.distance} km`,
-                                    mapImg: post.image,
-                                    likes: post.likeCount,
-                                    commentsList: commentsList,
-                                    shares: post.shareCount,
-                                    isLiked: isLiked // Set isLiked status based on likedBy
-                                };
-                            } catch (error) {
-                                console.error(`Error processing post ${post.postID}:`, error);
-                                throw error;
-                            }
+                        // Map posts with initial data
+                        this.activities = allPosts.map(post => ({
+                            ...post,
+                            id: post.postID,
+                            user: post.username || 'Unknown User',
+                            userImg: post.profilePicture || this.userProfile.avatar,
+                            date: this.calculateTimeSince(post.createdAt),
+                            location: post.waypoints[0].address,
+                            title: post.title,
+                            routeTitle: post.title,
+                            description: post.description,
+                            distance: `${post.distance} km`,
+                            mapImg: post.image,
+                            likes: post.likeCount,
+                            commentsList: [], // Initialize empty comments list
+                            shares: post.shareCount,
+                            isLiked: post.likedBy.includes(currentUserId)
                         }));
 
-                        // Assign the processed posts to activities
-                        this.activities = processedPosts;
+                        // Extract unique user IDs from posts
+                        const userIDs = [...new Set(this.activities.map(post => post.userID))];
 
-                        // Sort activities by date (most recent first)
-                        this.activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+                        // Fetch user data for each unique userID (post creators)
+                        const userPromises = userIDs.map(id =>
+                            axios.get(`${this.API_ENDPOINT}/api/${id}`)
+                                .then(userResponse => ({
+                                    id,
+                                    username: userResponse.data.username
+                                }))
+                                .catch(error => {
+                                    console.error(`Error fetching user data for ${id}:`, error);
+                                    return { id, username: 'Unknown User' };
+                                })
+                        );
+
+                        // Wait for all user data to be fetched
+                        const users = await Promise.all(userPromises);
+
+                        // Create a userMap for quick lookup
+                        const userMap = {};
+                        users.forEach(user => {
+                            userMap[user.id] = user.username;
+                        });
+
+                        // Update usernames in activities
+                        this.activities.forEach(activity => {
+                            activity.user = userMap[activity.userID] || 'Unknown User';
+                        });
+
+                        const commentPromises = this.activities.map(async activity => {
+                            try {
+                                const commentsResponse = await axios.get(`${this.API_ENDPOINT}/api/posts/${activity.id}/comments`);
+                                const comments = commentsResponse.data;
+
+                                // Get unique user IDs from comments
+                                const commentUserIDs = [...new Set(comments.map(comment => comment.userID))];
+
+                                // Fetch user data for comment authors
+                                const commentUserPromises = commentUserIDs.map(userId =>
+                                    axios.get(`${this.API_ENDPOINT}/api/${userId}`)
+                                        .then(response => ({
+                                            id: userId,
+                                            username: response.data.username
+                                        }))
+                                        .catch(() => ({
+                                            id: userId,
+                                            username: 'Unknown User'
+                                        }))
+                                );
+
+                                const commentUsers = await Promise.all(commentUserPromises);
+                                const commentUserMap = {};
+                                commentUsers.forEach(user => {
+                                    commentUserMap[user.id] = user.username;
+                                });
+
+                                // Add usernames to comments
+                                activity.commentsList = comments.map(comment => ({
+                                    ...comment,
+                                    username: commentUserMap[comment.userID] || 'Unknown User'
+                                }));
+                            } catch (error) {
+                                if (error.response?.status === 404) {
+                                    activity.commentsList = [];
+                                } else {
+                                    console.error(`Error fetching comments for post ${activity.id}:`, error);
+                                }
+                            }
+                        });
+
+                        // Wait for all comments to be fetched
+                        await Promise.all(commentPromises);
+
+                        // Sort activities by date
+                        this.activities.sort((a, b) => {
+                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
+                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
+                            return dateB - dateA;
+                        });
 
                         // Set trending routes
                         this.trendingRoutes = allPosts
                             .sort((a, b) => {
-                                // Primary sort by likes
                                 const likesDiff = (b.likeCount || 0) - (a.likeCount || 0);
-                                // If likes are equal, use shares as secondary sort
                                 return likesDiff !== 0 ? likesDiff : (b.shareCount || 0) - (a.shareCount || 0);
                             })
                             .slice(0, 2)
@@ -963,7 +1007,7 @@
                                 id: post.postID,
                                 title: post.title,
                                 distance: `${post.distance} km`,
-                                saves: `${post.likeCount || 0} likes`,  
+                                saves: `${post.likeCount || 0} likes`,
                                 image: post.image
                             }));
 
