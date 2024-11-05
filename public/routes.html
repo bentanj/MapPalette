@@ -8,7 +8,7 @@
     <title>MapPalette - Feed</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -176,6 +176,7 @@
                 displayedRoutes: 8,
                 userName: 'You',
                 searchQuery: '',
+                isLoading: true
             };
         },
         mounted() {
@@ -186,8 +187,6 @@
             const userCheckInterval = setInterval(() => {
                 if (window.currentUser) {
                     console.log(window.currentUser);
-                    loadingSpinner.style.display = 'none';
-                    appContainer.style.display = 'block';
                     clearInterval(userCheckInterval); // Stop checking once loaded
 
                     // Fetch all posts with userID once the currentUser is available
@@ -209,6 +208,13 @@
         methods: {
             // fetches all
             fetchAllPosts(userID) {
+                const loadingSpinner = document.getElementById('loading-spinner');
+                const appContainer = document.getElementById('app-container');
+                this.isLoading = true;
+                loadingSpinner.style.display = 'flex';
+                appContainer.style.display = 'none';
+
+
                 axios.get(`https://app-907670644284.us-central1.run.app/api/allposts?userID=${userID}`)
                     .then(response => {
                         this.routes = response.data.map(route => ({
@@ -216,7 +222,8 @@
                             modalId: 'modal-' + route.postID,
                             timeSince: this.calculateTimeSince(new Date(route.createdAt._seconds * 1000)),
                             username: route.username || 'Unknown User',
-                            commentsList: [] // Initialize comments list
+                            commentsList: [], // Initialize comments list
+                            isLiked: route.likedBy.includes(userID) // Set isLiked based on likedBy array
                         }));
 
                         // Extract unique user IDs from routes
@@ -259,18 +266,29 @@
                                     })
                             );
 
-                            // Wait for all comments to be fetched
-                            Promise.all(commentPromises).then(() => {
-                                // Apply filters and update UI
-                                this.applyFilters();
-                            });
-                        }).catch(error => {
+                           // Wait for all comments to be fetched
+                           return Promise.all(commentPromises);
+                        })
+                        .then(() => {
+                            // All data is loaded, apply filters and show content
+                            this.applyFilters();
+                            this.isLoading = false;
+                            loadingSpinner.style.display = 'none';
+                            appContainer.style.display = 'block';
+                        })
+                        .catch(error => {
                             console.error("Error fetching user data:", error);
+                            this.isLoading = false;
+                            loadingSpinner.style.display = 'none';
+                            appContainer.style.display = 'block';
                         });
-                    })
-                    .catch(error => {
-                        console.error("Error fetching routes data:", error);
-                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching routes data:", error);
+                    this.isLoading = false;
+                    loadingSpinner.style.display = 'none';
+                    appContainer.style.display = 'block';
+                });
             },
             calculateTimeSince(dateString) {
                 const postDate = new Date(dateString);
@@ -423,7 +441,7 @@
         methods: {
             likeRoute(route) {
                 const currentUserID = window.currentUser?.id || 'defaultUserID';
-                const isLiked = this.likedRoutes[route.postID];
+                const isLiked = route.isLiked;
 
                 const endpoint = isLiked
                     ? `https://app-907670644284.us-central1.run.app/api/posts/unlike?id=${route.postID}`
@@ -572,20 +590,37 @@
                     return;
                 }
 
-                // Define the API endpoint for sharing the post
-                const apiEndpoint = `https://app-907670644284.us-central1.run.app/api/posts/share?id=${route.postID}`;
+                // Generate the shareable link to `homepage.html` with the `postID`
+                const shareUrl = `${window.location.origin}/homepage.html?id=${route.postID}`;
 
-                // Send PUT request to the endpoint
+                // Copy the share URL to the clipboard
+                navigator.clipboard.writeText(shareUrl)
+                    .then(() => {
+                        alert("Link copied to clipboard!"); // Notify the user
+                        console.log("Share URL copied:", shareUrl);
+                    })
+                    .catch(err => {
+                        console.error("Failed to copy share link:", err);
+                        alert("Failed to copy link. Please try again.");
+                    });
+
+                // Send a PUT request to increment the share count
+                const apiEndpoint = `https://app-907670644284.us-central1.run.app/api/posts/share?id=${route.postID}`;
                 axios.put(apiEndpoint, { userID: currentUserID })
                     .then(response => {
                         console.log("Route shared successfully:", response.data);
-                        alert("Route shared successfully!");
                     })
                     .catch(error => {
-                        console.error("Error sharing route:", error);
-                        alert("Failed to share the route. Please try again.");
+                        if (error.response && error.response.status === 500) {
+                            // If it's a 500 error, log a simple message without a full error log
+                            console.log("Route was already shared by the user; skipping increment.");
+                        } else {
+                            // Log other unexpected errors
+                            console.error("Error updating share count:", error);
+                        }
                     });
             },
+            
             sortCommentsByDate(commentsList) {
                 return commentsList.sort((a, b) => {
                     const dateA = a.createdAt && a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
@@ -619,22 +654,21 @@
                                 <button 
                                     class="btn btn-link p-0 action-button" 
                                     @click="likeRoute(route)" 
-                                    :class="{'text-primary': likedRoutes[route.postID]}">
+                                    :class="{'text-primary': route.isLiked}">
                                     <i 
-                                        :class="likedRoutes[route.postID] ? 'fas fa-thumbs-up' : 'far fa-thumbs-up'" 
+                                        :class="route.isLiked ? 'fas fa-thumbs-up' : 'far fa-thumbs-up'" 
                                         class="me-1">
                                     </i>
-                                    <span>{{ likedRoutes[route.postID] ? 'Liked' : 'Like' }}</span>
+                                    <span>{{ route.isLiked ? 'Liked' : 'Like' }}</span>
                                 </button>
-<button class="btn btn-link p-0 action-button" @click="useRoute(route)">
-    <i class="fas fa-route me-1"></i>
-    <span>Use</span>
-</button>
-<button class="btn btn-link p-0 action-button" @click="shareRoute(route)">
-    <i class="far fa-share-square me-1"></i>
-    <span>Share</span>
-</button>
-
+                                <button class="btn btn-link p-0 action-button" @click="useRoute(route)">
+                                    <i class="fas fa-route me-1"></i>
+                                    <span>Use</span>
+                                </button>
+                                <button class="btn btn-link p-0 action-button" @click="shareRoute(route)">
+                                    <i class="far fa-share-square me-1"></i>
+                                    <span>Share</span>
+                                </button>
                             </div>
                             <br>
                             <!-- Comments Section -->

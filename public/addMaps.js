@@ -915,12 +915,12 @@ const app = Vue.createApp({
         },
         
         showPublicPostReminder() {
-            // Check if the post is private before showing the public visibility alert
-            if (!window.currentUser.isPostPrivate) {
-                // Display a warning to remind users that the post will be public
+            // Show reminder only if isPostPrivate is explicitly false
+            if (window.currentUser && !window.currentUser.isPostPrivate) {
                 this.setAlert('error', 'This post will be publicly visible once posted.');
             }
-        },        
+        }
+        
     },
     created() {
         // Assign initMap as a global function to initialize the map once the API loads
@@ -932,22 +932,26 @@ const app = Vue.createApp({
                 // User is authenticated
                 this.userID = user.uid;
                 this.username = user.email;
-                
+        
+                // Assign user to window.currentUser if not already done
+                window.currentUser = window.currentUser || {}; // Safeguard against null
+                window.currentUser.isPostPrivate = false; // Set or fetch this if it exists in your system
+        
                 // Determine if editing or creating a new post
                 this.postId = this.getMapIdFromUrl();
                 this.isEditing = !!this.postId;
-    
+        
                 try {
                     // Ensure Google Maps API is loaded before continuing
                     await this.loadGoogleMapsScript();
-    
+        
                     if (this.isEditing) {
                         // Fetch existing map data only after Google Maps API has loaded
                         await this.fetchMapData();
                     } else {
                         // Initialize new map for post creation
                         this.initMap();
-                        this.showPublicPostReminder();
+                        this.showPublicPostReminder(); // Now safe to call
                     }
                 } catch (error) {
                     console.error("Failed to load Google Maps API:", error);
@@ -956,7 +960,7 @@ const app = Vue.createApp({
                 // Redirect to login if not authenticated
                 window.location.href = "index.html";
             }
-        });
+        });        
     },
 });
 

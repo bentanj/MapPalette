@@ -1,6 +1,6 @@
-<!-- A LOT OF CODE HERE IS ADAPTED FROM HOMEPAGE.HTML (esp the activity cards part)-->
-
-<!--Profile page when press share do what?-->
+<!-- TODO:
+1. need to implement limit as to how many comments can show on the modal?
+-->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -31,17 +31,20 @@
     
 </head>
 <body>
-    <div id="app">
+     <!-- Loading Spinner -->
+     <div id="loading-spinner" class="text-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- main content-->
+    <div id="app" style="display: none;">
         <!-- Navbar -->
         <nav-bar :user_profile="userProfile"></nav-bar>
 
         <!-- Profile Header Section -->
         <div class="main-content-wrapper">
-            <div v-if="isLoading" class="loading-overlay">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
             <div v-else>
                 <div class="profile-header">
                     <div class="cover-photo">
@@ -136,8 +139,7 @@
                                     :activity="activity"
                                     :current-user="currentUser"
                                     @like="likeActivity"
-                                    @open-modal="openActivityModal"
-                                    @edit="handleActivityEdit">
+                                    @open-modal="openActivityModal">
                                 </activity-card>
                             </div>
 
@@ -172,144 +174,174 @@
         const { createApp } = Vue;
         
         // ActivityCard Component (copy exactly as is from homepage)
+        // ActivityCard Component
         const ActivityCard = {
-            props: {
-                activity: {
-                    type: Object,
-                    required: true
-                },
-                currentUser: {  
-                    type: Object,  
-                    required: true
-                }
+        props: {
+            activity: {
+                type: Object,
+                required: true
             },
-            computed: {
-                isLiked() {
-                    return this.activity.isLiked || false;
-                },
-                isOwnPost() {  
-                    return this.currentUser.username === this.activity.user; // Compare usernames
-                },
-                commentCount() {
-                    return this.activity.commentsList ? this.activity.commentsList.length : 0;
-                }
+            currentUser: {  
+                type: Object,
+                required: true
+            }
+        },
+        computed: {
+            isLiked() {
+                return this.activity.isLiked || false;
             },
-            methods: {
-                handleEdit() {
-                    window.location.href = `addMaps.html?id=${this.activity.id}`;
-                },
-                handleUse() {
-                    window.location.href = `addMaps.html?id=${this.activity.id}`;
-                },
-                handleShare() {
-                    this.$emit('share', this.activity); // Add this emit
-                    window.location.href = `homepage.html?id=${this.activity.id}`;
-                }
+            isOwnPost() {  
+                return window.currentUser && this.activity.user === window.currentUser.username;
             },
-            template: `
-                <article class="post">
-                    <header>
-                        <div class="title">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <h2>{{ activity.title }}</h2>
-                                <div v-if="isOwnPost" class="dropdown">
-                                    <button class="btn btn-link text-dark p-0" 
-                                            type="button" 
-                                            data-bs-toggle="dropdown" 
-                                            aria-expanded="false"
-                                            @click.stop>
-                                        <i class="fas fa-ellipsis-h"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <button class="dropdown-item" 
-                                                    @click.stop="handleEdit">
-                                                <i class="fas fa-edit me-2"></i>Edit Post
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
+            commentCount() {
+                return this.activity.commentsList ? this.activity.commentsList.length : 0;
+            }
+        },
+        methods: {
+            handleEdit() {
+                window.location.href = `addMaps.html?id=${this.activity.id}`;
+            },
+            useRoute() {
+                window.location.href = `addMaps.html?id=${this.activity.id}`;
+            },
+            handleShare() {
+                // Generate the share URL
+                const shareUrl = `${window.location.origin}/homepage.html?id=${this.activity.id}`;
+                
+                // Copy the URL to the clipboard
+                navigator.clipboard.writeText(shareUrl)
+                    .then(() => {
+                        // Emit the share event to parent component
+                        this.$emit('share', this.activity);
+                        
+                        // Notify the user that the link has been copied
+                        alert("Link copied to clipboard!");
+                    })
+                    .catch(err => {
+                        console.error("Failed to copy link: ", err);
+                    });
+            },
+            async likePost() {
+                this.$emit('like', this.activity);
+            },
+        },
+        template: `
+            <article class="post">
+                <!-- Header -->
+                <header>
+                    <div class="title">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h2>{{ activity.title }}</h2>
+                            <div v-if="isOwnPost" class="dropdown">
+                                <button class="btn btn-link text-dark p-0" 
+                                        type="button" 
+                                        data-bs-toggle="dropdown" 
+                                        aria-expanded="false"
+                                        @click.stop>
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <button class="dropdown-item" @click.stop="handleEdit">
+                                            <i class="fas fa-edit me-2"></i>Edit Post
+                                        </button>
+                                    </li>
+                                </ul>
                             </div>
-                            <p>by {{ activity.user }}</p>
                         </div>
-                        <div class="meta">
-                            <time class="published">{{ activity.date }}</time>
-                            <div class="d-flex align-items-center justify-content-end mt-2">
-                                <span class="me-2">{{ activity.user }}</span>
-                                <img :src="activity.userImg" alt="Profile" class="rounded-circle" 
-                                    style="width: 40px; height: 40px; object-fit: cover;">
-                            </div>
-                        </div>
-                    </header>
-                    
-                    <div class="image featured" @click="$emit('open-modal', activity)">
-                        <img :src="activity.mapImg" alt="Activity Map">
+                        <p>by {{ activity.user }}</p>
                     </div>
-                    
-                    <div class="content">
-                        <div class="d-flex justify-content-between text-center mb-3">
+                    <div class="meta">
+                        <time class="published">{{ activity.date }}</time>
+                        <div class="d-flex align-items-center justify-content-end mt-2">
+                            <span class="me-2">{{ activity.user }}</span>
+                            <img :src="activity.userImg" alt="Profile" class="rounded-circle" 
+                                style="width: 40px; height: 40px; object-fit: cover;">
+                        </div>
+                    </div>
+                </header>
+                
+                <!-- Main Image -->
+                <div class="image featured" @click="$emit('open-modal', activity)">
+                    <img :src="activity.mapImg" alt="Activity Map">
+                </div>
+                
+                <!-- Content -->
+                <div class="content">
+                    <div class="d-flex justify-content-between text-center mb-3">
+                        <div>
+                            <h6 class="mb-0 fw-bold">{{ activity.distance }}</h6>
+                            <small class="text-muted">Distance</small>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">{{ activity.time }}</h6>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1">
+                            <p v-if="activity.description" class="mb-0">{{ activity.description }}</p>
+                        </div>
+                        <div class="d-flex ms-3">
+                            <div class="me-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-geo-alt"></i> {{ activity.location }}
+                                </small>
+                            </div>
+                            <div class="me-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-heart"></i> {{ activity.likes || 0 }}
+                                </small>
+                            </div>
+                            <div class="me-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-chat"></i> {{ commentCount }}
+                                </small>
+                            </div>
                             <div>
-                                <h6 class="mb-0 fw-bold">{{ activity.distance }}</h6>
-                                <small class="text-muted">Distance</small>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="flex-grow-1">
-                                <p v-if="activity.description" class="mb-0">{{ activity.description }}</p>
-                            </div>
-                            <div class="d-flex ms-3">
-                                <div class="me-3">
-                                    <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ activity.location }}</small>
-                                </div>
-                                <div class="me-3">
-                                    <small class="text-muted"><i class="bi bi-heart"></i> {{ activity.likes || 0 }}</small>
-                                </div>
-                                <div class="me-3">
-                                    <small class="text-muted"><i class="bi bi-chat"></i> {{ commentCount }}</small>
-                                </div>
-                                <div>
-                                    <small class="text-muted"><i class="bi bi-share"></i> {{ activity.shares || 0 }}</small>
-                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-share"></i> {{ activity.shares || 0 }}
+                                </small>
                             </div>
                         </div>
                     </div>
-                    
-                    <footer>
-                        <div class="actions">
-                            <div class="d-flex justify-content-between border-top border-bottom py-3">
-                                <button
-                                    class="btn btn-link p-0 action-button"
-                                    @click.stop="$emit('like', activity)"
-                                    :class="{ 'liked': isLiked }"
-                                    :disabled="activity.likeDisabled">
-                                    <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
-                                    <span>Like</span>
-                                </button>
-                                <button
-                                    class="btn btn-link p-0 action-button"
-                                    @click.stop="$emit('open-modal', activity)">
-                                    <i class="far fa-comment me-1"></i>
-                                    <span>Comment</span>
-                                </button>
-                                <button
-                                    class="btn btn-link p-0 action-button"
-                                    @click.stop="handleUse">
-                                    <i class="far fa-map me-1"></i>
-                                    <span>Use</span>
-                                </button>
-                                <button
-                                    class="btn btn-link p-0 action-button"
-                                    @click.stop="handleShare">
-                                    <i class="far fa-share-square me-1"></i>
-                                    <span>Share</span>
-                                </button>
-                            </div>
+                </div>
+                
+                <!-- Footer -->
+                <footer>
+                    <div class="actions">
+                        <div class="d-flex justify-content-around border-top border-bottom py-3">
+                            <button
+                                class="btn btn-link p-0 action-button"
+                                @click.stop="likePost()"
+                                :class="{ 'liked': activity.isLiked }">
+                                <i :class="[activity.isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
+                                <span>{{ activity.isLiked ? 'Liked' : 'Like' }}</span>
+                            </button>
+                            <button
+                                class="btn btn-link p-0 action-button"
+                                @click.stop="$emit('open-modal', activity)">
+                                <i class="far fa-comment me-1"></i>
+                                <span>Comment</span>
+                            </button>
+                            <button
+                                class="btn btn-link p-0 action-button"
+                                @click.stop="useRoute">
+                                <i class="far fa-map me-1"></i>
+                                <span>Use</span>
+                            </button>
+                            <button
+                                class="btn btn-link p-0 action-button"
+                                @click.stop="handleShare">
+                                <i class="far fa-share-square me-1"></i>
+                                <span>Share</span>
+                            </button>
                         </div>
-                    </footer>
-                </article>`
-        }
-
-        // CommentModal Component (copy from homepage)
+                    </div>
+                </footer>
+            </article>
+        `
+    }
+        // CommentModal Component
         const CommentModal = {
             props: {
                 activity: {
@@ -326,8 +358,7 @@
                     disabledActions: {},
                     lastApiCallTime: 0,
                     comments: [],
-                    isLoading: false,
-                    error: null
+                    API_ENDPOINT: 'https://app-907670644284.us-central1.run.app'
                 }
             },
 
@@ -348,23 +379,33 @@
                 }
             },
 
-            async mounted() {
+            mounted() {
+                // Initialize modal
                 this.modal = new bootstrap.Modal(this.$el);
                 this.modal.show();
                 this.$el.addEventListener('hidden.bs.modal', () => {
                     this.$emit('close');
                 });
-                await this.fetchComments();
+
+                // Use the preloaded comments from activity
+                if (this.activity.commentsList && this.activity.commentsList.length > 0) {
+                    this.comments = this.activity.commentsList
+                        .map(comment => ({
+                            ...comment,
+                            timeAgo: this.calculateTimeSince(comment.createdAt)
+                        }))
+                        .sort((a, b) => {
+                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
+                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
+                            return dateB - dateA;
+                        });
+                }
             },
 
             methods: {
-                async likePost() {
+                async likePost(postId) {
+                    // Emit the like event to parent instead of handling API call directly
                     this.$emit('like', this.activity);
-                },
-
-                handleShare() {
-                    this.$emit('share', this.activity); // Add this emit
-                    window.location.href = `homepage.html?id=${this.activity.id}`;
                 },
 
                 calculateTimeSince(timestamp) {
@@ -401,114 +442,63 @@
                     return 'Just now';
                 },
 
-                async fetchComments() {
-                    this.isLoading = true;
-                    try {
-                        // Fetch comments
-                        const commentsResponse = await axios.get(
-                            `https://app-907670644284.us-central1.run.app/api/posts/${this.activity.id}/comments`
-                        );
-                        
-                        // Get unique userIDs from comments
-                        const userIDs = [...new Set(commentsResponse.data.map(comment => comment.userID))];
-                        
-                        // Create a map to store usernames
-                        const userMap = {};
-                        
-                        // Fetch user data for each unique userID
-                        await Promise.all(userIDs.map(async (userID) => {
-                            try {
-                                const userResponse = await axios.get(
-                                    `https://app-907670644284.us-central1.run.app/api/${userID}`
-                                );
-                                userMap[userID] = userResponse.data.username;
-                            } catch (error) {
-                                console.error(`Error fetching user data for ${userID}:`, error);
-                                userMap[userID] = 'Unknown User';
-                            }
-                        }));
-                        
-                        // Attach usernames to comments
-                        this.comments = commentsResponse.data.map(comment => ({
-                            ...comment,
-                            username: userMap[comment.userID] || 'Unknown User',
-                            timeAgo: this.calculateTimeSince(comment.createdAt)
-                        }));
-                        
-                        // Sort comments by date (newest first)
-                        this.comments.sort((a, b) => {
-                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
-                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
-                            return dateB - dateA;
-                        });
-                    } catch (error) {
-                        console.error('Error fetching comments:', error);
-                        this.error = 'Failed to load comments';
-                        if (error.response?.status === 404) {
-                            this.comments = [];
-                        }
-                    } finally {
-                        this.isLoading = false;
-                    }
-                },
-
                 async submitComment() {
                     if (!this.newComment.trim()) return;
 
                     const currentTime = Date.now();
                     if (currentTime - this.lastApiCallTime < 1000) {
-                        return;
+                        return; // Rate limiting to prevent rapid submissions
                     }
                     this.lastApiCallTime = currentTime;
                     this.disabledActions.comment = true;
 
                     try {
                         const response = await axios.post(
-                            `https://app-907670644284.us-central1.run.app/api/posts/${this.activity.id}/comments`,
+                            `${this.API_ENDPOINT}/api/posts/${this.activity.id}/comments`,
                             {
                                 userID: window.currentUser.id,
                                 text: this.newComment
                             }
                         );
 
-                        // Add the new comment to the list
+                        // Add the new comment to the local list immediately
                         const newComment = {
                             id: response.data.id,
                             userID: window.currentUser.id,
                             text: this.newComment,
                             username: window.currentUser.username,
-                            createdAt: response.data.createdAt,
+                            createdAt: new Date().toISOString(),
                             timeAgo: 'Just now'
                         };
 
+                        // Update both local comments and activity comments
                         this.comments.unshift(newComment);
+                        this.activity.commentsList.unshift(newComment);
+
                         this.newComment = '';
-                        
-                        // Update the comment count in the parent activity
-                        if (this.activity.commentsList) {
-                            this.activity.commentsList.unshift(newComment);
-                        } else {
-                            this.activity.commentsList = [newComment];
-                        }
+
                     } catch (error) {
-                        console.error('Error posting comment:', error);
-                        alert('Failed to post comment. Please try again.');
+                        console.error('Error submitting comment:', error);
+                        alert('Failed to submit comment. Please try again.');
                     } finally {
                         this.disabledActions.comment = false;
                     }
                 },
 
+                toggleShowAllComments() {
+                    this.showAllComments = !this.showAllComments;
+                },
                 useRoute() {
                     window.location.href = `addMaps.html?id=${this.activity.id}`;
                 },
-
-                shareRoute() {
-                    window.location.href = `homepage.html?id=${this.activity.id}`;
+                handleShare() {
+                    // Update API and redirect
+                    const shareUrl = `homepage.html?id=${this.activity.id}`;
+                    this.$emit('share', this.activity); // Emit share event to parent
+                    window.location.href = shareUrl;
                 },
 
-                toggleShowAllComments() {
-                    this.showAllComments = !this.showAllComments;
-                }
+            
             },
 
             template: `
@@ -546,26 +536,22 @@
 
                                 <!-- Action Buttons -->
                                 <div class="d-flex border-top border-bottom py-3">
-                                    <!-- Container for buttons with even spacing -->
                                     <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
-                                        <!-- Like Button -->
                                         <button class="btn btn-link p-0 action-button" 
-                                                @click="likePost"
+                                                @click="likePost(activity.id)"
                                                 :class="{ 'liked': isLiked }"
                                                 :disabled="disabledActions.like">
                                             <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
                                             <span>Like</span>
                                         </button>
 
-                                        <!-- Use Button -->
                                         <button class="btn btn-link p-0 action-button"
-                                                @click='useRoute'
+                                                @click="useRoute"
                                                 :disabled="disabledActions.use">
                                             <i class="far fa-map me-1"></i>
                                             <span>Use</span>
                                         </button>
 
-                                        <!-- Share Button -->
                                         <button class="btn btn-link p-0 action-button"
                                                 @click="handleShare"
                                                 :disabled="disabledActions.share">
@@ -596,44 +582,23 @@
 
                                     <h6>Comments ({{ comments.length }})</h6>
 
-                                    <!-- Loading State -->
-                                    <div v-if="isLoading" class="text-center my-3">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Loading comments...</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Error State -->
-                                    <div v-else-if="error" class="alert alert-danger" role="alert">
-                                        {{ error }}
-                                    </div>
-
-                                    <!-- Comments List -->
-                                    <div v-else>
-                                        <div v-if="comments.length === 0" class="text-center text-muted my-3">
-                                            No comments yet. Be the first to comment!
-                                        </div>
-                                        
-                                        <div v-else class="comments-list">
-                                            <div v-for="comment in displayedComments" 
-                                                :key="comment.id" 
-                                                class="mb-3">
-                                                <div class="comment-bubble">
-                                                    <strong>{{ comment.username }}</strong>
-                                                    <p>{{ comment.text }}</p>
-                                                </div>
-                                                <div class="comment-time text-muted">
-                                                    {{ comment.timeAgo }}
-                                                </div>
+                                    
+                                    <!-- Display comments if they exist -->
+                                    <div v-if="comments && comments.length > 0">
+                                        <div v-for="comment in displayedComments" :key="comment.id" class="mb-3">
+                                            <div class="comment-bubble">
+                                                <strong>{{ comment.username }}</strong>
+                                                <p>{{ comment.text }}</p>
                                             </div>
-
-                                            <!-- Load More Comments Button -->
-                                            <button v-if="hasMoreComments"
-                                                    @click="toggleShowAllComments"
-                                                    class="btn btn-link p-0">
-                                                {{ showAllComments ? 'Show Less Comments' : 'Load More Comments' }}
-                                            </button>
+                                            <div class="comment-time text-muted">
+                                                {{ calculateTimeSince(comment.createdAt) }}
+                                            </div>
                                         </div>
+                                    </div>
+                                    
+                                    <!-- Display prompt if no comments -->
+                                    <div v-else>
+                                        <p>No comments yet. Be the first to comment!</p>
                                     </div>
                                 </div>
                             </div>
@@ -681,8 +646,10 @@
                 }
             },
             created() {
-                this.isLoading = true; 
-                const checkUser = setInterval(() => {
+                const loadingSpinner = document.getElementById('loading-spinner');
+                const appContainer = document.getElementById('app');
+
+                const checkUser = setInterval(async () => {
                     if (window.currentUser) {
                         clearInterval(checkUser);
                         console.log('User data found:', window.currentUser);
@@ -691,71 +658,127 @@
                         this.currentUserId = window.currentUser.id;
                         this.updateUserProfile(window.currentUser);
                         
-                        // Fetch posts
-                        axios.get(`${this.API_ENDPOINT}/api/users/${window.currentUser.id}/posts`)
-                            .then(response => {
-                                console.log('Posts Data:', response.data);
-                                this.posts = response.data;
-                                
-                                // Update total distance
-                                const totalDistance = this.posts.reduce((sum, post) => 
-                                    sum + (parseFloat(post.distance) || 0), 0);
-                                this.userProfile.stats.totalDistance = parseFloat(totalDistance.toFixed(1));
+                        try {
+                            // Fetch posts
+                            const response = await axios.get(
+                                `${this.API_ENDPOINT}/api/users/${window.currentUser.id}/posts`
+                            );
+                            console.log('Posts Data:', response.data);
+                            this.posts = response.data;
+                            
+                            // Update total distance
+                            const totalDistance = this.posts.reduce(
+                                (sum, post) => sum + (parseFloat(post.distance) || 0), 
+                                0
+                            );
+                            this.userProfile.stats.totalDistance = parseFloat(totalDistance.toFixed(1));
 
-                                // Process posts for activities and routes
-                                this.processActivitiesAndRoutes();
-                            })
-                            .catch(error => {
-                                console.error("Error fetching posts:", error);
-                            })
-                            .finally(() => {
-                                this.isLoading = false;
-                            });
+                            // Process posts for activities and routes
+                            await this.processActivitiesAndRoutes();
+
+                            // Hide loading spinner and show content after everything is loaded
+                            if (loadingSpinner && appContainer) {
+                                loadingSpinner.style.display = 'none';
+                                appContainer.style.display = 'block';
+                            }
+                        } catch (error) {
+                            console.error('Error loading content:', error);
+                            // Show error state and hide spinner
+                            if (loadingSpinner && appContainer) {
+                                loadingSpinner.style.display = 'none';
+                                appContainer.style.display = 'block';
+                            }
+                        } finally {
+                            this.isLoading = false;
+                        }
                     }
                 }, 100);
             },
             methods: {
                 async processActivitiesAndRoutes() {
-                    // Process activities with comment fetching
-                    const processedActivities = await Promise.all(this.posts.map(async post => {
-                        // Fetch comments for this post
+                    const currentUserId = this.currentUserId; // Ensure we have the current user's ID
+
+                    const processedActivities = await Promise.all(this.posts.map(async (post) => {
                         let commentsList = [];
                         try {
+                            // Fetch comments for the post
                             const commentsResponse = await axios.get(
                                 `${this.API_ENDPOINT}/api/posts/${post.postID}/comments`
                             );
-                            commentsList = commentsResponse.data;
+                            const comments = commentsResponse.data;
+
+                            // Get unique user IDs from comments
+                            const commentUserIDs = [...new Set(comments.map(comment => comment.userID))];
+
+                            // Fetch user data for comment authors
+                            const commentUserPromises = commentUserIDs.map(userId =>
+                                axios.get(`${this.API_ENDPOINT}/api/${userId}`)
+                                    .then(response => ({
+                                        id: userId,
+                                        username: response.data.username
+                                    }))
+                                    .catch(() => ({
+                                        id: userId,
+                                        username: 'Unknown User'
+                                    }))
+                            );
+
+                            const commentUsers = await Promise.all(commentUserPromises);
+                            const commentUserMap = {};
+                            commentUsers.forEach(user => {
+                                commentUserMap[user.id] = user.username;
+                            });
+
+                            // Add usernames to comments
+                            commentsList = comments.map(comment => ({
+                                ...comment,
+                                username: commentUserMap[comment.userID] || 'Unknown User'
+                            }));
+
                         } catch (error) {
                             if (error.response?.status !== 404) {
                                 console.error(`Error fetching comments for post ${post.postID}:`, error);
                             }
+                            commentsList = [];
                         }
 
+                        // Use likedBy array to determine if current user has liked the post
+                        const isLiked = Array.isArray(post.likedBy) && post.likedBy.includes(currentUserId);
+
+                        // Return structured post data
                         return {
                             id: post.postID,
-                            user: this.currentUser.username,
-                            userImg: this.userProfile.avatar,
+                            user: post.username || this.currentUser.username,
+                            userImg: post.profilePicture || this.userProfile.avatar,
                             date: this.formatDate(post.createdAt),
-                            location: post.waypoints[0].address,
+                            location: post.waypoints[0]?.address || 'Unknown Location',
                             title: post.title,
-                            distance: `${post.distance} km`,
+                            distance: `${post.distance || 0} km`,
                             description: post.description,
                             mapImg: post.image,
-                            likes: post.likeCount,
-                            comments: [],
-                            shares: post.shareCount,
-                            commentsList: commentsList,
-                            isLiked: this.currentUser.postsLiked.includes(post.postID)
+                            likes: post.likeCount || 0,
+                            commentsList: commentsList.sort((a, b) => {
+                                const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
+                                const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
+                                return dateB - dateA;
+                            }),
+                            shares: post.shareCount || 0,
+                            isLiked: isLiked
                         };
                     }));
 
-                    this.activities = processedActivities;
+                    // Sort activities by date (newest first)
+                    this.activities = processedActivities.sort((a, b) => {
+                        const dateA = new Date(a.date);
+                        const dateB = new Date(b.date);
+                        return dateB - dateA;
+                    });
 
-                    // Process routes (this part remains unchanged)
+                    // Process routes similarly 
                     this.routes = this.posts.map(post => ({
                         id: post.postID,
                         title: post.title,
-                        distance: `${post.distance}km`,
+                        distance: `${post.distance || 0} km`,
                         image: post.image
                     }));
                 },
@@ -786,17 +809,22 @@
                     });
                 },
 
-                async handleShare(activity) {
-                    try {
-                        const response = await axios.put(
-                            `${this.API_ENDPOINT}/api/posts/share?id=${activity.id}`
-                        );
-                        if (response.status === 200) {
-                            activity.shares = (activity.shares || 0) + 1;
-                        }
-                    } catch (error) {
-                        console.error('Error updating share count:', error);
-                    }
+                handleShare() {
+                    // Generate the share URL
+                    const shareUrl = `${window.location.origin}/homepage.html?id=${this.activity.id}`;
+                    
+                    // Copy the URL to the clipboard
+                    navigator.clipboard.writeText(shareUrl)
+                        .then(() => {
+                            // Emit the share event to parent component
+                            this.$emit('share', this.activity);
+                            
+                            // Notify the user that the link has been copied
+                            alert("Link copied to clipboard!");
+                        })
+                        .catch(err => {
+                            console.error("Failed to copy link: ", err);
+                        });
                 },
 
                 formatDate(dateObj) {
@@ -818,29 +846,53 @@
                     this.selectedActivity = activity;
                 },
                 
-                likeActivity(activity) {
+                async likeActivity(activity) {
+                    // Rate limit to prevent rapid toggling
                     const currentTime = Date.now();
                     if (currentTime - this.lastApiCallTime < 1000) {
-                        alert('Please wait a moment before performing another action.');
                         return;
                     }
-
                     this.lastApiCallTime = currentTime;
-                    activity.likeDisabled = true;
 
-                    if (!activity.isLiked) {
-                        if (!activity.likes) activity.likes = 0;
-                        activity.likes++;
-                        activity.isLiked = true;
-                    } else {
-                        activity.likes--;
-                        activity.isLiked = false;
+                    // Determine API endpoint based on current `isLiked` status
+                    const endpoint = `${this.API_ENDPOINT}/api/posts/${activity.isLiked ? 'unlike' : 'like'}?id=${activity.id}`;
+                    const payload = { userID: this.currentUserId };
+
+                    try {
+                        // Make the request to like or unlike
+                        const response = await axios.put(endpoint, payload);
+
+                        if (response.status === 200) {
+                            // Toggle the like status
+                            activity.isLiked = !activity.isLiked;
+                            activity.likes += activity.isLiked ? 1 : -1;
+
+                            // Ensure postsLiked is defined as an array
+                            if (!Array.isArray(this.currentUser.postsLiked)) {
+                                this.currentUser.postsLiked = [];
+                            }
+
+                            // Update the `postsLiked` array for the current user
+                            if (activity.isLiked) {
+                                // Add activity ID if not already present
+                                if (!this.currentUser.postsLiked.includes(activity.id)) {
+                                    this.currentUser.postsLiked.push(activity.id);
+                                }
+                            } else {
+                                // Remove activity ID if it exists
+                                const index = this.currentUser.postsLiked.indexOf(activity.id);
+                                if (index > -1) {
+                                    this.currentUser.postsLiked.splice(index, 1);
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error toggling like:', error);
+
+                        // Optional error handling: display an alert or revert the like status
+                        alert('Failed to update like. Please try again.');
                     }
-
-                    setTimeout(() => {
-                        activity.likeDisabled = false;
-                    }, 1000);
-                }
+                },
             }
         });
     </script>

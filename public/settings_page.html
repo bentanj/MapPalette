@@ -290,14 +290,24 @@
     
                 initUserData() {
                     if (window.currentUser) {
-                        this.currentUserId = window.currentUser.id;
+                        this.currentUserId = window.currentUser.id || null;
+                        
+                        // Ensure user profile properties have values or defaults
                         this.userProfile = {
-                            username: window.currentUser.username,
+                            username: window.currentUser.username || '',
                             avatar: window.currentUser.profilePicture || 'resources/default-avatar.png'
                         };
-                        this.privacySettings.keepProfilePrivate = window.currentUser.isProfilePrivate;
-                        this.privacySettings.keepPostPrivate = window.currentUser.isPostPrivate;
+
+                        // Check and set privacy settings with defaults if undefined
+                        this.privacySettings = {
+                            keepProfilePrivate: window.currentUser.isProfilePrivate ?? false,
+                            keepPostPrivate: window.currentUser.isPostPrivate ?? false
+                        };
+
+                        // Remove the event listener as data is successfully loaded
                         window.removeEventListener("userLoaded", this.initUserData);
+                    } else {
+                        console.warn("Current user data is not loaded yet.");
                     }
                 },
     
