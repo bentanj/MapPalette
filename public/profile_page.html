@@ -1,6 +1,6 @@
-<!-- A LOT OF CODE HERE IS ADAPTED FROM HOMEPAGE.HTML (esp the activity cards part)-->
-
-<!--Profile page when press share do what?-->
+<!-- TODO:
+1. need to implement limit as to how many comments can show on the modal?
+-->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -31,17 +31,20 @@
     
 </head>
 <body>
-    <div id="app">
+     <!-- Loading Spinner -->
+     <div id="loading-spinner" class="text-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- main content-->
+    <div id="app" style="display: none;">
         <!-- Navbar -->
         <nav-bar :user_profile="userProfile"></nav-bar>
 
         <!-- Profile Header Section -->
         <div class="main-content-wrapper">
-            <div v-if="isLoading" class="loading-overlay">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
             <div v-else>
                 <div class="profile-header">
                     <div class="cover-photo">
@@ -181,12 +184,6 @@
             currentUser: {  
                 type: Object,
                 required: true
-            }
-        },
-        data() {
-            return {
-                disabledActions: {},
-                lastApiCallTime: 0
             }
         },
         computed: {
@@ -361,8 +358,6 @@
                     disabledActions: {},
                     lastApiCallTime: 0,
                     comments: [],
-                    isLoading: false,
-                    error: null,
                     API_ENDPOINT: 'https://app-907670644284.us-central1.run.app'
                 }
             },
@@ -384,13 +379,27 @@
                 }
             },
 
-            async mounted() {
+            mounted() {
+                // Initialize modal
                 this.modal = new bootstrap.Modal(this.$el);
                 this.modal.show();
                 this.$el.addEventListener('hidden.bs.modal', () => {
                     this.$emit('close');
                 });
-                await this.fetchComments();
+
+                // Use the preloaded comments from activity
+                if (this.activity.commentsList && this.activity.commentsList.length > 0) {
+                    this.comments = this.activity.commentsList
+                        .map(comment => ({
+                            ...comment,
+                            timeAgo: this.calculateTimeSince(comment.createdAt)
+                        }))
+                        .sort((a, b) => {
+                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
+                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
+                            return dateB - dateA;
+                        });
+                }
             },
 
             methods: {
@@ -433,57 +442,6 @@
                     return 'Just now';
                 },
 
-                async fetchComments() {
-                    this.isLoading = true;
-
-                    try {
-                        // Fetch comments
-                        const commentsResponse = await axios.get(
-                            `${this.API_ENDPOINT}/api/posts/${this.activity.id}/comments`
-                        );
-
-                        // Get unique userIDs from comments
-                        const userIDs = [...new Set(commentsResponse.data.map(comment => comment.userID))];
-                        
-                        // Create a map to store usernames
-                        const userMap = {};
-                        
-                        // Fetch user data for each unique userID
-                        await Promise.all(userIDs.map(async (userID) => {
-                            try {
-                                const userResponse = await axios.get(
-                                    `${this.API_ENDPOINT}/api/${userID}`
-                                );
-                                userMap[userID] = userResponse.data.username;
-                            } catch (error) {
-                                console.error(`Error fetching user data for ${userID}:`, error);
-                                userMap[userID] = 'Unknown User';
-                            }
-                        }));
-                        
-                        // Attach usernames to comments
-                        this.comments = commentsResponse.data.map(comment => ({
-                            ...comment,
-                            username: userMap[comment.userID] || 'Unknown User',
-                            timeAgo: this.calculateTimeSince(comment.createdAt)
-                        }));
-                        
-                        // Sort comments by date (newest first)
-                        this.comments.sort((a, b) => {
-                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
-                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
-                            return dateB - dateA;
-                        });
-                    } catch (error) {
-                        console.error('Error fetching comments:', error);
-                        if (error.response?.status === 404) {
-                            this.comments = [];
-                        }
-                    } finally {
-                        this.isLoading = false;
-                    }
-                },
-
                 async submitComment() {
                     if (!this.newComment.trim()) return;
 
@@ -513,15 +471,11 @@
                             timeAgo: 'Just now'
                         };
 
+                        // Update both local comments and activity comments
                         this.comments.unshift(newComment);
-                        this.newComment = ''; // Clear the comment input field
+                        this.activity.commentsList.unshift(newComment);
 
-                        // Update comment count if this is being tracked in the parent activity
-                        if (this.activity.commentsList) {
-                            this.activity.commentsList.unshift(newComment);
-                        } else {
-                            this.activity.commentsList = [newComment];
-                        }
+                        this.newComment = '';
 
                     } catch (error) {
                         console.error('Error submitting comment:', error);
@@ -692,8 +646,10 @@
                 }
             },
             created() {
-                this.isLoading = true; 
-                const checkUser = setInterval(() => {
+                const loadingSpinner = document.getElementById('loading-spinner');
+                const appContainer = document.getElementById('app');
+
+                const checkUser = setInterval(async () => {
                     if (window.currentUser) {
                         clearInterval(checkUser);
                         console.log('User data found:', window.currentUser);
@@ -702,26 +658,39 @@
                         this.currentUserId = window.currentUser.id;
                         this.updateUserProfile(window.currentUser);
                         
-                        // Fetch posts
-                        axios.get(`${this.API_ENDPOINT}/api/users/${window.currentUser.id}/posts`)
-                            .then(response => {
-                                console.log('Posts Data:', response.data);
-                                this.posts = response.data;
-                                
-                                // Update total distance
-                                const totalDistance = this.posts.reduce((sum, post) => 
-                                    sum + (parseFloat(post.distance) || 0), 0);
-                                this.userProfile.stats.totalDistance = parseFloat(totalDistance.toFixed(1));
+                        try {
+                            // Fetch posts
+                            const response = await axios.get(
+                                `${this.API_ENDPOINT}/api/users/${window.currentUser.id}/posts`
+                            );
+                            console.log('Posts Data:', response.data);
+                            this.posts = response.data;
+                            
+                            // Update total distance
+                            const totalDistance = this.posts.reduce(
+                                (sum, post) => sum + (parseFloat(post.distance) || 0), 
+                                0
+                            );
+                            this.userProfile.stats.totalDistance = parseFloat(totalDistance.toFixed(1));
 
-                                // Process posts for activities and routes
-                                this.processActivitiesAndRoutes();
-                            })
-                            .catch(error => {
-                                console.error("Error fetching posts:", error);
-                            })
-                            .finally(() => {
-                                this.isLoading = false;
-                            });
+                            // Process posts for activities and routes
+                            await this.processActivitiesAndRoutes();
+
+                            // Hide loading spinner and show content after everything is loaded
+                            if (loadingSpinner && appContainer) {
+                                loadingSpinner.style.display = 'none';
+                                appContainer.style.display = 'block';
+                            }
+                        } catch (error) {
+                            console.error('Error loading content:', error);
+                            // Show error state and hide spinner
+                            if (loadingSpinner && appContainer) {
+                                loadingSpinner.style.display = 'none';
+                                appContainer.style.display = 'block';
+                            }
+                        } finally {
+                            this.isLoading = false;
+                        }
                     }
                 }, 100);
             },
@@ -730,17 +699,47 @@
                     const currentUserId = this.currentUserId; // Ensure we have the current user's ID
 
                     const processedActivities = await Promise.all(this.posts.map(async (post) => {
-                        // Fetch comments for each post
                         let commentsList = [];
                         try {
+                            // Fetch comments for the post
                             const commentsResponse = await axios.get(
                                 `${this.API_ENDPOINT}/api/posts/${post.postID}/comments`
                             );
-                            commentsList = commentsResponse.data;
+                            const comments = commentsResponse.data;
+
+                            // Get unique user IDs from comments
+                            const commentUserIDs = [...new Set(comments.map(comment => comment.userID))];
+
+                            // Fetch user data for comment authors
+                            const commentUserPromises = commentUserIDs.map(userId =>
+                                axios.get(`${this.API_ENDPOINT}/api/${userId}`)
+                                    .then(response => ({
+                                        id: userId,
+                                        username: response.data.username
+                                    }))
+                                    .catch(() => ({
+                                        id: userId,
+                                        username: 'Unknown User'
+                                    }))
+                            );
+
+                            const commentUsers = await Promise.all(commentUserPromises);
+                            const commentUserMap = {};
+                            commentUsers.forEach(user => {
+                                commentUserMap[user.id] = user.username;
+                            });
+
+                            // Add usernames to comments
+                            commentsList = comments.map(comment => ({
+                                ...comment,
+                                username: commentUserMap[comment.userID] || 'Unknown User'
+                            }));
+
                         } catch (error) {
                             if (error.response?.status !== 404) {
                                 console.error(`Error fetching comments for post ${post.postID}:`, error);
                             }
+                            commentsList = [];
                         }
 
                         // Use likedBy array to determine if current user has liked the post
@@ -749,28 +748,37 @@
                         // Return structured post data
                         return {
                             id: post.postID,
-                            user: post.username || this.currentUser.username, // Use post username if available
+                            user: post.username || this.currentUser.username,
                             userImg: post.profilePicture || this.userProfile.avatar,
                             date: this.formatDate(post.createdAt),
                             location: post.waypoints[0]?.address || 'Unknown Location',
                             title: post.title,
-                            distance: `${post.distance || 0} km`, // Ensure distance defaults to 0 if undefined
+                            distance: `${post.distance || 0} km`,
                             description: post.description,
                             mapImg: post.image,
-                            likes: post.likeCount || 0, // Default to 0 if likes are missing
-                            commentsList: commentsList,
+                            likes: post.likeCount || 0,
+                            commentsList: commentsList.sort((a, b) => {
+                                const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
+                                const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
+                                return dateB - dateA;
+                            }),
                             shares: post.shareCount || 0,
                             isLiked: isLiked
                         };
                     }));
 
-                    this.activities = processedActivities;
+                    // Sort activities by date (newest first)
+                    this.activities = processedActivities.sort((a, b) => {
+                        const dateA = new Date(a.date);
+                        const dateB = new Date(b.date);
+                        return dateB - dateA;
+                    });
 
-                    // Process routes similarly to homepage.html
+                    // Process routes similarly 
                     this.routes = this.posts.map(post => ({
                         id: post.postID,
                         title: post.title,
-                        distance: `${post.distance || 0} km`, // Default to 0 if distance is missing
+                        distance: `${post.distance || 0} km`,
                         image: post.image
                     }));
                 },
