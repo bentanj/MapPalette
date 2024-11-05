@@ -30,7 +30,8 @@ body {
     align-items: center;
     
     /* Visual styles */
-    background: linear-gradient(90deg, #43cea2, #185a9d);
+    /* background: linear-gradient(90deg, #43cea2, #185a9d); */
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);;
     color: #fff;
     border: none;
     
@@ -40,7 +41,9 @@ body {
 }
 
 .back-to-top:hover {
-    background: linear-gradient(90deg, #185a9d, #43cea2);
+    /* background: linear-gradient(90deg, #185a9d, #43cea2); */
+    background: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+    color: #fff;
 }
 
 @media (max-width: 576px) {
@@ -52,38 +55,6 @@ body {
     }
 }
 
-/* Action Buttons */
-.btn-link {
-    color: #185a9d;
-    font-weight: bold;
-}
-
-.btn-link:hover {
-    color: #43cea2;
-    text-decoration: none;
-}
-
-/* Primary Buttons */
-.btn-primary {
-    background: linear-gradient(90deg, #43cea2, #185a9d);
-    border: none;
-    color: #fff;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(90deg, #185a9d, #43cea2);
-    color: #fff;
-}
-
-/* Comments Section */
-.list-unstyled li {
-    padding: 10px 0;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.list-unstyled li:last-child {
-    border-bottom: none;
-}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -91,21 +62,4 @@ body {
         width: 100%;
         height: auto;
     }
-}
-
-
-
-
-/* for friends.html */
-.profile-pic {
-    width: 80px;
-    /* Set the desired width */
-    height: 80px;
-    /* Set the desired height */
-    object-fit: cover;
-    /* Ensure the image covers the container without stretching */
-    border-radius: 50%;
-    /* Make the image circular */
-    border: 2px solid #ddd;
-    /* Optional: Add a border around the image */
 }

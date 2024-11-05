@@ -48,10 +48,16 @@
     }
 
     /* Styling for buttons */
-    .btn-primary {
-      background-color: #007bff;
+    .btn {
+      background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+      color: white;
       border: none;
       font-size: 1rem;
+    }
+
+    .btn:hover {
+        background: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+        color: white;
     }
 
     .btn-outline-primary {
@@ -60,7 +66,7 @@
 
     /* Forgot password link */
     .text-center a {
-      color: #007bff;
+      color: #FF6B6B;
       text-decoration: none;
     }
 
@@ -78,12 +84,12 @@
       <a href="index.html" class="text-decoration-none">
         <div class="d-flex justify-content-center align-items-center py-2">
           <img src="./resources/index/mappalettelogo.png" class="img-fluid" style="max-width: 100px; margin-right: 10px;">
-          <h1 class="app-name" style="color: #007bff;">MapPalette</h1>
+          <h1 class="app-name" style="color: #FF6B6B;">MapPalette</h1>
         </div>
       </a>
       <!-- Login Form Container -->
       <div class="login-container">
-      <h2 class="app-name">Login</h2>
+      <h3 class="app-name">Login</h3>
       <form id = 'login-form'>
           <div class="mb-3">
           <label for="email" class="form-label">Email</label>
@@ -94,7 +100,7 @@
           <input type="password" class="form-control" id="password" placeholder="Enter your password">
           </div>
           <div class="d-grid">
-          <button type="submit" class="btn btn-primary">Login</button>
+          <button type="submit" class="btn">Login</button>
           </div>
           <div class="text-center mt-3">
             <a href="#" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">Forgot your password?</a> |

@@ -49,7 +49,7 @@
     input[type="date"]:focus {
       color: #495057;
       background-color: #fff;
-      border-color: #007bff;
+      border-color: #FF6B6B;
       outline: 0;
       box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
@@ -62,14 +62,21 @@
     }
 
     .terms-text a {
-      color: #007bff;
+      color: #FF6B6B;
       text-decoration: none;
     }
 
-    .btn-primary {
+    .btn {
       width: 100%;
       padding: 10px;
       margin-top: 1rem;
+      background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+      color: white;
+    }
+
+    .btn:hover {
+        background: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+        color: white;
     }
 
     .login-link {
@@ -79,7 +86,7 @@
     }
 
     .login-link a {
-      color: #007bff;
+      color: #FF6B6B;
       text-decoration: none;
     }
 
@@ -112,7 +119,7 @@
         <a href="index.html" class="text-decoration-none">
           <div class="d-flex justify-content-center align-items-center py-2">
             <img src="../public/resources/index/mappalettelogo.png" class="img-fluid" style="max-width: 100px; margin-right: 10px;">
-            <h1 class="app-name" style="color: #007bff;">MapPalette</h1>
+            <h1 class="app-name" style="color: #FF6B6B;">MapPalette</h1>
           </div>
         </a>
         <div class="signup-container">
@@ -163,7 +170,7 @@
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Sign Up</button>
+                <button type="submit" class="btn">Sign Up</button>
             </form>
 
             <!-- Terms of Service -->
