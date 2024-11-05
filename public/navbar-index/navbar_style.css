@@ -20,9 +20,12 @@
 .navbar-brand {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--primary-color) !important;  /* Restored original color */
     display: flex;
     align-items: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
 }
 
 .navbar-brand img {
