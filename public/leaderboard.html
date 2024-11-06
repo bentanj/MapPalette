@@ -195,45 +195,13 @@
         <site-footer></site-footer>
     </div>
 
-
-<button @click="scrollToTop" class="btn back-to-top">
-    <i class="fas fa-chevron-up"></i>
-</button>
-
-<!-- Footer -->
-<site-footer></site-footer>
-
-
-
-
-</body>
-
-
-<script>
-    const app = Vue.createApp({
-        data() {
-            return {
-                users: [ // DOES NOT CURRENTLY INCLUDE USERID
-                    /*{ id: 1, username: "MapMaster", points: 15420, profilePic: "/api/placeholder/50/50", rank: "Champion" },
-                    { id: 2, username: "RouteExplorer", points: 12350, profilePic: "/api/placeholder/50/50", rank: "Master" },
-                    { id: 3, username: "TrailBlazer", points: 10890, profilePic: "/api/placeholder/50/50", rank: "Pro"},
-                    { id: 4, username: "PathFinder", points: 9870, profilePic: "/api/placeholder/50/50", rank: "Elite" },
-                    { id: 5, username: "WandererPro", points: 8760, profilePic: "/api/placeholder/50/50", rank: "Elite" },
-                    { id: 6, username: "MapExplorer", points: 7650, profilePic: "/api/placeholder/50/50", rank: "Elite" },
-                    { id: 7, username: "RouteMaster", points: 6540, profilePic: "/api/placeholder/50/50", rank: "Elite" },
-                    { id: 8, username: "NavigatorPro", points: 5430, profilePic: "/api/placeholder/50/50", rank: "Elite" },
-                    { id: 9, username: "RunsEverywhere", points: 5120, profilePic: "/api/placeholder/50/50", rank: "Elite" },
-                    { id: 10, username: "LovesJogging", points: 4980, profilePic: "/api/placeholder/50/50", rank: "Elite" },
-                    { id: 11, username: "HaltsSometimes", points: 4670, profilePic: "/api/placeholder/50/50", rank: "Newbie" },
-                    { id: 12, username: "WaterBoy", points: 4420, profilePic: "/api/placeholder/50/50", rank: "Newbie" },
-                    { id: 13, username: "GaitWalker", points: 5430, profilePic: "/api/placeholder/50/50", rank: "Newbie" },
-                    { id: 14, username: "BackTracker", points: 999, profilePic: "/api/placeholder/50/50", rank: "Newbie" }*/
-                ]
-            }
-        },
-        computed: {
-            topPlayers() {
-                return this.users.slice(0, 3);
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    users: [],
+                    baseURL: 'https://app-907670644284.us-central1.run.app'
+                }
             },
             computed: {
                 topPlayers() {
@@ -302,33 +270,8 @@
                     await this.fetchLeaderboardData();
                 }
             }
-        },
-        mounted() {
-            // Fetch leaderboard data from the API
-            axios.get('https://app-907670644284.us-central1.run.app/api/challenge/leaderboard')
-                .then(response => {
-                    data = response.data; // NEED TO IMPLEMENT RANK
-                    data.sort((a, b) => b.points - a.points);
-                    console.log(data);
-                    data = data.map((user, index) => {
-                        let rank;
-                        if (index === 0) rank = 'Champion';
-                        else if (index === 1) rank = 'Master';
-                        else if (index === 2) rank = 'Pro';
-                        else if (index >= 3 && index <= 9) rank = 'Elite';
-                        else rank = 'Newbie';
-                        
-                        return { ...user, rank };
-                    });
-                    this.users = data;
-                    
-                })
-                .catch(error => {
-                    console.error('Error fetching leaderboard data:', error);
-                });
-        },  
-    });
-</script>
+        });
+    </script>
 
     <script src="navbar/navbar.js"></script>
 
