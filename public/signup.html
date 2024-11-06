@@ -49,7 +49,7 @@
     input[type="date"]:focus {
       color: #495057;
       background-color: #fff;
-      border-color: #007bff;
+      border-color: #FF6B6B;
       outline: 0;
       box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
@@ -62,14 +62,21 @@
     }
 
     .terms-text a {
-      color: #007bff;
+      color: #FF6B6B;
       text-decoration: none;
     }
 
-    .btn-primary {
+    .btn {
       width: 100%;
       padding: 10px;
       margin-top: 1rem;
+      background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+      color: white;
+    }
+
+    .btn:hover {
+        background: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+        color: white;
     }
 
     .login-link {
@@ -79,7 +86,7 @@
     }
 
     .login-link a {
-      color: #007bff;
+      color: #FF6B6B;
       text-decoration: none;
     }
 
@@ -111,8 +118,8 @@
     <div class="justify-content-center align-items-center">
         <a href="index.html" class="text-decoration-none">
           <div class="d-flex justify-content-center align-items-center py-2">
-            <img src="../resources/index/mappalettelogo.png" class="img-fluid" style="max-width: 100px; margin-right: 10px;">
-            <h1 class="app-name" style="color: #007bff;">MapPalette</h1>
+            <img src="../public/resources/index/mappalettelogo.png" class="img-fluid" style="max-width: 100px; margin-right: 10px;">
+            <h1 class="app-name" style="color: #FF6B6B;">MapPalette</h1>
           </div>
         </a>
         <div class="signup-container">
@@ -159,11 +166,11 @@
                     <!-- Profile picture preview below the upload box, centralized -->
                     <div id="file-preview-wrapper" style="display: flex; justify-content: center; margin-top: 20px;">
                         <div id="file-preview" class="profile-picture-preview" style="border-radius: 50%; width: 150px; height: 150px; border: 2px solid #ccc; overflow: hidden; position: relative;">
-                            <img src="../resources/index/placeholder_pfp.png" alt="" id="profile-pic-img" style="width: 100%; height: 100%; object-fit: cover; position: absolute; cursor: grab; transition: transform 0.2s ease;">
+                            <img src="../public/resources/index/placeholder_pfp.png" alt="" id="profile-pic-img" style="width: 100%; height: 100%; object-fit: cover; position: absolute; cursor: grab; transition: transform 0.2s ease;">
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Sign Up</button>
+                <button type="submit" class="btn">Sign Up</button>
             </form>
 
             <!-- Terms of Service -->

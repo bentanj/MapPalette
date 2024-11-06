@@ -1,0 +1,65 @@
+@import 'footer/footer_style.css';
+
+@import 'navbar-index/navbar_style.css';
+
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Back to Top Button */
+.back-to-top {
+    /* Positioning */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    
+    /* Perfect circle dimensions */
+    width: 50px;
+    height: 50px;
+    border-radius: 50% !important;
+    
+    /* Remove any default padding/margins that might affect shape */
+    padding: 0 !important;
+    margin: 0 !important;
+    
+    /* Center the content */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* Visual styles */
+    /* background: linear-gradient(90deg, #43cea2, #185a9d); */
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);;
+    color: #fff;
+    border: none;
+    
+    /* Ensure no text decoration or outline affects the shape */
+    text-decoration: none;
+    outline: none;
+}
+
+.back-to-top:hover {
+    /* background: linear-gradient(90deg, #185a9d, #43cea2); */
+    background: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+    color: #fff;
+}
+
+@media (max-width: 576px) {
+    .back-to-top {
+        width: 40px;
+        height: 40px;
+        bottom: 15px;
+        right: 15px;
+    }
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .image-box img {
+        width: 100%;
+        height: auto;
+    }
+}

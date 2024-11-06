@@ -3,59 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MapPalette - Login</title>
+  <title>MapPalette</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Additional External CSS -->
+    <link rel="stylesheet" href="index.css">
+    <!-- Vue -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     
 
   <style>
-    .navbar {
-        position: sticky;
-        top: 0;
-        z-index: 3;
+    @import 'footer/footer_style.css';
+    @import 'navbar-index/navbar_style.css';
+    
+    /* FADE-IN SCROLL CSS */
+    .fade-in {
+        opacity: 0;
+        transform: translateY(90px);
+        transition: opacity 0.8s ease-out, transform 0.5s ease-out;
+    }
+  
+    .fade-in.show {
+        opacity: 1;
+        transform: translateY(0);
     }
 
-    .navbar-brand {
-        /*controls brand name size in navbar*/
-        font-size: 1.5rem;
-    }
 
-    .nav-link {
-        /*controls font size and margin of nav links*/
-        font-size: 1.2rem;
-        margin-left: 20px;
-    }
-
-    .navbar-brand img {
-        /*brand logo sizing*/
-        width: 50px;
-        height: 50px;
-        margin-right: 8px;
-    }
-
-    .app-name {
-      font-size: 2.5rem;
-      color: #007bff;
-    }
-
+    /* --------------------------------------------------------------------------------------------------------------------------------------- */
+    /* HERO CAROUSEL CSS */
     .hero-main-carousel {
         position: relative;
         height: calc(100vh - 82px);
         color: white;
         margin-top: 0;
-      }
+    }
       
-      .hero-carousel-item {
+    .hero-carousel-item {
         height: calc(100vh - 82px);
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
         position: relative;
-      }
+    }
       
-      .hero-carousel-item::before {
+    .hero-carousel-item::before {
         content: '';
         position: absolute;
         top: 0;
@@ -63,43 +56,71 @@
         right: 0;
         bottom: 0;
         background: rgba(0, 0, 0, 0.3);
-      }
+    }
   
-      /* Set specific background images for each slide */
-      .hero-carousel-item:nth-child(1) {
-          background-image: url('./resources/index/run-background.jpeg');
-        }
-        
-        .hero-carousel-item:nth-child(2) {
-          background-image: url('./resources/index/run-background.jpeg');
-        }
-        
-        .hero-carousel-item:nth-child(3) {
-          background-image: url('./resources/index/run-background.jpeg');
-        }
-        
-        .hero-carousel-item:nth-child(4) {
-          background-image: url('./resources/index/run-background.jpeg');
-        }
-        
-        .hero-carousel-item:nth-child(5) {
-          background-image: url('./resources/index/run-background.jpeg');
-        }
-        
-        .hero-carousel-item:nth-child(6) {
-          background-image: url('./resources/index/run-background.jpeg');
-        }
+    /* hero carousel background images */
+    .hero-carousel-item:nth-child(1) {
+        background-image: url('./resources/index/run-background.jpeg');
+    } 
+    .hero-carousel-item:nth-child(2) {
+        background-image: url('./resources/index/run-background.jpeg');
+    }
+    .hero-carousel-item:nth-child(3) {
+        background-image: url('./resources/index/run-background.jpeg');
+    }
+    .hero-carousel-item:nth-child(4) {
+        background-image: url('./resources/index/run-background.jpeg');
+    } 
+    .hero-carousel-item:nth-child(5) {
+        background-image: url('./resources/index/run-background.jpeg');
+    }
+    .hero-carousel-item:nth-child(6) {
+        background-image: url('./resources/index/run-background.jpeg');
+    }
+    .hero-carousel-item:nth-child(7) {
+        background-image: url('./resources/index/run-background.jpeg');
+    }
       
-      /* Base styles for slide content */
-      .hero-slide-content {
+    /* base styles for slide content */
+    .hero-slide-content {
         position: absolute;
         width: 100%;
         height: 100%;
         z-index: 1;
-      }
+    }
+
+    /* Slide 0 - Bottom Up Fade Design */
+    .slide-0 .hero-title {
+        position: absolute;
+        left: 50%;
+        top: 35%;
+        width: 100%;
+        text-align: center;
+        transform: translate(-50%, 100px);
+        opacity: 0;
+        transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+    }
+
+    .slide-0 .hero-subtitle {
+        position: absolute;
+        left: 50%;
+        top: 55%;
+        transform: translate(-50%, 100px);
+        opacity: 0;
+        transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.2s;
+    }
+
+    .slide-0 .hero-btn-group {
+        position: absolute;
+        left: 50%;
+        bottom: 19%;
+        transform: translate(-50%, 100px);
+        opacity: 0;
+        transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.4s;
+    }
   
-      /* Slide 1 - Split Design */
-      .slide-1 .hero-title {
+    /* Slide 1 - Split Design */
+    .slide-1 .hero-title {
         position: absolute;
         left: 10%;
         top: 30%;
@@ -107,84 +128,84 @@
         transform: translateX(-100vw);
         opacity: 0;
         transition: transform 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
-      }
-  
-      .slide-1 .hero-subtitle {
+    }
+
+    .slide-1 .hero-subtitle {
         position: absolute;
         right: 10%;
         top: 40%;
         transform: translateX(100vw);
         opacity: 0;
         transition: transform 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
-      }
-  
-      .slide-1 .hero-btn-group {
+    }
+
+    .slide-1 .hero-btn-group {
         position: absolute;
         bottom: 19%;
         left: 50%;
         transform: translate(-50%, 100px);
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
-      }
-  
-      /* Slide 2 - Diagonal Design */
-      .slide-2 .hero-title {
+    }
+
+    /* Slide 2 - Diagonal Design */
+    .slide-2 .hero-title {
         position: absolute;
         left: 50%;
         top: 30%;
         transform: translate(-50%, -50%) rotate(-15deg) scale(0.5);
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
-  
-      .slide-2 .hero-subtitle {
+    }
+
+    .slide-2 .hero-subtitle {
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%) rotate(15deg) scale(0.5);
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
-  
-      .slide-2 .hero-btn-group {
+    }
+
+    .slide-2 .hero-btn-group {
         position: absolute;
         left: 50%;
         bottom: 19%;
         transform: translate(-50%, 50px);
         opacity: 0;
         transition: all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1);
-      }
-  
-      /* Slide 3 - Cascade Design */
-      .slide-3 .hero-title {
+    }
+
+    /* Slide 3 - Cascade Design */
+    .slide-3 .hero-title {
         position: absolute;
         left: 50%;
         top: 30%;
         transform: translate(-50%, -200px);
         opacity: 0;
         transition: all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1);
-      }
-  
-      .slide-3 .hero-subtitle {
+    }
+
+    .slide-3 .hero-subtitle {
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -200px);
         opacity: 0;
         transition: all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1) 0.2s;
-      }
-  
-      .slide-3 .hero-btn-group {
+    }
+
+    .slide-3 .hero-btn-group {
         position: absolute;
         left: 50%;
         bottom: 19%;
         transform: translate(-50%, -200px);
         opacity: 0;
         transition: all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1) 0.4s;
-      }
-  
-      /* Slide 4 - Corner Design */
-      .slide-4 .hero-title {
+    }
+
+    /* Slide 4 - Corner Design */
+    .slide-4 .hero-title {
         position: absolute;
         left: 10%;
         top: 20%;
@@ -192,9 +213,9 @@
         transform-origin: top left;
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
-  
-      .slide-4 .hero-subtitle {
+    }
+
+    .slide-4 .hero-subtitle {
         position: absolute;
         right: 10%;
         bottom: 40%;
@@ -202,218 +223,257 @@
         transform-origin: bottom right;
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
-      }
-  
-      .slide-4 .hero-btn-group {
+    }
+
+    .slide-4 .hero-btn-group {
         position: absolute;
         left: 50%;
         bottom: 19%;
         transform: translate(-50%, 100px) scale(0.3);
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s;
-      }
-  
-      /* Slide 5 - Spiral Design */
-      .slide-5 .hero-title {
+    }
+
+    /* Slide 5 - Spiral Design */
+    .slide-5 .hero-title {
         position: absolute;
         left: 50%;
         top: 30%;
         transform: translate(-50%, -50%) rotate(180deg);
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
-  
-      .slide-5 .hero-subtitle {
+    }
+
+    .slide-5 .hero-subtitle {
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%) rotate(-180deg);
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
-      }
-  
-      .slide-5 .hero-btn-group {
+    }
+
+    .slide-5 .hero-btn-group {
         position: absolute;
         left: 50%;
         bottom: 19%;
         transform: translate(-50%, -50%) rotate(180deg);
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s;
-      }
-  
-      /* Slide 6 - Zoom Design */
-      .slide-6 .hero-title {
+    }
+
+    /* Slide 6 - Zoom Design */
+    .slide-6 .hero-title {
         position: absolute;
         left: 50%;
         top: 30%;
         transform: translate(-50%, -50%) scale(2);
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
-      }
-  
-      .slide-6 .hero-subtitle {
+    }
+
+    .slide-6 .hero-subtitle {
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%) scale(0.5);
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.2s;
-      }
-  
-      .slide-6 .hero-btn-group {
+    }
+
+    .slide-6 .hero-btn-group {
         position: absolute;
         left: 50%;
         bottom: 19%;
         transform: translate(-50%, -50%) scale(0.3);
         opacity: 0;
         transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.4s;
-      }
-  
-      /* Active slide animations */
-      .slide-1.active .hero-title {
-        transform: translateX(0);
+    }
+
+    /* Active slide animations */
+    .slide-0.active .hero-title,
+    .slide-0.active .hero-subtitle {
+        transform: translate(-50%, -50%);
         opacity: 1;
-      }
-  
-      .slide-1.active .hero-subtitle {
-        transform: translateX(0);
-        opacity: 1;
-      }
-  
-      .slide-1.active .hero-btn-group {
+    }
+
+    .slide-0.active .hero-btn-group {
         transform: translate(-50%, 0);
         opacity: 1;
-      }
-  
-      .slide-2.active .hero-title,
-      .slide-2.active .hero-subtitle {
+    }
+
+    .slide-1.active .hero-title {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .slide-1.active .hero-subtitle {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .slide-1.active .hero-btn-group {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+
+    .slide-2.active .hero-title,
+    .slide-2.active .hero-subtitle {
         transform: translate(-50%, -50%) rotate(0) scale(1);
         opacity: 1;
-      }
-  
-      .slide-2.active .hero-btn-group {
+    }
+
+    .slide-2.active .hero-btn-group {
         transform: translate(-50%, 0);
         opacity: 1;
-      }
-  
-      .slide-3.active .hero-title,
-      .slide-3.active .hero-subtitle,
-      .slide-3.active .hero-btn-group {
+    }
+
+    .slide-3.active .hero-title,
+    .slide-3.active .hero-subtitle,
+    .slide-3.active .hero-btn-group {
         transform: translate(-50%, 0);
         opacity: 1;
-      }
-  
-      .slide-4.active .hero-title,
-      .slide-4.active .hero-subtitle {
+    }
+
+    .slide-4.active .hero-title,
+    .slide-4.active .hero-subtitle {
         transform: scale(1);
         opacity: 1;
-      }
-  
-      .slide-4.active .hero-btn-group {
+    }
+
+    .slide-4.active .hero-btn-group {
         transform: translate(-50%, 0) scale(1);
         opacity: 1;
-      }
-  
-      .slide-5.active .hero-title,
-      .slide-5.active .hero-subtitle,
-      .slide-5.active .hero-btn-group {
+    }
+
+    .slide-5.active .hero-title,
+    .slide-5.active .hero-subtitle,
+    .slide-5.active .hero-btn-group {
         transform: translate(-50%, -50%) rotate(0);
         opacity: 1;
-      }
-  
-      .slide-6.active .hero-title,
-      .slide-6.active .hero-subtitle,
-      .slide-6.active .hero-btn-group {
+    }
+
+    .slide-6.active .hero-title,
+    .slide-6.active .hero-subtitle,
+    .slide-6.active .hero-btn-group {
         transform: translate(-50%, -50%) scale(1);
         opacity: 1;
-      }
+    }
   
-      /* Rest of your existing styles */
-      .hero-slide-content h1 {
-          font-size: 3.5rem;
-          margin-bottom: 1.5rem;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    /* Rest of your existing styles */
+    .hero-slide-content h1 {
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    
+    .hero-slide-content p {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    .btn {
+        padding: 0.75rem 2rem;
+        font-size: 1.1rem;
+        border-radius: 50px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        /*background: linear-gradient(90deg, #43cea2, #185a9d);*/
+        background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        /* background: linear-gradient(90deg, #185a9d, #43cea2);*/
+        background: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-light:hover {
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #FF6B6B;
+        transform: translateY(-2px);
+    }
+
+    /* Carousel Controls */
+    .hero-main-carousel .carousel-control-prev,
+    .hero-main-carousel .carousel-control-next {
+        width: 10%; /* Increase width of clickable area */
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+    }
+
+    .hero-main-carousel .carousel-control-prev {
+        left: 0;
+        padding-left: 0.5rem; /* Add padding to move icon closer to edge */
+    }
+
+    .hero-main-carousel .carousel-control-next {
+        right: 0;
+        padding-right: 0.5rem; /* Add padding to move icon closer to edge */
+    }
+
+    .hero-main-carousel .carousel-control-prev-icon,
+    .hero-main-carousel .carousel-control-next-icon {
+        width: 4rem; /* Make icons slightly larger */
+        height: 4rem;
+        background-color: rgba(0, 0, 0, 0.3); /* Add slight background for better visibility */
+        border-radius: 50%;
+        background-size: 50%;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .hero-main-carousel .carousel-control-prev:hover,
+    .hero-main-carousel .carousel-control-next:hover {
+        opacity: 1;
+    }
+    
+    .carousel-indicators {
+        bottom: 2rem;
+    }
+
+    .carousel-indicators button {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin: 0 8px;
+        background-color: rgba(255, 255, 255, 0.5);
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .carousel-indicators button.active {
+        background-color: #fff;
+        transform: scale(1.2);
+    }
+
+    @media (max-width: 576px) {
+        .hero-title {
+        font-size: 2.5rem;
         }
         
-        .hero-slide-content p {
-          font-size: 1.5rem;
-          margin-bottom: 2rem;
-          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        .hero-subtitle {
+        font-size: 1.2rem;
         }
-  
-      .btn {
-          padding: 0.75rem 2rem;
-          font-size: 1.1rem;
-          border-radius: 50px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          transition: all 0.3s ease;
+        
+        .btn {
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
         }
-    
-        .btn-primary {
-          background-color: #007bff;
-          border: none;
-        }
-    
-        .btn-primary:hover {
-          background-color: #0056b3;
-          transform: translateY(-2px);
-        }
-    
-        .btn-outline-light:hover {
-          background-color: rgba(255, 255, 255, 0.9);
-          color: #000;
-          transform: translateY(-2px);
-        }
-    
-        /* Carousel Controls */
-        .carousel-control-prev,
-        .carousel-control-next {
-          width: 5%;
-          opacity: 0.7;
-          transition: opacity 0.3s ease;
-        }
-    
-        .carousel-control-prev:hover,
-        .carousel-control-next:hover {
-          opacity: 1;
-        }
-    
-        .carousel-indicators {
-          bottom: 2rem;
-        }
-    
-        .carousel-indicators button {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          margin: 0 8px;
-          background-color: rgba(255, 255, 255, 0.5);
-          border: none;
-          transition: all 0.3s ease;
-        }
-    
-        .carousel-indicators button.active {
-          background-color: #fff;
-          transform: scale(1.2);
-        }
-    
-        @media (max-width: 768px) {
-          .hero-title {
-            font-size: 2.5rem;
-          }
-          
-          .hero-subtitle {
-            font-size: 1.2rem;
-          }
-          
-          .btn {
-            padding: 0.5rem 1.5rem;
-            font-size: 1rem;
-          }
-        }
+    }
 
-    /* Key Features section */
+
+    /* --------------------------------------------------------------------------------------------------------------------------------------- */
+    /* KEY FEATURES CSS */
     .key-features-section {
         width: 100vw;
         margin-left: calc(-50vw + 50%);
@@ -428,7 +488,27 @@
         padding: 0 2rem;
     }
 
-    /* Modal styles for reviews */
+    /* Sequential rendering for Key Features */
+    .col-sm-4 {
+        opacity: 0;
+        transform: translateY(50px);
+        transition: opacity 1s ease-out, transform 0.4s ease-out;
+      } 
+  
+    .col-sm-4:hover {
+        background-color: #f1f1f1;
+        transform: scale(1.05);
+    }
+
+
+
+    /* --------------------------------------------------------------------------------------------------------------------------------------- */
+    /* REVIEWS SECTION CSS */
+    .reviews .card {
+        border: none;
+        background-color: #f8f9fa;
+    }
+    
     .review-modal {
         display: none;
         position: fixed;
@@ -437,7 +517,7 @@
         width: 100%;
         height: 100vh;
         background-color: rgba(0, 0, 0, 0.8);
-        z-index: 1000;
+        z-index: 1100;
     }
 
     .review-modal-content {
@@ -469,7 +549,7 @@
         box-sizing: border-box;
     }
 
-    /* New X button styles */
+    /* Modal X Button */
     .close-modal {
         position: absolute;
         right: 1.5rem;
@@ -528,7 +608,7 @@
         }
     }
 
-    /* Make gallery items clickable */
+    /* GALLERY */
     .gallery-item-container {
         cursor: pointer;
     }
@@ -538,116 +618,7 @@
       height: 50px;
       margin-bottom: 1rem;
     }
-
-    /* Video container */
-    .video-container {
-        text-align: center;
-    }
-
-    /* About us */
-    .about-us {
-      padding: 3rem 0;
-    }
-
-    .about-us-description {
-        font-style: italic;
-        font-weight: lighter;
-    }
-
-    /* First Impressions section */
-    .reviews .card {
-      border: none;
-      background-color: #f8f9fa;
-    }
-
-    /* Fade-in scroll effect */
-    .fade-in {
-      opacity: 0;
-      transform: translateY(90px);
-      transition: opacity 0.8s ease-out, transform 1.3s ease-out;
-    }
-
-    .fade-in.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* Sequential rendering for Key Features */
-    .col-sm-4 {
-      opacity: 0;
-      transform: translateY(50px);
-      transition: opacity 1s ease-out, transform 3s ease-out;
-    } 
-
-    /* Additional hover feature */
-    .col-sm-4:hover {
-      background-color: #f1f1f1;
-      transform: scale(1.05);
-    }
-
-    /* Carousel modifications */
-    .carousel-container {
-        position: relative;
-        max-width: 35%;
-        margin: auto;
-        overflow: hidden;
-    }
-
-    .carousel-slide {
-        display: flex;
-        transition: transform 0.5s ease-in-out;
-    }
-
-    .carousel-item {
-        min-width: 100%;
-        text-align: center;
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .person-image {
-        width: 100%;
-        height: auto;
-        object-fit: contain;
-    }
-
-    .person-name {
-        font-size: 1.5em;
-        margin: 10px 0;
-    }
-
-    .person-description {
-        font-size: 1em;
-        color: #666;
-        font-style: italic;
-    }
-
-    .carousel-control-prev, .carousel-control-next {
-        top: 40%;
-        transform: translateY(-50%);
-        z-index: 2;
-    }
-
-    .prev, .next {
-      cursor: pointer;
-      position: absolute;
-      font-size: 2em;
-      color: #333;
-      background-color: transparent;
-      border: none;
-      padding: 0 10px;
-    }
-
-    .prev {
-      left: 10px;
-    }
-
-    .next {
-      right: 10px;
-    }
-
-
-
+  
     .scrollbar-hide::-webkit-scrollbar {
         display: none;
     }
@@ -665,10 +636,6 @@
         transition: transform 0.5s ease-in-out;
         width: auto !important;  /* Override max-width */
         margin: 0 !important;    /* Remove any margins */
-    }
-    
-    .nav-text {
-        font-size: 1.25rem;
     }
     
     .gallery-container {
@@ -721,475 +688,649 @@
         display: flex;
         justify-content: center;
         align-items: center;
+    } 
+
+
+
+    /* --------------------------------------------------------------------------------------------------------------------------------------- */
+    /* STEPPER SECTION CSS*/
+    .stepper-section {
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        margin-right: calc(-50vw + 50%);
+        background-color: #f8f9fa;
+        padding-left: 3rem 0;
+        padding-right: 3rem 0;
     }
+    .stepper-wrapper {
+        padding: 40px 0;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .stepper-item {
+        position: relative;
+        display: flex;
+        gap: 2rem;
+        padding-bottom: 2rem;
+    }
+    
+    .stepper-item:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 40px;
+        bottom: 0;
+        width: 2px;
+        background: #e0e0e0;
+    }
+    
+    .step-counter {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        /*background: linear-gradient(90deg, #43cea2, #185a9d);*/
+        background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+    
+    .step-content {
+        margin-top: 3px;
+    }
+    
+    .step-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+    }
+    
+    .step-description {
+        color: #666;
+        font-size: 1rem;
+        line-height: 1.5;
+        margin-bottom: 0.5rem;
+    }
+    
+    .step-details {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        color: #495057;
+    }
+    
+    .stepper-item:hover .step-counter {
+        /* background: linear-gradient(90deg, #185a9d, #43cea2);*/
+        background: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+        transform: scale(1.2);
+        transition: all 0.2s ease;
+    }      
+
+
+    /* --------------------------------------------------------------------------------------------------------------------------------------- */
+    /* ABOUT US CSS */
+    .about-us {
+        padding: 3rem 0;
+    }
+  
+    .about-us-description {
+        font-style: italic;
+        font-weight: lighter;
+    }
+  
+    .about-us .carousel-item {
+        min-width: 100%;
+        text-align: center;
+        opacity: 1;
+        visibility: visible;
+    } 
+    
+    .person-image {
+        width: 100%; /* Make the image take full width */
+        height: auto; /* Maintain aspect ratio */
+        object-fit: contain; /* Ensure the entire image is visible */
+    }
+    
+    .person-name {
+        font-size: 1.5em;
+        margin: 10px 0;
+    }
+    
+    .person-description {
+        font-size: 1em;
+        color: #666;
+        font-style: italic;
+    }
+
+    .about-us .carousel-control-prev, .about-us .carousel-control-next {
+        top: 40%; /* Move the buttons higher */
+        transform: translateY(-50%); /* Cancel any default vertical centering */
+        z-index: 2; /* Ensure buttons appear above other elements */
+    }
+        
+    
+    .about-us .prev, .about-us .next {
+        cursor: pointer;
+        position: absolute;
+        font-size: 2em;
+        color: #333;
+        background-color: transparent;
+        border: none;
+        padding: 0 10px;
+    }
+    
+    .about-us .prev {
+        left: 10px;
+    }
+    
+    .about-us .next {
+        right: 10px;
+    } 
   </style>
 </head>
+
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light px-3">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#"><img src="./resources/index/mappalettelogo.png"><span style="color: #007bff;">MapPalette</span></a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a href="login.html" class="nav-link btn btn-outline-primary">Login</a>
-              </li>
-              <li class="nav-item">
-                <a href="signup.html" class="nav-link btn btn-primary">Sign Up</a>
-              </li>
-            </ul>
-        </div>
-    </div>
-</nav>
 
-  <!-- Hero Section -->
-  <div class="section hero-main-carousel carousel slide" data-bs-ride="carousel" data-bs-interval="7000" id="heroMainCarousel">
-    <div class="hero-carousel-inner carousel-inner">
-      <!-- Slide 1 - Split Design -->
-      <div class="hero-carousel-item carousel-item slide-1 active">
-        <div class="hero-slide-content">
-          <h1 class="hero-title">Explore the World with MapPalette</h1>
-          <p class="hero-subtitle">Creative routes for every adventure</p>
-          <div class="hero-btn-group">
-            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
-            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 2 - Diagonal Design -->
-      <div class="hero-carousel-item carousel-item slide-2">
-        <div class="hero-slide-content">
-          <h1 class="hero-title">Create imaginative designs with our route mapping tool!</h1>
-          <p class="hero-subtitle">Turn your running routes into works of art</p>
-          <div class="hero-btn-group">
-            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
-            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 3 - Cascade Design -->
-      <div class="hero-carousel-item carousel-item slide-3">
-        <div class="hero-slide-content">
-          <h1 class="hero-title">Mission and Vision</h1>
-          <p class="hero-subtitle">Making fitness fun and creative for everyone</p>
-          <div class="hero-btn-group">
-            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
-            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 4 - Corner Design -->
-      <div class="hero-carousel-item carousel-item slide-4">
-        <div class="hero-slide-content">
-          <h1 class="hero-title">Share your routes with friends!</h1>
-          <p class="hero-subtitle">Connect with fellow runners and share your creative routes</p>
-          <div class="hero-btn-group">
-            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
-            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 5 - Spiral Design -->
-      <div class="hero-carousel-item carousel-item slide-5">
-        <div class="hero-slide-content">
-          <h1 class="hero-title">Join Our Growing Community!</h1>
-          <p class="hero-subtitle">Be part of a creative fitness revolution</p>
-          <div class="hero-btn-group">
-            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
-            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 6 - Zoom Design -->
-      <div class="hero-carousel-item carousel-item slide-6">
-        <div class="hero-slide-content">
-          <h1 class="hero-title">View the top weekly routes!</h1>
-          <p class="hero-subtitle">Get inspired by the most popular routes of the week</p>
-          <div class="hero-btn-group">
-            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
-            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Carousel Controls -->
-    <button class="hero-carousel-control-prev carousel-control-prev" type="button" data-bs-target="#heroMainCarousel" data-bs-slide="prev">
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Previous</span>
-    </button>
-    <button class="hero-carousel-control-next carousel-control-next" type="button" data-bs-target="#heroMainCarousel" data-bs-slide="next">
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Next</span>
-    </button>
-
-    <!-- Carousel Indicators -->
-    <div class="hero-carousel-indicators carousel-indicators">
-      <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-      <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-      <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-      <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
-      <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
-      <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="5" aria-label="Slide 6"></button>
-    </div>
-  </div>
-
-
-
-
-  <!-- Key Features -->
-  <section class="key-features-section">
-    <div class="key-features-content">
-        <div class="mb-5 fade-in" style="text-align:center">
-            <h2>Why Choose MapPalette?</h2>
-        </div>
-        <div class="row mt-4">
-            <div class="col-sm-4">
-                <img class="features-image" src="./resources/index/features/maps.png" alt="">
-                <h4>Creative Route Drawing</h4>
-                <p>Design and follow fun, custom running routes on the map.</p>
-            </div>
-            <div class="col-sm-4">
-                <img class="features-image" src="./resources/index/features/share.png" alt="">
-                <h4>Share Your Routes</h4>
-                <p>Easily share your routes with friends or on social media.</p>
-            </div>
-            <div class="col-sm-4">
-                <img class="features-image" src="./resources/index/features/integration.png" alt="">
-                <h4>Seamless Integration</h4>
-                <p>Connect with fitness apps like Strava to track your runs.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-
-  <!-- Reviews Section -->
-  <section class="reviews fade-in">
-
-    <div class="vh-100 position-relative bg-white overflow-hidden">
-        <div class="position-absolute start-50 translate-middle-x text-center my-5">
-            <h1 class="h2 mt-2 mb-3 fw-heavy">Hear from our Users</h1>
-            <h2 class="h5 mt-2 mb-3 fw-light fst-italic">Click on the images to find out more!</h2>
-        </div>
-    
-        
-        <div id="galleryContainer" class="d-flex overflow-auto h-100 align-items-center scrollbar-hide px-1 gallery-container mt-5">
-            <div class="flex-shrink-0" style="width: 2vw"></div>
-            <!-- Images will be inserted here by JavaScript -->
-            <div class="flex-shrink-0" style="width: 2vw"></div>
-        </div>
-    
-        <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4">
-            <div id="indicatorContainer" class="d-flex gap-1">
-                <!-- Indicators will be inserted here by JavaScript -->
-            </div>
-        </div>
-        
-    </div>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const images = [
-                '../public/resources/index/reviews/ananya.png',
-                '../public/resources/index/reviews/bingbing.png',
-                '../public/resources/index/reviews/brandon.png',
-                '../public/resources/index/reviews/chein.png',
-                '../public/resources/index/reviews/supreme.png',
-                '../public/resources/index/reviews/darryl.png',
-                '../public/resources/index/reviews/emily.png',
-                '../public/resources/index/reviews/justin.png',
-                '../public/resources/index/reviews/nick.png',
-                '../public/resources/index/reviews/ryan.png',
-                '../public/resources/index/reviews/suzy.png',
-                '../public/resources/index/reviews/zac.png',
-            ];
-            let activeIndex = null;
-            let isDragging = false;
-            let startX = 0;
-            let scrollLeft = 0;
-    
-            const galleryContainer = document.getElementById('galleryContainer');
-            const indicatorContainer = document.getElementById('indicatorContainer');
-    
-            // Initialize gallery items
-            images.forEach((src, index) => {
-                const itemWrapper = document.createElement('div');
-                itemWrapper.className = 'gallery-item-wrapper';
-
-                const itemContainer = document.createElement('div');
-                itemContainer.className = 'gallery-item-container';
-
-                const itemImage = document.createElement('img');
-                itemImage.setAttribute('src', src);
-                itemImage.setAttribute('alt', `Gallery image ${index + 1}`);
-                itemImage.setAttribute('class', "h-100 gallery-image");
-                itemImage.setAttribute('style', "object-fit: cover;");
-
-                itemContainer.appendChild(itemImage);
-                itemWrapper.appendChild(itemContainer);
-                
-                galleryContainer.insertBefore(itemWrapper, galleryContainer.lastElementChild);
-    
-                const dot = document.createElement('div');
-                dot.className = 'indicator-dot inactive';
-                indicatorContainer.appendChild(dot);
-            });
-    
-            function getItemScale(index) {
-                if (activeIndex === null) return 0.6;
-                const distance = Math.abs(index - activeIndex);
-                switch (distance) {
-                    case 0: return 1;
-                    case 1: return 0.9;  // Increased from 0.85
-                    case 2: return 0.8;  // Increased from 0.75
-                    case 3: return 0.7;  // Increased from 0.65
-                    default: return 0.6;
-                }
-            }
-    
-            function getVerticalOffset(index) {
-                const scale = getItemScale(index);
-                return (1 - scale) * 15;  // Reduced from 20 to minimize vertical spacing
-            }
-    
-            function updateGalleryItems() {
-                const items = document.querySelectorAll('.gallery-item-wrapper');
-                const dots = document.querySelectorAll('.indicator-dot');
-                
-                items.forEach((item, index) => {
-                    const container = item.querySelector('.gallery-item-container');
-                    const scale = getItemScale(index);
-                    
-                    item.style.opacity = scale * 0.8 + 0.2;
-                    container.style.height = `${scale * 70}vh`;
-                    container.style.transform = `translateY(${getVerticalOffset(index)}%)`;
-                });
-    
-                dots.forEach((dot, index) => {
-                    dot.className = `indicator-dot ${index === activeIndex ? 'active' : 'inactive'}`;
-                });
-            }
-    
-            function handleScroll() {
-                const containerWidth = galleryContainer.offsetWidth;
-                const centerPos = galleryContainer.scrollLeft + (containerWidth / 2);
-                const itemWidth = containerWidth / 5;  // Show more items
-                const initialPadding = window.innerWidth * 0.02;  // Reduced padding
-                const adjustedCenterPos = centerPos - initialPadding;
-                const newActiveIndex = Math.round(adjustedCenterPos / itemWidth);
-    
-                if (newActiveIndex >= 0 && newActiveIndex < images.length) {
-                    activeIndex = newActiveIndex;
-                    updateGalleryItems();
-                }
-            }
-    
-            // Mouse event handlers remain the same
-            function handleMouseDown(e) {
-                isDragging = true;
-                galleryContainer.classList.add('dragging');
-                startX = e.pageX - galleryContainer.offsetLeft;
-                scrollLeft = galleryContainer.scrollLeft;
-            }
-    
-            function handleMouseUp() {
-                isDragging = false;
-                galleryContainer.classList.remove('dragging');
-            }
-    
-            function handleMouseMove(e) {
-                if (!isDragging) return;
-                e.preventDefault();
-                const x = e.pageX - galleryContainer.offsetLeft;
-                const walk = (x - startX) * 2;
-                galleryContainer.scrollLeft = scrollLeft - walk;
-            }
-    
-            // Event listeners
-            galleryContainer.addEventListener('scroll', handleScroll);
-            galleryContainer.addEventListener('mousedown', handleMouseDown);
-            galleryContainer.addEventListener('mouseup', handleMouseUp);
-            galleryContainer.addEventListener('mousemove', handleMouseMove);
-            galleryContainer.addEventListener('mouseleave', handleMouseUp);
-    
-            // Initialize gallery state
-            updateGalleryItems();
-    
-            // Handle image hover
-            document.querySelectorAll('.gallery-item-wrapper').forEach((item, index) => {
-                item.addEventListener('mouseenter', () => {
-                    if (!isDragging) {
-                        activeIndex = index;
-                        updateGalleryItems();
-                    }
-                });
-            });
-        });
-    </script>
-</section>
-
-<!-- Reviews Section with Modal -->
-<div id="reviewModal" class="review-modal">
-    <div class="review-modal-content">
-        <div class="close-modal" aria-label="Close modal"></div>
-        <img id="modalImage" class="review-modal-image" src="" alt="Review">
-        <div class="review-modal-text">
-            <h3 id="modalName"></h3>
-            <p id="modalReview"></p>
-        </div>
-    </div>
-</div>
-
-  <!-- Video Section -->
-  <div class="bg-light">
-    <div class="container py-5 video-container">
-        <h3 class="mb-4 fade-in">Watch How MapPalette Works</h3>
-        <div class="row justify-content-center fade-in">
-            <div class="col-sm-8">
-                <video class="w-100" height="auto" autoplay muted loop>
-                    <source src="./resources/index/placeholder_vid.mp4" type="video/mp4">
-                </video>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-  <!-- About Us Section -->
-  <section class="about-us">
-    <div class="container">
-        <h2 class="text-center mb-2 fade-in">Meet The Team!</h2>
-        <p class="text-center mt-3 mb-4 about-us-description h5 fade-in">MapPalette is developed by RunGoWhere Pte Ltd, a passionate team of IS students from SMU. <br> Meet the brilliant minds behind our application!</p>
-
-        <div class="row justify-content-center">
-            <div class="col-sm-5 fade-in">
-                <div class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
-                    <div class="carousel-inner">
-                        <div class="carousel-item active">
-                            <img src="./resources/index/about_us/bentan.jpg" alt="Ben Tan Kiat" class="d-block w-100 person-image">
-                            <h3 class="person-name">Ben Tan Kiat</h3>
-                            <p class="person-description">Resident Homepage Artist</p>
-                        </div>
-                        <div class="carousel-item">
-                            <img src="./resources/index/about_us/bendan.jpeg" alt="Benjamin Daniel Loh Wayne" class="d-block w-100 person-image">
-                            <h3 class="person-name">Benjamin Daniel Loh Wayne</h3>
-                            <p class="person-description"><b>The</b> Firebase/Backend Guy</p>
-                        </div>
-                        <div class="carousel-item">
-                            <img src="./resources/index/about_us/alvin.jpeg" alt="Koh En Wei, Alvin" class="d-block w-100 person-image">
-                            <h3 class="person-name">Koh En Wei, Alvin</h3>
-                            <p class="person-description">Social Media Influencer</p>
-                        </div>
-                        <div class="carousel-item">
-                            <img src="./resources/index/about_us/weishen.png" alt="Lo Wei Shen" class="d-block w-100 person-image">
-                            <h3 class="person-name">Lo Wei Shen</h3>
-                            <p class="person-description">Accounts Manager (Account..ant?)</p>
-                        </div>
-                        <div class="carousel-item">
-                            <img src="./resources/index/about_us/zhongyan.png" alt="Tan Zhong Yan" class="d-block w-100 person-image">
-                            <h3 class="person-name">Tan Zhong Yan</h3>
-                            <p class="person-description">Ingenious Route Drawer</p>
+<div id="app">
+    <nav-bar></nav-bar>
+    <div style="padding-top: 67px">
+        <!-- Hero Section -->
+        <div id="heroMainCarousel" class="carousel slide hero-main-carousel" data-bs-ride="carousel" data-bs-interval="4000">
+            <div class="hero-carousel-inner carousel-inner">
+                <!-- Slide 0 - Bottom-Up Design -->
+                <div class="carousel-item hero-carousel-item slide-0 active">
+                    <div class="hero-slide-content">
+                        <h1 class="hero-title">Explore the World with MapPalette</h1>
+                        <p class="hero-subtitle">Creative routes for every adventure</p>
+                        <div class="hero-btn-group">
+                            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
+                            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
                         </div>
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target=".carousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target=".carousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
+                </div>
+
+                <!-- Slide 1 - Split Design -->
+                <div class="carousel-item hero-carousel-item slide-1">
+                    <div class="hero-slide-content">
+                        <h1 class="hero-title">Compete with fellow runners!</h1>
+                        <p class="hero-subtitle">Rack up points and top the leaderboard</p>
+                        <div class="hero-btn-group">
+                            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
+                            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2 - Diagonal Design -->
+                <div class="carousel-item hero-carousel-item slide-2">
+                    <div class="hero-slide-content">
+                        <h1 class="hero-title">Create imaginative designs with our route mapping tool!</h1>
+                        <p class="hero-subtitle">Turn your running routes into works of art</p>
+                        <div class="hero-btn-group">
+                            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
+                            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3 - Cascade Design -->
+                <div class="carousel-item hero-carousel-item slide-3">
+                    <div class="hero-slide-content">
+                        <h1 class="hero-title">Mission and Vision</h1>
+                        <p class="hero-subtitle">Making fitness fun and creative for everyone</p>
+                        <div class="hero-btn-group">
+                            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
+                            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4 - Corner Design -->
+                <div class="carousel-item hero-carousel-item slide-4">
+                    <div class="hero-slide-content">
+                        <h1 class="hero-title">Share your routes with friends!</h1>
+                        <p class="hero-subtitle">Connect with fellow runners and share your creative routes</p>
+                        <div class="hero-btn-group">
+                            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
+                            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 5 - Spiral Design -->
+                <div class="carousel-item hero-carousel-item slide-5">
+                    <div class="hero-slide-content">
+                        <h1 class="hero-title">Join Our Growing Community!</h1>
+                        <p class="hero-subtitle">Be part of a creative fitness revolution</p>
+                        <div class="hero-btn-group">
+                            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
+                            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 6 - Zoom Design -->
+                <div class="carousel-item hero-carousel-item slide-6">
+                    <div class="hero-slide-content">
+                        <h1 class="hero-title">View the top weekly routes!</h1>
+                        <p class="hero-subtitle">Get inspired by the most popular routes of the week</p>
+                        <div class="hero-btn-group">
+                            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
+                            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carousel Controls -->
+            <button class="hero-carousel-control-prev carousel-control-prev" type="button" data-bs-target="#heroMainCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="hero-carousel-control-next carousel-control-next" type="button" data-bs-target="#heroMainCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+
+            <!-- Carousel Indicators -->
+            <div class="hero-carousel-indicators carousel-indicators">
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 0"></button>
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="2" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="3" aria-label="Slide 3"></button>
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="4" aria-label="Slide 4"></button>
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="5" aria-label="Slide 5"></button>
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="6" aria-label="Slide 6"></button>
+            </div>
+        </div>
+
+
+
+
+        <!-- Key Features -->
+        <section class="key-features-section">
+            <div class="key-features-content">
+                <div class="mb-5 fade-in" style="text-align:center">
+                    <h2>Why Choose MapPalette?</h2>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-sm-4">
+                        <img class="features-image" src="./resources/index/features/maps.png" alt="">
+                        <h4>Creative Route Drawing</h4>
+                        <p>Design and follow fun, custom running routes on the map.</p>
+                    </div>
+                    <div class="col-sm-4">
+                        <img class="features-image" src="./resources/index/features/share.png" alt="">
+                        <h4>Share Your Routes</h4>
+                        <p>Easily share your routes with friends or on social media.</p>
+                    </div>
+                    <div class="col-sm-4">
+                        <img class="features-image" src="./resources/index/features/integration.png" alt="">
+                        <h4>Seamless Integration</h4>
+                        <p>Connect with fitness apps like Strava to track your runs.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Reviews Section -->
+        <section class="reviews fade-in">
+
+            <div class="vh-100 position-relative bg-white overflow-hidden">
+                <div class="position-absolute start-50 translate-middle-x text-center my-5">
+                    <h1 class="h2 mt-2 mb-3 fw-heavy">Hear from our Users</h1>
+                    <h2 class="h5 mt-2 mb-3 fw-light fst-italic">Click on the images to find out more!</h2>
+                </div>
+
+                
+                <div id="galleryContainer" class="d-flex overflow-auto h-100 align-items-center scrollbar-hide px-1 gallery-container mt-5">
+                    <div class="flex-shrink-0" style="width: 2vw"></div>
+                    <!-- Images inserted here by JavaScript -->
+                    <div class="flex-shrink-0" style="width: 2vw"></div>
+                </div>
+
+                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4">
+                    <div id="indicatorContainer" class="d-flex gap-1">
+                        <!-- Indicators inserted here by JavaScript -->
+                    </div>
+                </div>
+                
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const images = [
+                        './resources/index/reviews/ananya.png',
+                        './resources/index/reviews/bingbing.png',
+                        './resources/index/reviews/brandon.png',
+                        './resources/index/reviews/chein.png',
+                        './resources/index/reviews/supreme.png',
+                        './resources/index/reviews/darryl.png',
+                        './resources/index/reviews/emily.png',
+                        './resources/index/reviews/justin.png',
+                        './resources/index/reviews/nick.png',
+                        './resources/index/reviews/ryan.png',
+                        './resources/index/reviews/suzy.png',
+                        './resources/index/reviews/zac.png',
+                    ];
+                    let activeIndex = null;
+                    let isDragging = false;
+                    let startX = 0;
+                    let scrollLeft = 0;
+
+                    const galleryContainer = document.getElementById('galleryContainer');
+                    const indicatorContainer = document.getElementById('indicatorContainer');
+
+                    // Initialize gallery items
+                    images.forEach((src, index) => {
+                        const itemWrapper = document.createElement('div');
+                        itemWrapper.className = 'gallery-item-wrapper';
+
+                        const itemContainer = document.createElement('div');
+                        itemContainer.className = 'gallery-item-container';
+
+                        const itemImage = document.createElement('img');
+                        itemImage.setAttribute('src', src);
+                        itemImage.setAttribute('alt', `Gallery image ${index + 1}`);
+                        itemImage.setAttribute('class', "h-100 gallery-image");
+                        itemImage.setAttribute('style', "object-fit: cover;");
+
+                        itemContainer.appendChild(itemImage);
+                        itemWrapper.appendChild(itemContainer);
+                        
+                        galleryContainer.insertBefore(itemWrapper, galleryContainer.lastElementChild);
+
+                        const dot = document.createElement('div');
+                        dot.className = 'indicator-dot inactive';
+                        indicatorContainer.appendChild(dot);
+                    });
+
+                    function getItemScale(index) {
+                        if (activeIndex === null) return 0.6;
+                        const distance = Math.abs(index - activeIndex);
+                        switch (distance) {
+                            case 0: return 1;
+                            case 1: return 0.9;  
+                            case 2: return 0.8;  
+                            case 3: return 0.7;  
+                            default: return 0.6;
+                        }
+                    }
+
+                    function getVerticalOffset(index) {
+                        const scale = getItemScale(index);
+                        return (1 - scale) * 15;  
+                    }
+
+                    function updateGalleryItems() {
+                        const items = document.querySelectorAll('.gallery-item-wrapper');
+                        const dots = document.querySelectorAll('.indicator-dot');
+                        
+                        items.forEach((item, index) => {
+                            const container = item.querySelector('.gallery-item-container');
+                            const scale = getItemScale(index);
+                            
+                            item.style.opacity = scale * 0.8 + 0.2;
+                            container.style.height = `${scale * 70}vh`;
+                            container.style.transform = `translateY(${getVerticalOffset(index)}%)`;
+                        });
+
+                        dots.forEach((dot, index) => {
+                            dot.className = `indicator-dot ${index === activeIndex ? 'active' : 'inactive'}`;
+                        });
+                    }
+
+                    function handleScroll() {
+                        const containerWidth = galleryContainer.offsetWidth;
+                        const centerPos = galleryContainer.scrollLeft + (containerWidth / 2);
+                        const itemWidth = containerWidth / 5;  // Show more items
+                        const initialPadding = window.innerWidth * 0.02;  // Reduced padding
+                        const adjustedCenterPos = centerPos - initialPadding;
+                        const newActiveIndex = Math.round(adjustedCenterPos / itemWidth);
+
+                        if (newActiveIndex >= 0 && newActiveIndex < images.length) {
+                            activeIndex = newActiveIndex;
+                            updateGalleryItems();
+                        }
+                    }
+
+                    // Mouse event handlers
+                    function handleMouseDown(e) {
+                        isDragging = true;
+                        galleryContainer.classList.add('dragging');
+                        startX = e.pageX - galleryContainer.offsetLeft;
+                        scrollLeft = galleryContainer.scrollLeft;
+                    }
+
+                    function handleMouseUp() {
+                        isDragging = false;
+                        galleryContainer.classList.remove('dragging');
+                    }
+
+                    function handleMouseMove(e) {
+                        if (!isDragging) return;
+                        e.preventDefault();
+                        const x = e.pageX - galleryContainer.offsetLeft;
+                        const walk = (x - startX) * 2;
+                        galleryContainer.scrollLeft = scrollLeft - walk;
+                    }
+
+                    // Event listeners
+                    galleryContainer.addEventListener('scroll', handleScroll);
+                    galleryContainer.addEventListener('mousedown', handleMouseDown);
+                    galleryContainer.addEventListener('mouseup', handleMouseUp);
+                    galleryContainer.addEventListener('mousemove', handleMouseMove);
+                    galleryContainer.addEventListener('mouseleave', handleMouseUp);
+
+                    // Initialize gallery state
+                    updateGalleryItems();
+
+                    // Handle image hover
+                    document.querySelectorAll('.gallery-item-wrapper').forEach((item, index) => {
+                        item.addEventListener('mouseenter', () => {
+                            if (!isDragging) {
+                                activeIndex = index;
+                                updateGalleryItems();
+                            }
+                        });
+                    });
+                });
+            </script>
+        </section>
+
+        <!-- Reviews Section with Modal -->
+        <div id="reviewModal" class="review-modal">
+            <div class="review-modal-content">
+                <div class="close-modal" aria-label="Close modal"></div>
+                <img id="modalImage" class="review-modal-image" src="" alt="Review">
+                <div class="review-modal-text">
+                    <h3 id="modalName"></h3>
+                    <p id="modalReview"></p>
                 </div>
             </div>
         </div>
+
+        <!-- Stepper Section -->
+        <section class="stepper-section">
+            <div class="container fade-in bg-light">
+                <div class="row justify-content-center">
+                    <div class="col-md-10">
+                        <h2 class="text-center mt-5 mb-4">How MapPalette Works</h2>
+                        <div class="stepper-wrapper">
+                            <div class="stepper-item">
+                                <div class="step-counter">1</div>
+                                <div class="step-content">
+                                    <div class="step-title">Create Your Account</div>
+                                    <div class="step-description">
+                                        Sign up for MapPalette in just a few clicks. Join our community of creative runners!
+                                    </div>
+                                    <div class="step-details">
+                                        Simply provide your email and create a password. No credit card required. Start exploring our features immediately after verification.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stepper-item">
+                                <div class="step-counter">2</div>
+                                <div class="step-content">
+                                    <div class="step-title">Design Your Route</div>
+                                    <div class="step-description">
+                                        Use our intuitive map interface to draw your running route in creative shapes and patterns.
+                                    </div>
+                                    <div class="step-details">
+                                        Click points on the map to create your route. Our smart algorithm helps you follow roads and paths automatically.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stepper-item">
+                                <div class="step-counter">3</div>
+                                <div class="step-content">
+                                    <div class="step-title">Customize Your Experience</div>
+                                    <div class="step-description">
+                                        Add personal touches to your route with custom markers, descriptions, and difficulty ratings.
+                                    </div>
+                                    <div class="step-details">
+                                        Mark interesting spots, add notes about terrain, and set privacy settings for your routes.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stepper-item">
+                                <div class="step-counter">4</div>
+                                <div class="step-content">
+                                    <div class="step-title">Share and Connect</div>
+                                    <div class="step-description">
+                                        Share your creative routes with friends or discover routes created by other runners.
+                                    </div>
+                                    <div class="step-details">
+                                        Connect with fellow runners, join challenges, and get inspired by the community's creative routes.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- About Us Section -->
+        <section class="about-us">
+            <div class="container">
+                <h2 class="text-center mb-2 fade-in">Meet The Team!</h2>
+                <p class="text-center mt-3 mb-4 about-us-description h5 fade-in">MapPalette is developed by RunGoWhere Pte Ltd, a passionate team of IS students from SMU. <br> Meet the brilliant minds behind our application!</p>
+
+                <div class="row justify-content-center">
+                    <div class="col-sm-5 fade-in">
+                        <div id="teamCarousel" class="team-carousel carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+                            <div class="carousel-inner">
+                                <div class="team-carousel-item carousel-item active">
+                                    <img src="./resources/index/about_us/bentan.jpg" alt="Ben Tan Kiat" class="d-block w-100 person-image">
+                                    <h3 class="person-name">Ben Tan Kiat</h3>
+                                    <p class="person-description">Resident Homepage Artist</p>
+                                </div>
+                                <div class="team-carousel-item carousel-item">
+                                    <img src="./resources/index/about_us/bendan.jpeg" alt="Benjamin Daniel Loh Wayne" class="d-block w-100 person-image">
+                                    <h3 class="person-name">Benjamin Daniel Loh Wayne</h3>
+                                    <p class="person-description"><b>The</b> Firebase/Backend Guy</p>
+                                </div>
+                                <div class="team-carousel-item carousel-item">
+                                    <img src="./resources/index/about_us/alvin.jpeg" alt="Koh En Wei, Alvin" class="d-block w-100 person-image">
+                                    <h3 class="person-name">Koh En Wei, Alvin</h3>
+                                    <p class="person-description">Social Media Influencer</p>
+                                </div>
+                                <div class="team-carousel-item carousel-item">
+                                    <img src="./resources/index/about_us/weishen.png" alt="Lo Wei Shen" class="d-block w-100 person-image">
+                                    <h3 class="person-name">Lo Wei Shen</h3>
+                                    <p class="person-description">Accounts Manager (Account..ant?)</p>
+                                </div>
+                                <div class="team-carousel-item carousel-item">
+                                    <img src="./resources/index/about_us/zhongyan.png" alt="Tan Zhong Yan" class="d-block w-100 person-image">
+                                    <h3 class="person-name">Tan Zhong Yan</h3>
+                                    <p class="person-description">Ingenious Route Drawer</p>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#teamCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#teamCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
-  </section>
 
-  <!-- Footer -->
-  <footer class="bg-light text-center text-lg-start">
-    <div class="container p-4">
-        <!-- Grid row -->
-        <div class="row align-items-center">
-            <!-- Column 1: Brand Name -->
-            <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
-                <h5 class="text-uppercase fw-bold">MapPalette</h5>
-            </div>
+    <button @click="scrollToTop" class="btn back-to-top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
 
-            <!-- Column 2: Contact Information -->
-            <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
-                <h6 class="fw-bold">Contact us</h6>
-                <p class="mb-1">mappalette@gmail.com</p>
-                <p class="mb-1">+65-687654321</p>
-                <p>81 Victoria St, Singapore 188065</p>
-            </div>
+    <site-footer></site-footer>
+</div>
 
-            <!-- Column 3: Social Media Icons -->
-            <div class="col-lg-4 col-md-12 text-md-end">
-                <a href="#" class="me-3 text-dark"><img
-                        src="https://img.icons8.com/ios-filled/24/000000/facebook-new.png" alt="Facebook" /></a>
-                <a href="#" class="me-3 text-dark"><img
-                        src="https://img.icons8.com/ios-filled/24/000000/linkedin.png" alt="LinkedIn" /></a>
-                <a href="#" class="me-3 text-dark"><img
-                        src="https://img.icons8.com/ios-filled/24/000000/twitter.png" alt="Twitter" /></a>
-                <a href="#" class="text-dark"><img
-                        src="https://img.icons8.com/ios-filled/24/000000/instagram-new.png"
-                        alt="Instagram" /></a>
-            </div>
-        </div>
-        <!-- Grid row -->
-
-        <hr class="my-4">
-
-        <!-- Copyright -->
-        <div class="text-center">
-            <p class="mb-0">&copy; 2024. All rights reserved.</p>
-        </div>
-    </div>
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script>
-    // Fade-in scroll effect
-    document.addEventListener('scroll', function () {
-      const elements = document.querySelectorAll('.fade-in');
-      const windowHeight = window.innerHeight;
-
-      elements.forEach(el => {
-        const position = el.getBoundingClientRect().top;
-        if (position < windowHeight-220) {
-          el.classList.add('show');
+<script>
+    // CREATE VUE APP
+    const app = Vue.createApp({
+        methods: {
+            scrollToTop() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            },
         }
-      });
-    });
+    })
 
-    // Fade-in scroll effect with sequential rendering for Key Features
-    document.addEventListener('scroll', function () {
-        const features = document.querySelectorAll('.col-sm-4');
-        const windowHeight = window.innerHeight;
-    
-        features.forEach((feature, index) => {
-        const position = feature.getBoundingClientRect().top;
-        
-        // Trigger the fade-in only when the element is in the viewport, and add a delay for each feature
-        if (position < windowHeight - 240) { // Adjust this value as needed
-            setTimeout(() => {
-            feature.style.opacity = 1;
-            feature.style.transform = 'translateY(0)';
-            }, index * 400); // Delay each feature based on its index (200ms per feature)
-        }
+    // FADE-IN SCROLL EFFECT
+    document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('scroll', function () {
+            const elements = document.querySelectorAll('.fade-in');
+            const windowHeight = window.innerHeight;
+
+            elements.forEach(el => {
+                if (el) { // Check if 'el' exists before calling getBoundingClientRect
+                    const position = el.getBoundingClientRect().top;
+                    if (position < windowHeight - 220) {
+                        el.classList.add('show');
+                    }
+                }
+            });
         });
-    });
-  
+
+        document.addEventListener('scroll', function () {
+            const features = document.querySelectorAll('.col-sm-4');
+            const windowHeight = window.innerHeight;
+
+            features.forEach((feature, index) => {
+                if (feature) { // Check if feature exists
+                    const position = feature.getBoundingClientRect().top;
+
+                    if (position < windowHeight - 270) {
+                        setTimeout(() => {
+                            feature.style.opacity = 1;
+                            feature.style.transform = 'translateY(0)';
+                        }, index * 400);
+                    }
+                }
+            });
+        });
+
+    });    
+
+    // INITIALISE REVIEW SECTION MODALS
     document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('reviewModal');
         const modalImage = document.getElementById('modalImage');
@@ -1197,7 +1338,7 @@
         const modalReview = document.getElementById('modalReview');
         const closeBtn = document.querySelector('.close-modal');
 
-        // Review data - you can expand this with actual reviews
+        // MODAL DATA
         const reviewsData = {
             'ananya': {
                 name: 'Ananya',
@@ -1207,7 +1348,46 @@
                 name: 'Bing Bing',
                 review: 'I love how easy it is to share routes with my running group. Great community feature!'
             },
-            // Add more reviews for each image...
+            'brandon': {
+                name: 'Brandon',
+                review: 'Running with MapPalette has completely changed my perspective on training!'
+            },
+            'chein': {
+                name: 'Chein',
+                review: 'The app helps me discover new paths and keeps my runs exciting!'
+            },
+            'supreme': {
+                name: 'Supreme',
+                review: 'I appreciate the customization options for planning my routes.'
+            },
+            'darryl': {
+                name: 'Darryl',
+                review: 'MapPalette makes it so easy to track my progress and stay motivated!'
+            },
+            'emily': {
+                name: 'Emily',
+                review: 'I love the social aspect of the app. It makes running with friends more fun!'
+            },
+            'justin': {
+                name: 'Justin',
+                review: 'The variety of routes keeps me engaged and looking forward to my runs.'
+            },
+            'nick': {
+                name: 'Nick',
+                review: 'Great app for both new and experienced runners. Highly recommended!'
+            },
+            'ryan': {
+                name: 'Ryan',
+                review: 'MapPalette has become an essential part of my training regimen.'
+            },
+            'suzy': {
+                name: 'Suzy',
+                review: 'I enjoy exploring new areas with the app. It’s like a treasure hunt!'
+            },
+            'zac': {
+                name: 'Zac',
+                review: 'The community features are fantastic for connecting with other runners!'
+            },
         };
 
         // Handle gallery item clicks
@@ -1237,25 +1417,18 @@
         }
     });
 
-    // Optional: Auto-slide functionality for team carousel
-    document.addEventListener('scroll', function () {
-        // Detect when the carousel section fades in and start autoslide
-        const carouselSection = document.querySelector('.carousel-container'); // Adjust selector to match your carousel container
-        const carouselPosition = carouselSection.getBoundingClientRect().top;
-        const aboutUs = document.getElementsByClassName('about-us');
-        
-        if (carouselPosition < windowHeight - 150 && !carouselSection.classList.contains('started') && aboutUs.style.opacity == 1) {
-          // Start the carousel autoslide once it's visible
-          const carousel = new bootstrap.Carousel('#quoteCarousel', {
-            interval: 4000, // Set the autoslide interval (5 seconds here)
-            ride: 'carousel'
-          });
-          
-          // Mark the carousel as "started" to avoid re-triggering the autoslide
-          carouselSection.classList.add('started');
-        }
-      });
-  </script>
+
+</script>
+
+<!-- IMPORT NAVBAR AND FOOTER -->
+<script src="navbar-index/navbar.js"></script>
+<script src="footer/footer.js"></script>
+
+<script>
+    app.mount('#app')
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
 
