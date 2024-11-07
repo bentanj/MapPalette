@@ -72,9 +72,11 @@
                                     <h6 class="fw-bold mb-0">Profile Picture</h6>
                                     <div class="profile-picture-container">
                                         <!-- Profile picture preview container -->
-                                        <div id="file-preview-wrapper" style="display: flex; justify-content: center; margin-top: 20px;">
-                                            <div id="file-preview" class="profile-picture-preview" style="border-radius: 50%; width: 150px; height: 150px; border: 2px solid #ccc; overflow: hidden; position: relative;">
-                                                <img :src="userProfile.avatar || 'resources/default-avatar.png'" alt="Profile Picture" id="profile-pic-img" style="width: 100%; height: 100%; object-fit: cover; position: absolute;">
+                                        <div id="file-preview-wrapper">
+                                            <div id="file-preview">
+                                                <img :src="userProfile.avatar || 'resources/default-avatar.png'" 
+                                                     alt="Profile Picture" 
+                                                     id="profile-pic-img">
                                             </div>
                                         </div>
                                 
