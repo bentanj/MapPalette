@@ -1,5 +1,4 @@
 <!-- TODO:
-1. trending route -> when map clicked goes to route page with modal of map opened?
 2. need to implement limit as to how many comments can show on the modal?
 -->
 
@@ -81,98 +80,6 @@
                 </div>
             </section>
 
-            <!-- New User Welcome Section (show only if user has no friends/routes) -->
-            <div class="container mt-4" v-if="isNewUser">
-                <div class="row">
-                    <!-- Getting Started Guide -->
-                    <div class="col-lg-8">
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-body">
-                                <h3 class="card-title mb-4">👋 Welcome to MapPalette!</h3>
-                                <p class="card-text">Here's how to get started:</p>
-                                
-                                <div class="getting-started-steps">
-                                    <div class="step d-flex align-items-start mb-4">
-                                        <div class="step-icon me-3">
-                                            <i class="bi bi-1-circle-fill fs-4 text-primary"></i>
-                                        </div>
-                                        <div>
-                                            <h5>Draw Your First Route</h5>
-                                            <p>Create your first running route by clicking "Draw Your Map!" in the quick actions menu.</p>
-                                            <a href="addMaps.html" class="btn btn-primary">
-                                                <i class="bi bi-map me-2"></i>Start Drawing
-                                            </a>
-                                        </div>
-                                    </div>
-
-                                    <div class="step d-flex align-items-start mb-4">
-                                        <div class="step-icon me-3">
-                                            <i class="bi bi-2-circle-fill fs-4 text-primary"></i>
-                                        </div>
-                                        <div>
-                                            <h5>Connect with Runners</h5>
-                                            <p>Follow other runners to see their routes and activities in your feed.</p>
-                                            <a href="friends.html" class="btn btn-primary">
-                                                <i class="bi bi-people me-2"></i>Find Runners
-                                            </a>
-                                        </div>
-                                    </div>
-
-                                    <div class="step d-flex align-items-start">
-                                        <div class="step-icon me-3">
-                                            <i class="bi bi-3-circle-fill fs-4 text-primary"></i>
-                                        </div>
-                                        <div>
-                                            <h5>Explore Routes</h5>
-                                            <p>Discover popular running routes in your area and save them for later.</p>
-                                            <a href="routes.html" class="btn btn-primary">
-                                                <i class="bi bi-compass me-2"></i>Browse Routes
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Suggested Users to Follow -->
-                    <div class="col-lg-4">
-                        <div class="card shadow-sm">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h4 class="card-title mb-0">Suggested Runners</h4>
-                                    <a href="friends.html" class="text-decoration-none">See All</a>
-                                </div>
-
-                                <div v-if="suggestedUsers.length > 0">
-                                    <div v-for="user in suggestedUsers" :key="user.userID" class="suggested-user mb-3">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <img :src="user.profilePicture || 'resources/default-profile.png'" 
-                                                    :alt="user.username"
-                                                    class="suggested-user-avatar me-3">
-                                                <div>
-                                                    <h6 class="mb-0">{{ user.username }}</h6>
-                                                </div>
-                                            </div>
-                                            <button class="btn btn-outline-primary btn-sm"
-                                                    @click="followUser(user)"
-                                                    :disabled="user.isFollowing">
-                                                <i class="bi" :class="user.isFollowing ? 'bi-check' : 'bi-plus'"></i>
-                                                {{ user.isFollowing ? 'Following' : 'Follow' }}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="text-center py-3">
-                                    <p class="text-muted mb-0">Loading suggestions...</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- main content -->
             <div class="container-fluid">
                 <div class="row">
@@ -225,44 +132,120 @@
                                     </a>
                                 </div>
                             </div>
-                    
-                            <!-- Trending Routes Section - Only shown for existing users -->
-                            <template v-if="!isNewUser && trendingRoutes.length > 0">
-                                <div>
-                                    <h6 class="mb-3 text-uppercase fw-bold text-muted small">Trending Routes</h6>
-                                    <div v-for="route in trendingRoutes" 
-                                        :key="route.id" 
-                                        class="card mb-2 hover-overlay"
-                                        @click="viewRoute(route)">
-                                        <img :src="route.image" class="card-img-top" alt="Route preview" 
-                                            style="height: 100px; object-fit: cover;">
-                                        <div class="card-body p-2">
-                                            <h6 class="card-title mb-1">{{ route.title }}</h6>
-                                            <p class="card-text small text-muted mb-0">{{ route.distance }} • {{ route.saves }}</p>
+
+                            <!-- Suggested Followers (shown when user has no following) -->
+                            <div v-if="userProfile.stats.following === 0" class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="text-uppercase fw-bold text-muted small mb-0">Suggested Runners</h6>
+                                    <div>
+                                        <button @click="loadSuggestedUsers" 
+                                                class="btn btn-link btn-sm text-decoration-none p-0 me-2">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </button>
+                                        <a href="friends.html" class="text-decoration-none small">See All</a>
+                                    </div>
+                                </div>
+                                <div v-if="suggestedUsers.length > 0">
+                                    <div v-for="user in suggestedUsers" :key="user.userID" class="mb-3 p-2 border rounded hover-shadow">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
+                                                <img :src="user.profilePicture || 'resources/default-profile.png'" 
+                                                    :alt="user.username"
+                                                    class="rounded-circle me-2"
+                                                    style="width: 40px; height: 40px; object-fit: cover;">
+                                                <div>
+                                                    <h6 class="mb-0 small">{{ user.username }}</h6>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <!-- Follow Button -->
+                                                <button class="btn btn-outline-primary btn-sm"
+                                                        v-if="!user.isFollowing"
+                                                        @click="followUser(user)">
+                                                    <i class="bi bi-person-plus"></i>
+                                                    Follow
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </template>
+                                <div v-else class="text-center py-3">
+                                    <p class="text-muted small mb-0">Loading suggestions...</p>
+                                </div>
+                            </div>
 
-                            <!-- Alternative content for new users -->
-                            <template v-else>
-                                <div>
-                                    <h6 class="mb-3 text-uppercase fw-bold text-muted small">Get Started</h6>
-                                    <div class="card mb-2 p-3">
-                                        <p class="text-muted mb-2 small">Follow other runners to discover trending routes in your feed!</p>
-                                        <a href="friends.html" class="btn btn-outline-primary btn-sm">
-                                            <i class="bi bi-people me-2"></i>Find Runners
-                                        </a>
+                            <!-- Trending Routes Section - Only shown for existing users -->
+                            <div v-if="userProfile.stats.following > 0 && trendingRoutes.length > 0">
+                                <h6 class="mb-3 text-uppercase fw-bold text-muted small">Trending Routes</h6>
+                                <div v-for="route in trendingRoutes" 
+                                    :key="route.id" 
+                                    class="card mb-2 hover-overlay"
+                                    @click="viewRoute(route)">
+                                    <img :src="route.image" class="card-img-top" alt="Route preview" 
+                                        style="height: 100px; object-fit: cover;">
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title mb-1">{{ route.title }}</h6>
+                                        <p class="card-text small text-muted mb-0">{{ route.distance }} • {{ route.saves }}</p>
                                     </div>
                                 </div>
-                            </template>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Main content area using vue components -->
                     <div class="col-lg-8 col-md-8 content">
+                        <!-- New User Tutorial Section (show only if user has no friends/routes) -->
+                        <div v-if="isNewUser && (!activities || activities.length === 0)" class="mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h3 class="card-title mb-4">👋 Welcome to MapPalette!</h3>
+                                    <p class="card-text">Here's how to get started:</p>
+                                    
+                                    <div class="getting-started-steps">
+                                        <div class="step d-flex align-items-start mb-4">
+                                            <div class="step-icon me-3">
+                                                <i class="bi bi-1-circle-fill fs-4 text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h5>Draw Your First Route</h5>
+                                                <p>Create your first running route by clicking "Draw Your Map!" in the quick actions menu.</p>
+                                                <a href="addMaps.html" class="btn btn-primary">
+                                                    <i class="bi bi-map me-2"></i>Start Drawing
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="step d-flex align-items-start mb-4">
+                                            <div class="step-icon me-3">
+                                                <i class="bi bi-2-circle-fill fs-4 text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h5>Connect with Runners</h5>
+                                                <p>Follow other runners to see their routes and activities in your feed.</p>
+                                                <a href="friends.html" class="btn btn-primary">
+                                                    <i class="bi bi-people me-2"></i>Find Runners
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="step d-flex align-items-start">
+                                            <div class="step-icon me-3">
+                                                <i class="bi bi-3-circle-fill fs-4 text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h5>Explore Routes</h5>
+                                                <p>Discover popular running routes in your area and save them for later.</p>
+                                                <a href="routes.html" class="btn btn-primary">
+                                                    <i class="bi bi-compass me-2"></i>Browse Routes
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div id="activity-feed">
-                            <div v-if="activities.length === 0 && !isLoading" class="text-center py-4">
+<div v-if="activities.length === 0 && !isLoading" class="text-center py-4">
                                 <div class="card shadow-sm">
                                     <div class="card-body">
                                         <h5 class="mb-3">No Activities Yet</h5>
@@ -819,8 +802,8 @@
                     hidden: true,
                     alertType: '',
                     alertMessage: '',
-                    isNewUser: false,
                     suggestedUsers: [],
+                    isLoading: false,
                 }
             },
             created() {
@@ -886,11 +869,20 @@
                         
                         if (response.data && Array.isArray(response.data)) {
                             // Filter out current user and already followed users
-                            this.suggestedUsers = response.data.filter(user => 
+                            let eligibleUsers = response.data.filter(user => 
                                 user.userID !== this.currentUser.id && !user.isFollowing
-                            ).slice(0, 5);
+                            );
                             
-                            console.log('Loaded suggested users:', this.suggestedUsers);
+                            // Shuffle the array 
+                            for (let i = eligibleUsers.length - 1; i > 0; i--) {
+                                const j = Math.floor(Math.random() * (i + 1));
+                                [eligibleUsers[i], eligibleUsers[j]] = [eligibleUsers[j], eligibleUsers[i]];
+                            }
+                            
+                            // Take first 5 users from shuffled array
+                            this.suggestedUsers = eligibleUsers.slice(0, 5);
+                            
+                            console.log('Loaded randomized suggested users:', this.suggestedUsers);
                         } else {
                             console.log('No suggested users found');
                             this.suggestedUsers = [];
