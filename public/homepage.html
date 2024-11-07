@@ -43,6 +43,24 @@
         <div id="app">
         <!-- Navbar -->
         <nav-bar :user_profile="userProfile"></nav-bar>
+        
+        <!-- alert -->
+        <div class="alert alert-dismissible fade" 
+            :class="{'alert-warning': alertType === 'error', 'alert-success': alertType === 'success', 'show': showAlert}"
+            :hidden="hidden" 
+            role="alert">
+            <!-- Icons for Error or Success -->
+            <svg v-if="alertType === 'error'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+            </svg>
+            <svg v-if="alertType === 'success'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+            </svg>
+            <!-- Alert Message -->
+            {{ alertMessage }}
+            <!-- Close Button -->
+            <button type="button" class="btn-close" @click="dismissAlert()"></button>
+        </div>
 
         <div class="main-content-wrapper">
             <!-- Hero Section -->
@@ -62,6 +80,98 @@
                     </div>
                 </div>
             </section>
+
+            <!-- New User Welcome Section (show only if user has no friends/routes) -->
+            <div class="container mt-4" v-if="isNewUser">
+                <div class="row">
+                    <!-- Getting Started Guide -->
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-body">
+                                <h3 class="card-title mb-4">👋 Welcome to MapPalette!</h3>
+                                <p class="card-text">Here's how to get started:</p>
+                                
+                                <div class="getting-started-steps">
+                                    <div class="step d-flex align-items-start mb-4">
+                                        <div class="step-icon me-3">
+                                            <i class="bi bi-1-circle-fill fs-4 text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h5>Draw Your First Route</h5>
+                                            <p>Create your first running route by clicking "Draw Your Map!" in the quick actions menu.</p>
+                                            <a href="addMaps.html" class="btn btn-primary">
+                                                <i class="bi bi-map me-2"></i>Start Drawing
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="step d-flex align-items-start mb-4">
+                                        <div class="step-icon me-3">
+                                            <i class="bi bi-2-circle-fill fs-4 text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h5>Connect with Runners</h5>
+                                            <p>Follow other runners to see their routes and activities in your feed.</p>
+                                            <a href="friends.html" class="btn btn-primary">
+                                                <i class="bi bi-people me-2"></i>Find Runners
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="step d-flex align-items-start">
+                                        <div class="step-icon me-3">
+                                            <i class="bi bi-3-circle-fill fs-4 text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h5>Explore Routes</h5>
+                                            <p>Discover popular running routes in your area and save them for later.</p>
+                                            <a href="routes.html" class="btn btn-primary">
+                                                <i class="bi bi-compass me-2"></i>Browse Routes
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Suggested Users to Follow -->
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h4 class="card-title mb-0">Suggested Runners</h4>
+                                    <a href="friends.html" class="text-decoration-none">See All</a>
+                                </div>
+
+                                <div v-if="suggestedUsers.length > 0">
+                                    <div v-for="user in suggestedUsers" :key="user.userID" class="suggested-user mb-3">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
+                                                <img :src="user.profilePicture || 'resources/default-profile.png'" 
+                                                    :alt="user.username"
+                                                    class="suggested-user-avatar me-3">
+                                                <div>
+                                                    <h6 class="mb-0">{{ user.username }}</h6>
+                                                </div>
+                                            </div>
+                                            <button class="btn btn-outline-primary btn-sm"
+                                                    @click="followUser(user)"
+                                                    :disabled="user.isFollowing">
+                                                <i class="bi" :class="user.isFollowing ? 'bi-check' : 'bi-plus'"></i>
+                                                {{ user.isFollowing ? 'Following' : 'Follow' }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="text-center py-3">
+                                    <p class="text-muted mb-0">Loading suggestions...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- main content -->
             <div class="container-fluid">
@@ -116,28 +226,60 @@
                                 </div>
                             </div>
                     
-                            <!-- Trending Routes -->
-                            <div>
-                                <h6 class="mb-3 text-uppercase fw-bold text-muted small">Trending Routes</h6>
-                                <div v-for="route in trendingRoutes" 
-                                    :key="route.id" 
-                                    class="card mb-2 hover-overlay"
-                                    @click="viewRoute(route)">
-                                    <img :src="route.image" class="card-img-top" alt="Route preview" 
-                                        style="height: 100px; object-fit: cover;">
-                                    <div class="card-body p-2">
-                                        <h6 class="card-title mb-1">{{ route.title }}</h6>
-                                        <p class="card-text small text-muted mb-0">{{ route.distance }} • {{ route.saves }}</p>
+                            <!-- Trending Routes Section - Only shown for existing users -->
+                            <template v-if="!isNewUser && trendingRoutes.length > 0">
+                                <div>
+                                    <h6 class="mb-3 text-uppercase fw-bold text-muted small">Trending Routes</h6>
+                                    <div v-for="route in trendingRoutes" 
+                                        :key="route.id" 
+                                        class="card mb-2 hover-overlay"
+                                        @click="viewRoute(route)">
+                                        <img :src="route.image" class="card-img-top" alt="Route preview" 
+                                            style="height: 100px; object-fit: cover;">
+                                        <div class="card-body p-2">
+                                            <h6 class="card-title mb-1">{{ route.title }}</h6>
+                                            <p class="card-text small text-muted mb-0">{{ route.distance }} • {{ route.saves }}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </template>
+
+                            <!-- Alternative content for new users -->
+                            <template v-else>
+                                <div>
+                                    <h6 class="mb-3 text-uppercase fw-bold text-muted small">Get Started</h6>
+                                    <div class="card mb-2 p-3">
+                                        <p class="text-muted mb-2 small">Follow other runners to discover trending routes in your feed!</p>
+                                        <a href="friends.html" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-people me-2"></i>Find Runners
+                                        </a>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
 
                     <!-- Main content area using vue components -->
                     <div class="col-lg-8 col-md-8 content">
                         <div id="activity-feed">
+                            <div v-if="activities.length === 0 && !isLoading" class="text-center py-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="mb-3">No Activities Yet</h5>
+                                        <p class="text-muted">Follow other runners to see their activities here, or create your own route to share!</p>
+                                        <div class="mt-3">
+                                            <a href="addMaps.html" class="btn btn-primary me-2">
+                                                <i class="bi bi-map me-2"></i>Create Route
+                                            </a>
+                                            <a href="friends.html" class="btn btn-outline-primary">
+                                                <i class="bi bi-people me-2"></i>Find Runners
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <activity-card
+                                v-else
                                 v-for="activity in activities"
                                 :key="activity.id"
                                 :activity="activity"
@@ -218,11 +360,12 @@
                         // Emit the share event to parent component
                         this.$emit('share', this.activity);
                         
-                        // Notify the user that the link has been copied
-                        alert("Link copied to clipboard!");
+                        // Show success alert instead of using alert()
+                        this.$root.setAlert('success', "Link copied to clipboard!");
                     })
                     .catch(err => {
                         console.error("Failed to copy link: ", err);
+                        this.$root.setAlert('error', "Failed to copy link to clipboard");
                     });
             },
             async likePost() {
@@ -547,8 +690,8 @@
                                                 @click="likePost(activity.id)"
                                                 :class="{ 'liked': isLiked }"
                                                 :disabled="disabledActions.like">
-                                            <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
-                                            <span>Like</span>
+                                            <i :class="[activity.isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
+                                            <span>{{ activity.isLiked ? 'Liked' : 'Like' }}</span>
                                         </button>
 
                                         <button class="btn btn-link p-0 action-button"
@@ -670,19 +813,47 @@
                     trendingRoutes: [],
                     activities: [],
                     postID: null, //share url param
-                    error: null // For handling errors in loading comments
+                    error: null, // For handling errors in loading comments
+                    showAlert: false,
+                    alertTimeout: null,
+                    hidden: true,
+                    alertType: '',
+                    alertMessage: '',
+                    isNewUser: false,
+                    suggestedUsers: [],
                 }
             },
             created() {
                 const loadingSpinner = document.getElementById('loading-spinner');
                 const appContainer = document.getElementById('app-container');
 
-                // Get postId from URL 
                 const urlParams = new URLSearchParams(window.location.search);
                 this.postId = urlParams.get('id');
-    
+
+                const initializeApp = async () => {
+                    try {
+                        // Load suggested users first
+                        await this.loadSuggestedUsers();
+                        
+                        // Then try to fetch posts
+                        if (this.postId) {
+                            await this.fetchSinglePost(this.postId);
+                        } else {
+                            await this.fetchPosts();
+                        }
+                    } catch (error) {
+                        console.error('Error during initialization:', error);
+                        // Still continue to show the app even if there's an error
+                    } finally {
+                        if (loadingSpinner && appContainer) {
+                            loadingSpinner.style.display = 'none';
+                            appContainer.style.display = 'block';
+                        }
+                    }
+                };
+
                 // Check for window.currentUser
-                const checkUser = setInterval(async () => {
+                const checkUser = setInterval(() => {
                     if (window.currentUser) {
                         clearInterval(checkUser);
                         console.log('User data found:', window.currentUser);
@@ -691,32 +862,96 @@
                         this.currentUserId = window.currentUser.id;
                         this.updateUserProfile(window.currentUser);
                         
-                        try {
-                            // Fetch posts based on whether we have a postId
-                            if (this.postId) {
-                                await this.fetchSinglePost(this.postId);
-                            } else {
-                                await this.fetchPosts();
-                            }
-
-                            // hide loading spinner and show content after everything is loaded
-                            if (loadingSpinner && appContainer) {
-                                loadingSpinner.style.display = 'none';
-                                appContainer.style.display = 'block';
-                            }
-                        } catch (error) {
-                            console.error('Error loading content:', error);
-                            // show an error message to the user
-                            if (loadingSpinner && appContainer) {
-                                loadingSpinner.style.display = 'none';
-                                appContainer.style.display = 'block';
-                            }
-                        }
+                        initializeApp();
                     }
                 }, 100);
             },
 
+            computed: {
+                isNewUser() {
+                    return (!this.activities || this.activities.length === 0) || 
+                        (!this.userProfile.stats.following || this.userProfile.stats.following === 0);
+                }
+            },
+
             methods: {
+                async loadSuggestedUsers() {
+                    if (!this.currentUser || !this.currentUser.id) {
+                        console.log('Current user not available yet');
+                        return;
+                    }
+                    
+                    try {
+                        const response = await axios.get(`${this.API_ENDPOINT}/api/users/getcondensed/${this.currentUser.id}`);
+                        
+                        if (response.data && Array.isArray(response.data)) {
+                            // Filter out current user and already followed users
+                            this.suggestedUsers = response.data.filter(user => 
+                                user.userID !== this.currentUser.id && !user.isFollowing
+                            ).slice(0, 5);
+                            
+                            console.log('Loaded suggested users:', this.suggestedUsers);
+                        } else {
+                            console.log('No suggested users found');
+                            this.suggestedUsers = [];
+                        }
+                    } catch (error) {
+                        console.error('Error loading suggested users:', error);
+                        this.suggestedUsers = [];
+                    }
+                },
+                
+                async followUser(user) {
+                    try {
+                        // Make API call to follow user
+                        await axios.post(`${this.API_ENDPOINT}/api/follow?id=${user.userID}`, {
+                            userID: this.currentUser.id
+                        });
+                        
+                        // Update UI
+                        user.isFollowing = true;
+                        
+                        // Update suggested users list
+                        this.suggestedUsers = this.suggestedUsers.filter(u => u.userID !== user.userID);
+                        
+                        // Refresh activities
+                        await this.fetchPosts();
+                    } catch (error) {
+                        console.error('Error following user:', error);
+                    }
+                },
+
+                dismissAlert() {
+                    this.showAlert = false;
+                    setTimeout(() => {
+                        this.hidden = true;
+                        this.alertMessage = '';
+                    }, 300);
+                    if (this.alertTimeout) {
+                        clearTimeout(this.alertTimeout);
+                        this.alertTimeout = null;
+                    }
+                },
+
+                setAlert(type, message) {
+                    if (this.alertTimeout) {
+                        clearTimeout(this.alertTimeout);
+                        this.alertTimeout = null;
+                    }
+
+                    this.hidden = false;
+                    this.alertType = type;
+                    this.alertMessage = message;
+
+                    setTimeout(() => {
+                        this.showAlert = true;
+                    }, 10);
+
+                    this.alertTimeout = setTimeout(() => {
+                        this.dismissAlert();
+                        this.alertTimeout = null;
+                    }, 3000);
+                },
                 async fetchSinglePost(postId) {
                     this.isLoading = true;
                     try {
@@ -896,125 +1131,135 @@
                         const allPosts = response.data;
                         console.log(`Total posts fetched: ${allPosts.length}`);
 
+                        if (allPosts && allPosts.length > 0) {
                         // Map posts with initial data
-                        this.activities = allPosts.map(post => ({
-                            ...post,
-                            id: post.postID,
-                            user: post.username || 'Unknown User',
-                            userImg: post.profilePicture || this.userProfile.avatar,
-                            date: this.calculateTimeSince(post.createdAt),
-                            location: post.waypoints[0].address,
-                            title: post.title,
-                            routeTitle: post.title,
-                            description: post.description,
-                            distance: `${post.distance} km`,
-                            mapImg: post.image,
-                            likes: post.likeCount,
-                            commentsList: [], // Initialize empty comments list
-                            shares: post.shareCount,
-                            isLiked: post.likedBy.includes(currentUserId)
-                        }));
-
-                        // Extract unique user IDs from posts
-                        const userIDs = [...new Set(this.activities.map(post => post.userID))];
-
-                        // Fetch user data for each unique userID (post creators)
-                        const userPromises = userIDs.map(id =>
-                            axios.get(`${this.API_ENDPOINT}/api/${id}`)
-                                .then(userResponse => ({
-                                    id,
-                                    username: userResponse.data.username
-                                }))
-                                .catch(error => {
-                                    console.error(`Error fetching user data for ${id}:`, error);
-                                    return { id, username: 'Unknown User' };
-                                })
-                        );
-
-                        // Wait for all user data to be fetched
-                        const users = await Promise.all(userPromises);
-
-                        // Create a userMap for quick lookup
-                        const userMap = {};
-                        users.forEach(user => {
-                            userMap[user.id] = user.username;
-                        });
-
-                        // Update usernames in activities
-                        this.activities.forEach(activity => {
-                            activity.user = userMap[activity.userID] || 'Unknown User';
-                        });
-
-                        const commentPromises = this.activities.map(async activity => {
-                            try {
-                                const commentsResponse = await axios.get(`${this.API_ENDPOINT}/api/posts/${activity.id}/comments`);
-                                const comments = commentsResponse.data;
-
-                                // Get unique user IDs from comments
-                                const commentUserIDs = [...new Set(comments.map(comment => comment.userID))];
-
-                                // Fetch user data for comment authors
-                                const commentUserPromises = commentUserIDs.map(userId =>
-                                    axios.get(`${this.API_ENDPOINT}/api/${userId}`)
-                                        .then(response => ({
-                                            id: userId,
-                                            username: response.data.username
-                                        }))
-                                        .catch(() => ({
-                                            id: userId,
-                                            username: 'Unknown User'
-                                        }))
-                                );
-
-                                const commentUsers = await Promise.all(commentUserPromises);
-                                const commentUserMap = {};
-                                commentUsers.forEach(user => {
-                                    commentUserMap[user.id] = user.username;
-                                });
-
-                                // Add usernames to comments
-                                activity.commentsList = comments.map(comment => ({
-                                    ...comment,
-                                    username: commentUserMap[comment.userID] || 'Unknown User'
-                                }));
-                            } catch (error) {
-                                if (error.response?.status === 404) {
-                                    activity.commentsList = [];
-                                } else {
-                                    console.error(`Error fetching comments for post ${activity.id}:`, error);
-                                }
-                            }
-                        });
-
-                        // Wait for all comments to be fetched
-                        await Promise.all(commentPromises);
-
-                        // Sort activities by date
-                        this.activities.sort((a, b) => {
-                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
-                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
-                            return dateB - dateA;
-                        });
-
-                        // Set trending routes
-                        this.trendingRoutes = allPosts
-                            .sort((a, b) => {
-                                const likesDiff = (b.likeCount || 0) - (a.likeCount || 0);
-                                return likesDiff !== 0 ? likesDiff : (b.shareCount || 0) - (a.shareCount || 0);
-                            })
-                            .slice(0, 2)
-                            .map(post => ({
+                            this.activities = allPosts.map(post => ({
+                                ...post,
                                 id: post.postID,
+                                user: post.username || 'Unknown User',
+                                userImg: post.profilePicture || this.userProfile.avatar,
+                                date: this.calculateTimeSince(post.createdAt),
+                                location: post.waypoints[0].address,
                                 title: post.title,
+                                routeTitle: post.title,
+                                description: post.description,
                                 distance: `${post.distance} km`,
-                                saves: `${post.likeCount || 0} likes`,
-                                image: post.image
+                                mapImg: post.image,
+                                likes: post.likeCount,
+                                commentsList: [], // Initialize empty comments list
+                                shares: post.shareCount,
+                                isLiked: post.likedBy.includes(currentUserId)
                             }));
 
+                            // Extract unique user IDs from posts
+                            const userIDs = [...new Set(this.activities.map(post => post.userID))];
+
+                            // Fetch user data for each unique userID (post creators)
+                            const userPromises = userIDs.map(id =>
+                                axios.get(`${this.API_ENDPOINT}/api/${id}`)
+                                    .then(userResponse => ({
+                                        id,
+                                        username: userResponse.data.username
+                                    }))
+                                    .catch(error => {
+                                        console.error(`Error fetching user data for ${id}:`, error);
+                                        return { id, username: 'Unknown User' };
+                                    })
+                            );
+
+                            // Wait for all user data to be fetched
+                            const users = await Promise.all(userPromises);
+
+                            // Create a userMap for quick lookup
+                            const userMap = {};
+                            users.forEach(user => {
+                                userMap[user.id] = user.username;
+                            });
+
+                            // Update usernames in activities
+                            this.activities.forEach(activity => {
+                                activity.user = userMap[activity.userID] || 'Unknown User';
+                            });
+
+                            const commentPromises = this.activities.map(async activity => {
+                                try {
+                                    const commentsResponse = await axios.get(`${this.API_ENDPOINT}/api/posts/${activity.id}/comments`);
+                                    const comments = commentsResponse.data;
+
+                                    // Get unique user IDs from comments
+                                    const commentUserIDs = [...new Set(comments.map(comment => comment.userID))];
+
+                                    // Fetch user data for comment authors
+                                    const commentUserPromises = commentUserIDs.map(userId =>
+                                        axios.get(`${this.API_ENDPOINT}/api/${userId}`)
+                                            .then(response => ({
+                                                id: userId,
+                                                username: response.data.username
+                                            }))
+                                            .catch(() => ({
+                                                id: userId,
+                                                username: 'Unknown User'
+                                            }))
+                                    );
+
+                                    const commentUsers = await Promise.all(commentUserPromises);
+                                    const commentUserMap = {};
+                                    commentUsers.forEach(user => {
+                                        commentUserMap[user.id] = user.username;
+                                    });
+
+                                    // Add usernames to comments
+                                    activity.commentsList = comments.map(comment => ({
+                                        ...comment,
+                                        username: commentUserMap[comment.userID] || 'Unknown User'
+                                    }));
+                                } catch (error) {
+                                    if (error.response?.status === 404) {
+                                        activity.commentsList = [];
+                                    } else {
+                                        console.error(`Error fetching comments for post ${activity.id}:`, error);
+                                    }
+                                }
+                            });
+
+                            // Wait for all comments to be fetched
+                            await Promise.all(commentPromises);
+
+                            // Sort activities by date
+                            this.activities.sort((a, b) => {
+                                const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
+                                const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
+                                return dateB - dateA;
+                            });
+
+                            // Set trending routes
+                            this.trendingRoutes = allPosts
+                                .sort((a, b) => {
+                                    const likesDiff = (b.likeCount || 0) - (a.likeCount || 0);
+                                    return likesDiff !== 0 ? likesDiff : (b.shareCount || 0) - (a.shareCount || 0);
+                                })
+                                .slice(0, 2)
+                                .map(post => ({
+                                    id: post.postID,
+                                    title: post.title,
+                                    distance: `${post.distance} km`,
+                                    saves: `${post.likeCount || 0} likes`,
+                                    image: post.image
+                                }));
+                        } else {
+                            this.activities = [];
+                            this.trendingRoutes = [];
+                        }
+
                     } catch (error) {
-                        console.error('Error in fetchPosts:', error);
-                        this.activities = [];
-                        this.trendingRoutes = [];
+                        // Handle 404
+                        if (error.response && error.response.status === 404) {
+                            console.log('No posts found for user - new user detected');
+                            this.activities = [];
+                            this.trendingRoutes = [];
+                        } else {
+                            console.error('Error in fetchPosts:', error);
+                        }
                     } finally {
                         this.isLoading = false;
                     }
