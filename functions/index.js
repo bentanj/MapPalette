@@ -461,10 +461,12 @@ app.get('/api/posts/:postId/comments', async (req, res) => {
   try {
     const commentsSnap = await db.collection('posts').doc(postID).collection('comments').orderBy('createdAt').get();
 
+    // Check if there are no comments, and return an empty array if true
     if (commentsSnap.empty) {
-      return res.status(404).json({ message: 'No comments found for this post.' });
+      return res.status(200).json([]); // Return an empty array for no comments
     }
 
+    // Map through comments if they exist
     const comments = commentsSnap.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
@@ -476,6 +478,7 @@ app.get('/api/posts/:postId/comments', async (req, res) => {
     return res.status(500).send(error);
   }
 });
+
 
 // Update a comment by post ID
 app.put('/api/posts/:postId/comments/:commentId', async (req, res) => {
