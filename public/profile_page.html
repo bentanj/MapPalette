@@ -354,6 +354,7 @@
                 return {
                     newComment: '',
                     modal: null,
+                    displayLimit: 4,
                     showAllComments: false,
                     disabledActions: {},
                     lastApiCallTime: 0,
@@ -368,14 +369,16 @@
                 },
 
                 displayedComments() {
-                    if (this.showAllComments) {
-                        return this.comments;
-                    }
-                    return this.comments.slice(0, 4);
+                    return this.comments.slice(0, this.displayLimit);
                 },
 
                 hasMoreComments() {
-                    return this.comments.length > 4;
+                    return this.comments.length > this.displayLimit;
+                },
+
+                remainingCommentsCount() {
+                    const remaining = this.comments.length - this.displayLimit;
+                    return Math.min(remaining, 4); 
                 }
             },
 
@@ -403,6 +406,10 @@
             },
 
             methods: {
+                loadMoreComments() {
+                    this.displayLimit += 4; // Increase limit by 4
+                },
+
                 async likePost(postId) {
                     // Emit the like event to parent instead of handling API call directly
                     this.$emit('like', this.activity);
@@ -497,8 +504,6 @@
                     this.$emit('share', this.activity); // Emit share event to parent
                     window.location.href = shareUrl;
                 },
-
-            
             },
 
             template: `
@@ -593,6 +598,15 @@
                                             <div class="comment-time text-muted">
                                                 {{ calculateTimeSince(comment.createdAt) }}
                                             </div>
+                                        </div>
+
+                                        <!-- Show More Comments Button -->
+                                        <div v-if="hasMoreComments" class="text-center mt-3 mb-3">
+                                            <button 
+                                                @click="loadMoreComments" 
+                                                class="btn btn-outline-primary btn-sm">
+                                                Show {{ remainingCommentsCount }} more comments
+                                            </button>
                                         </div>
                                     </div>
                                     
