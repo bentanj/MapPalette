@@ -45,7 +45,7 @@ const app = Vue.createApp({
         // Post related
         postTitle:'',
         postDescription:'',
-        minDescriptionLength: 50, // Minimum character requirement
+        maxDescriptionLength: 400, // Maximum character
         userID:'',
         username:'',
         submitting:false,
@@ -72,7 +72,7 @@ const app = Vue.createApp({
             return this.postDescription.length;
         },
         isSubmitDisabled() {
-            return this.descriptionLength < this.minDescriptionLength;
+            return this.descriptionLength >= this.maxDescriptionLength;
         }
     },
     methods: {
@@ -195,6 +195,11 @@ const app = Vue.createApp({
         },          
 
         async addWaypoint(latLng, index = null) {
+            if (this.markers.length >= 27) {
+                this.setAlert('error', 'You have exceeded the marker limit of 27.');
+                return; // Exit the function if the limit is reached
+            }
+
             return new Promise((resolve) => {
                 // Generate a unique ID for the waypoint
                 const id = Date.now() + Math.random();
@@ -478,8 +483,8 @@ const app = Vue.createApp({
             this.formValidated = true;
             const form = document.querySelector('form');
             
-            if (this.descriptionLength < this.minDescriptionLength) {
-                this.setAlert('error', `Description must be at least ${this.minDescriptionLength} characters.`);
+            if (this.descriptionLength >= this.maxDescriptionLength) {
+                this.setAlert('error', `Description must be less than ${this.maxDescriptionLength} characters.`);
                 return; // Prevent submission
             }
 
@@ -526,6 +531,11 @@ const app = Vue.createApp({
 
                 if (response.data.id) {
                     this.setAlert('success', 'Your copy has been saved successfully.');
+                    
+                    // Show the creation success modal
+                    const createModal = new bootstrap.Modal(document.getElementById('createPostSuccess'));
+                    createModal.show();
+
                     this.clearMap(false);
                     this.postTitle = '';
                     this.postDescription = '';
@@ -803,6 +813,98 @@ const app = Vue.createApp({
         },        
 
         startTour() {
+            if (this.isEditing) {
+                // Call the editing tour if in editing mode
+                this.startEditTour();
+            } else {
+                // Call the creation tour if in creation mode
+                const driverObj = driver({
+                    showProgress: true,
+                    steps: [
+                        {
+                            element: '#map',
+                            popover: {
+                                title: 'Map Interaction',
+                                description: 'Use scroll to zoom in and out of the map.',
+                                position: 'top',
+                            },
+                        },
+                        {
+                            element: '#pac-input',
+                            popover: {
+                                title: 'Search Location',
+                                description: 'Enter a location in the search bar, then press Enter or click a suggestion.',
+                                position: 'bottom',
+                            },
+                        },
+                        {
+                            element: '#map',
+                            popover: {
+                                title: 'Plot a Waypoint',
+                                description: 'Click on the map to plot a waypoint. Each click adds a new point.',
+                                position: 'top',
+                            },
+                            onNext: () => {
+                                const mapCenter = this.map.getCenter();
+                                this.addWaypoint(mapCenter);
+                            },
+                        },
+                        {
+                            element: '#colorPalette',
+                            popover: {
+                                title: 'Change Route Color',
+                                description: 'Click on a color to change the route color.',
+                                position: 'top',
+                            },
+                        },
+                        {
+                            element: '.btn.btn-danger.m-1',
+                            popover: {
+                                title: 'Clear Route',
+                                description: 'Click here to clear all waypoints instantly.',
+                                position: 'left',
+                            },
+                        },
+                        {
+                            element: '#export-button',
+                            popover: {
+                                title: 'Export Route',
+                                description: 'Click here to export your route to Google Maps.',
+                                position: 'left',
+                            },
+                        },
+                        {
+                            element: 'form',
+                            popover: {
+                                title: 'Add Post Details',
+                                description: 'Provide a title and description for your route. These fields are required.',
+                                position: 'top',
+                            },
+                        },
+                        {
+                            element: '.btn.btn-danger.w-100',
+                            popover: {
+                                title: 'Delete Post',
+                                description: 'Click here to delete this post if needed.',
+                                position: 'left',
+                            },
+                        },
+                        {
+                            element: '.btn.btn-primary.w-100',
+                            popover: {
+                                title: 'Create Post',
+                                description: 'Click here to create a post for your route.',
+                                position: 'top',
+                            },
+                        },
+                    ],
+                });
+                driverObj.drive();
+            }
+        },
+    
+        startEditTour() {
+            // Define the steps for the edit tour
             const driverObj = driver({
                 showProgress: true,
                 steps: [
@@ -849,6 +951,13 @@ const app = Vue.createApp({
                             description: 'Click here to clear all waypoints instantly.',
                             position: 'left',
                         },
+                    },                   {
+                        element: '.btn.btn-secondary.m-1',
+                        popover: {
+                            title: 'Undo Changes',
+                            description: 'Click here to restore original waypoints.',
+                            position: 'left',
+                        },
                     },
                     {
                         element: '#export-button',
@@ -875,19 +984,26 @@ const app = Vue.createApp({
                         },
                     },
                     {
+                        element: '.btn.btn-secondary.w-100',
+                        popover: {
+                            title: 'Return Home',
+                            description: 'Click here to return home.',
+                            position: 'left',
+                        },
+                    },
+                    {
                         element: '.btn.btn-primary.w-100',
                         popover: {
-                            title: 'Create Post',
-                            description: 'Click here to create a post for your route.',
+                            title: 'Update Post',
+                            description: 'Click here to update a post for your route.',
                             position: 'top',
                         },
                     },
                 ],
             });
-        
             driverObj.drive();
         },
-
+        
         async getTownName(lat, lng) {
             try {
                 const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {

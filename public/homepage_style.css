@@ -35,6 +35,45 @@ body {
     padding-bottom: 3rem; 
 }
 
+/*bootstrap alert when share*/
+.alert {
+    position: fixed;
+    top: 60px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    border-radius: 0;
+    width: 100%; 
+    z-index: 1020;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Update animation for top-down entry */
+.alert.show {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translate(-50%, -100%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+/* When alert is hiding */
+.alert.fade:not(.show) {
+    transform: translate(-50%, -100%);
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
 /* Content spacing */
 .content {
     margin-top: 20px;
@@ -127,6 +166,37 @@ body {
     font-size: 1.3rem;
 }
 
+/* New User Welcome Section */
+.getting-started-steps .step {
+    transition: transform 0.2s ease;
+}
+
+.getting-started-steps .step:hover {
+    transform: translateX(10px);
+}
+
+.suggested-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.suggested-user {
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.suggested-user:hover {
+    background-color: var(--background-light);
+}
+
+/* Step icon colors */
+.bi-1-circle-fill { color: #43cea2; }
+.bi-2-circle-fill { color: #185a9d; }
+.bi-3-circle-fill { color: #ff7e5f; }
+
 /* side column styles */
 .side-column {
     position: sticky;
@@ -137,8 +207,12 @@ body {
     border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     padding: 1.5rem !important;
-    margin-bottom: 2rem; 
+    margin-bottom: 2rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
+
 
 .side-column::-webkit-scrollbar {
     width: 6px;
@@ -206,6 +280,9 @@ body {
     font-size: 1.5em;
     margin: 0;
     color: black;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .post > header .meta {
@@ -241,7 +318,17 @@ body {
 .post .content p {
     margin: 0.5rem 0 0 0;
     word-wrap: break-word;
-    overflow: hidden;
+    overflow-wrap: break-word;
+    word-break: break-all;
+    hyphens: auto;
+}
+
+/* Action buttons container */
+.post footer .actions .d-flex {
+    justify-content: space-around;
+    padding: 0 10%;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 /* Stats spacing adjustment */
@@ -442,16 +529,6 @@ body {
     cursor: pointer;
 }
 
-/* Large screens (lg and up) */
-@media (min-width: 992px) {
-    .hero-section {
-        height: 400px;
-    }
-    .content {
-        padding-left: calc(100% / 9);
-    }
-}
-
 /* Medium screens (md) */
 @media (max-width: 991.98px) {
     .content {
@@ -480,10 +557,20 @@ body {
         font-size: 1rem;
         padding: 0.4rem 0.8rem;
     }
+
+    .profile-pic {
+        margin-left: auto;
+    }
+    
+    .side-column {
+        position: static;
+        height: auto;
+        margin-bottom: 2rem;
+    }
+
 }
 
-/* Small screens (sm) */
-@media (max-width: 767.98px) {
+@media (max-width: 768px) {
     .hero-section {
         height: 450px;
     }
@@ -509,6 +596,50 @@ body {
     .hero-stats .stat-item {
         font-size: 0.9rem;
     }
+
+    .content {
+        padding-left: 1rem;
+    }
+    
+    .post > header {
+        flex-direction: row !important; /* Override the column direction */
+        padding: 1.5rem;
+        align-items: flex-start;
+    }
+    
+    .post > header .title {
+        padding-right: 1rem;
+        padding-bottom: 0 !important;
+        flex: 1;
+    }
+    
+    .post > header .meta {
+        min-width: auto;
+        padding-left: 1rem;
+        text-align: right;
+        border-left: solid 1px var(--border-color);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .post > header .meta time.published {
+        margin-bottom: 0.5rem;
+    }
+    
+    .post > header .meta .d-flex {
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    
+    .post > header .meta img {
+        margin-top: 0.5rem;
+    }
+    
+    .post footer .stats li {
+        margin-left: 1em;
+        padding-left: 1em;
+    }
 }
 
 /* Extra small screens (xs) */
@@ -528,45 +659,88 @@ body {
     .hero-stats .stat-item {
         padding: 0.3rem 0.7rem;
     }
-}
 
-/* Responsive styles */
-@media (max-width: 991px) {
-    .profile-pic {
-        margin-left: auto;
+    .post footer .actions .d-flex {
+        gap: 1rem;
     }
     
-    .side-column {
-        position: static;
-        height: auto;
-        margin-bottom: 2rem;
+    .post footer .actions .d-flex .btn-link {
+        width: calc(50% - 0.5rem);  /* Take up half the width minus gap */
+        justify-content: center;
+    }
+
+    .post footer {
+        padding: 1em 1em;  /* Reduce padding for small screens */
     }
 }
 
-@media (max-width: 768px) {
-    .content {
-        padding-left: 1rem;
-    }
-    
-    .post > header {
+/* Small mobile screens */
+@media (max-width: 500px) {
+    .hero-stats {
+        width: 100%;
+        display: flex;
         flex-direction: column;
-        padding: 1.5rem;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .hero-stats .stat-item {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        width: auto;
+        min-width: 150px;
+        justify-content: center;
+    }
+
+    .hero-stats .stat-item i {
+        font-size: 1rem;
     }
     
-    .post > header .title {
-        padding-right: 0;
-        padding-bottom: 1.5rem;
+    .hero-content h1 {
+        font-size: 1.65rem;
+        margin-bottom: 0.75rem;
     }
     
-    .post > header .meta {
-        padding-left: 0;
-        border-left: 0;
-        text-align: left;
-        min-width: 0;
+    .hero-content p {
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        padding: 0;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* Extra small screen size - 4 rows layout */
+@media (max-width: 300px) {
+    .post footer .actions .d-flex {
+        gap: 0.75rem;  /* Slightly reduce gap for very small screens */
+        flex-direction: column;  /* Stack buttons vertically */
     }
     
-    .post footer .stats li {
-        margin-left: 1em;
-        padding-left: 1em;
+    .post footer .actions .d-flex .btn-link {
+        width: 100%;  /* Full width for each button */
+        justify-content: center;
+    }
+
+    .post footer {
+        padding: 0.75em;  /* Further reduce padding for very small screens */
+    }
+}
+
+/* Regular screen size - maintain current design */
+@media (min-width: 501px) {
+    .post footer .actions .d-flex {
+        flex-wrap: nowrap;
+    }
+}
+
+/* Large screens (lg and up) */
+@media (min-width: 992px) {
+    .hero-section {
+        height: 400px;
+    }
+    .content {
+        padding-left: calc(100% / 9);
     }
 }
