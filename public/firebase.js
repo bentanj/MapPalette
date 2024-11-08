@@ -63,10 +63,10 @@ signupForm?.addEventListener('submit', async (e) => {
   const email = document.getElementById('email').value;
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
-  const confirmPassword = document.getElementById('confirm-password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
   const birthday = document.getElementById('birthday').value;
   const gender = document.getElementById('gender').value;
-  const profilePicture = document.getElementById('profile-picture').files[0];
+  const profilePicture = document.getElementById('profilePicture').files[0];
 
   if (password !== confirmPassword) {
     alert("Passwords do not match.");
