@@ -139,6 +139,64 @@
     .login-link a:hover {
       text-decoration: underline;
     }
+    /* Add these styles to your existing <style> section */
+
+/* Base transitions for form elements */
+.form-control, .form-select {
+  transition: all 0.3s ease;
+  border: 1px solid #ced4da;
+}
+
+/* Hover effects for input fields and select */
+.form-control:hover, .form-select:hover {
+  border-color: #FF6B6B;
+  box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.1);
+  transform: translateY(-1px);
+  background-color: #fff;
+}
+
+/* Focus effects for input fields and select */
+.form-control:focus, .form-select:focus {
+  border-color: #FF6B6B;
+  box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Profile upload hover effects */
+.profile-upload {
+  transition: all 0.3s ease;
+}
+
+.profile-upload:hover {
+  border-color: #FF6B6B;
+  box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.1);
+  transform: translateY(-2px);
+  background-color: #fff;
+}
+
+/* Form label hover effects */
+.form-label {
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.form-control:hover + .form-label,
+.form-select:hover + .form-label,
+.form-control:focus + .form-label,
+.form-select:focus + .form-label {
+  color: #FF6B6B;
+  transform: translateX(5px);
+}
+
+/* Enhanced button hover effect */
+.btn {
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+}
   </style>
 </head>
 <body>
