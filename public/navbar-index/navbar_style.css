@@ -1,8 +1,6 @@
 /* navbar styles */
 :root {
-    --primary-color: #FF6B6B;  /* Original logo color */
-    /*--primary-gradient: linear-gradient(90deg, #43cea2, #185a9d);*/
-    /*--primary-gradient-hover: linear-gradient(90deg, #185a9d, #43cea2);*/
+    --primary-color: #FF6B6B;
     --primary-gradient: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
     --primary-gradient-hover: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
     --background-light: #F7F7F7;    
@@ -17,6 +15,7 @@
     z-index: 1030;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     background: white !important;
+    padding: 0.5rem 1rem;
 }
 
 .navbar-brand {
@@ -36,29 +35,41 @@
     margin-right: 8px;
 }
 
+/* Hamburger button styles */
+.navbar-toggler {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    background-color: transparent;
+}
+
+.navbar-toggler:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
+}
+
 /* Login/Signup buttons container */
 .navbar .navbar-nav {
     display: flex;
     align-items: center;
-    gap: 10px;  /* Consistent spacing between buttons */
+    gap: 10px;
+    margin-left: auto; /* This pushes the nav items to the right */
 }
 
 /* Common button styles */
 .nav-link.btn {
-    padding: 8px 24px;  /* Consistent padding */
+    padding: 8px 24px;
     border-radius: 4px;
     font-weight: bold;
     font-size: 1rem;
     transition: all 0.3s ease;
-    min-width: 100px;  /* Ensure minimum consistent width */
+    min-width: 100px;
     text-align: center;
 }
 
 /* Login button styles */
 .nav-link.btn-outline-primary {
-    /*color: #185a9d;*/
-    color: #FF6B6B;;
-    /*border: 2px solid #185a9d;*/
+    color: #FF6B6B;
     border: 2px solid #FF6B6B;
     background: transparent;
 }
@@ -85,16 +96,52 @@
     transform: translateY(0px) !important;
 }
 
-/* responsive styles */
-@media (max-width: 991.98px) {
+/* Mobile responsive styles */
+@media (max-width: 576px) {
+    .navbar {
+        padding: 0.5rem;
+    }
+
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+
+    .navbar-brand img {
+        width: 32px;
+        height: 32px;
+        margin-right: 6px;
+    }
+
+    .navbar .navbar-collapse {
+        background-color: white;
+        padding: 1rem;
+        margin: 0 -0.5rem;
+    }
+
     .navbar .navbar-nav {
-        gap: 15px;
-        margin-top: 10px;
+        gap: 8px;
+        flex-direction: column;
+        width: 100%;
+        margin-left: 0; /* Reset margin for mobile view */
     }
 
     .nav-link.btn {
-        display: inline-block;
-        width: 100%;  /* Full width on mobile */
-        margin: 5px 0;
+        width: 100%;
+        min-width: unset;
+        margin: 0;
     }
+
+    .nav-item {
+        width: 100%;
+    }
+}
+
+/* Add smooth transition for navbar collapse */
+.navbar-collapse {
+    transition: height 0.3s ease;
+}
+
+/* Make sure the menu shows properly when open on mobile */
+.navbar-collapse.show {
+    display: block;
 }
