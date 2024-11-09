@@ -72,7 +72,7 @@
         background-image: url('./resources/index/run-background3.jpeg');
     }
     .hero-carousel-item:nth-child(5) {
-        background-image: url('./resources/index/run-background4.jpg');
+        background-image: url('./resources/index/run-background4.jpeg');
     } 
     .hero-carousel-item:nth-child(6) {
         background-image: url('./resources/index/run-background5.jpeg');
@@ -144,6 +144,12 @@
         clip-path: inset(0 0 0 0);
     }
 
+    .slide-0.active .hero-title::before,
+    .slide-0.active .hero-subtitle::before,
+    .slide-0.active .hero-btn-group::before {
+        transform: translateX(-50%) scaleX(0);
+    }
+
     /* Add a pseudo-element for the shutter effect with limited width */
     .slide-0 .hero-title::before,
     .slide-0 .hero-subtitle::before,
@@ -170,12 +176,6 @@
         width: 23%;
         transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
     }*/
-
-    .slide-0.active .hero-title::before,
-    .slide-0.active .hero-subtitle::before,
-    .slide-0.active .hero-btn-group::before {
-        transform: translateX(-50%) scaleX(0);
-    }
 
   
     /* Slide 1 - Split Design */
@@ -962,7 +962,7 @@
                 <div class="carousel-item hero-carousel-item slide-2">
                     <div class="hero-slide-content">
                         <h1 class="hero-title">Why Choose Us?</h1>
-                        <p class="hero-subtitle">Experience running like never before—track, create, and share your unique routes</p>
+                        <p class="hero-subtitle">Experience running like never before — track, create, and share your unique routes</p>
                         <div class="hero-btn-group">
                             <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
                             <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
