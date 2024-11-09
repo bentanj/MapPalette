@@ -126,6 +126,10 @@ async function fetchSubcollectionIds(userId, subcollection) {
 
 // Handle session persistence and set global user data
 onAuthStateChanged(auth, async (user) => {
+  // List of pages where unauthenticated users are allowed
+  const allowedPages = ["index.html", "signup.html", "login.html"];
+  const currentPage = window.location.pathname.split("/").pop();
+
   if (user) {
       console.log("User is authenticated with UID:", user.uid);
       startSessionTimeout(); // Reset session timeout on page load
@@ -136,7 +140,7 @@ onAuthStateChanged(auth, async (user) => {
           const userDoc = await getDoc(userDocRef);
 
           if (userDoc.exists()) {
-            const userData = userDoc.data(); // Extract data from user document
+            const userData = userDoc.data();
             // Fetch subcollection document IDs
             const postsCreated = await fetchSubcollectionIds(user.uid, 'postsCreated');
             const followers = await fetchSubcollectionIds(user.uid, 'followers');
@@ -146,15 +150,13 @@ onAuthStateChanged(auth, async (user) => {
             window.currentUser = {
                 id: user.uid,
                 ...userDoc.data(),
-                postsCreated: postsCreated || [], // Populate with IDs or empty array if not found
+                postsCreated: postsCreated || [],
                 followers: followers || [],
                 following: following || [],
-                isProfilePrivate: userData.isProfilePrivate || false, // Default to false if not set
+                isProfilePrivate: userData.isProfilePrivate || false,
                 isPostPrivate: userData.isPostPrivate || false,  
             };
             window.dispatchEvent(new Event("userLoaded"));
-            // Check if user collection is imported correctly
-            // console.log("User data loaded globally with subcollections:", window.currentUser);
           } else {
               console.error("User document does not exist!");
           }
@@ -164,6 +166,12 @@ onAuthStateChanged(auth, async (user) => {
   } else {
       console.log("No user is authenticated.");
       window.currentUser = null;
+
+      // Only redirect if the current page is not in the allowed list
+      if (!allowedPages.includes(currentPage)) {
+          alert("You are logged out. Redirecting to the login page.");
+          window.location.href = "index.html";
+      }
   }
 });
 
