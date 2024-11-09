@@ -1,0 +1,306 @@
+/* HERO CAROUSEL */
+@media (max-width: 576px) {
+    /* Base Height Adjustments */
+    .hero-main-carousel,
+    .hero-carousel-item {
+        height: 100vh;
+        min-height: 500px;
+        max-height: 65vh;
+    }
+    
+    /* Global Content Styling */
+    .hero-slide-content {
+        text-align: center;
+        height: 100%;
+        position: relative;
+    }
+    
+    .hero-slide-content h1 {
+        font-size: 2rem !important;
+        margin-bottom: 1rem;
+        width: 85%;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .hero-slide-content p {
+        font-size: 1.1rem !important;
+        margin-bottom: 1.5rem;
+        width: 85%;
+        max-width: 280px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Button Group Base Styling */
+    .hero-btn-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        width: 85%;
+        max-width: 240px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+
+    /* Global positioning for all slides */
+    [class^="slide-"] .hero-title,
+    [class^="slide-"] .hero-subtitle {
+        width: 85% !important;
+        max-width: 300px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        left: 50% !important;
+        text-align: center !important;
+    }
+
+    /* Global Button Group Positioning for ALL slides */
+    [class^="slide-"] .hero-btn-group {
+        position: absolute;
+        bottom: 15%;
+        left: 50%;
+        transform: translateX(-50%) translateY(50px);
+        opacity: 0;
+        transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+    
+    [class^="slide-"].active .hero-btn-group {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+
+    /* Slide 0 - Shutter Design */
+    .slide-0 .hero-title {
+        position: absolute;
+        top: 25%;
+        transform: translateX(-50%);
+    }
+    
+    .slide-0 .hero-subtitle {
+        position: absolute;
+        top: 45%;
+        transform: translateX(-50%);
+    }
+
+    /* Slide 1 - Diagonal Design */
+    .slide-1 .hero-title,
+    .slide-1 .hero-subtitle {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg) scale(0.5);
+    }
+    
+    .slide-1 .hero-title {
+        top: 45%;  /* Keeping title position */
+    }
+    
+    .slide-1 .hero-subtitle {
+        top: 70%;  /* Changed from implicit 50% to 65% */
+    }
+    
+    .slide-1.active .hero-title,
+    .slide-1.active .hero-subtitle {
+        transform: translate(-50%, -50%) rotate(0) scale(1);
+        opacity: 1;
+    }
+
+    /* Slide 2 - Bottom Up Fade */
+    .slide-2 .hero-title {
+        position: absolute;
+        top: 25%;
+        transform: translate(-50%, 100px);
+    }
+    
+    .slide-2 .hero-subtitle {
+        position: absolute;
+        top: 45%;
+        transform: translate(-50%, 100px);
+    }
+    
+    .slide-2.active .hero-title,
+    .slide-2.active .hero-subtitle {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+
+    /* Slide 3 - Corner Design - Updated */
+    .slide-3 .hero-title,
+    .slide-3 .hero-subtitle {
+        position: absolute !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) scale(0.3) !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        text-align: center !important;
+        width: 85% !important;
+        max-width: 300px !important;
+        right: auto !important;
+        margin: 0 !important;
+    }
+    
+    .slide-3 .hero-title {
+        top: 35% !important;  /* Changed from 25% to 35% */
+    }
+    
+    .slide-3 .hero-subtitle {
+        top: 55% !important;  /* Changed from 45% to 55% */
+    }
+    
+    .slide-3.active .hero-title,
+    .slide-3.active .hero-subtitle {
+        transform: translate(-50%, -50%) scale(1) !important;
+        opacity: 1;
+    }
+
+    /* Slide 4 - Cascade */
+    .slide-4 .hero-title,
+    .slide-4 .hero-subtitle {
+        position: absolute;
+        transform: translate(-50%, -200px);
+    }
+    
+    .slide-4 .hero-title {
+        top: 35%;  /* Changed from 25% to 35% */
+    }
+    
+    .slide-4 .hero-subtitle {
+        top: 50%;  /* Changed from 45% to 55% */
+    }
+    
+    .slide-4.active .hero-title,
+    .slide-4.active .hero-subtitle {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+
+    /* Slide 5 - Zoom */
+    .slide-5 .hero-title,
+    .slide-5 .hero-subtitle {
+        position: absolute;
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+    
+    .slide-5 .hero-title {
+        top: 35%;  /* Changed from 25% to 35% */
+    }
+    
+    .slide-5 .hero-subtitle {
+        top: 55%;  /* Changed from 45% to 55% */
+    }
+    
+    .slide-5.active .hero-title,
+    .slide-5.active .hero-subtitle {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    
+    /* Remove any accidental button positioning inheritance */
+    .slide-5 .hero-btn-group {
+        bottom: 15% !important;
+    }
+
+    /* Slide 6 - Spiral */
+    .slide-6 .hero-title,
+    .slide-6 .hero-subtitle {
+        position: absolute;
+        transform: translate(-50%, -50%) rotate(180deg);
+        opacity: 0;
+    }
+    
+    .slide-6 .hero-title {
+        top: 35%;  /* Changed from 25% to 35% */
+    }
+    
+    .slide-6 .hero-subtitle {
+        top: 55%;  /* Changed from 45% to 55% */
+    }
+    
+    .slide-6.active .hero-title,
+    .slide-6.active .hero-subtitle {
+        transform: translate(-50%, -50%) rotate(0);
+        opacity: 1;
+    }
+    
+    /* Remove any accidental button positioning inheritance */
+    .slide-6 .hero-btn-group {
+        bottom: 15% !important;
+    }
+
+    /* Slide 7 - Split - Updated */
+    .slide-7 .hero-title,
+    .slide-7 .hero-subtitle {
+        position: absolute !important;
+        left: 50% !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        text-align: center !important;
+        width: 85% !important;
+        max-width: 300px !important;
+        right: auto !important;
+        margin: 0 !important;
+    }
+    
+    .slide-7 .hero-title {
+        top: 35% !important;  /* Changed from 25% to 35% */
+        transform: translate(-150%, -50%) !important;
+    }
+    
+    .slide-7 .hero-subtitle {
+        top: 55% !important;  /* Changed from 45% to 55% */
+        transform: translate(50%, -50%) !important;
+    }
+    
+    .slide-7.active .hero-title,
+    .slide-7.active .hero-subtitle {
+        transform: translate(-50%, -50%) !important;
+        opacity: 1;
+    }
+
+    /* Carousel Controls */
+    .carousel-indicators {
+        bottom: 1rem;
+    }
+    
+    .carousel-indicators button {
+        width: 8px;
+        height: 8px;
+        margin: 0 4px;
+    }
+    
+    .hero-main-carousel .carousel-control-prev,
+    .hero-main-carousel .carousel-control-next {
+        width: 15%;
+    }
+    
+    .hero-main-carousel .carousel-control-prev-icon,
+    .hero-main-carousel .carousel-control-next-icon {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    /* Force text containment */
+    .hero-slide-content h1,
+    .hero-slide-content p {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------------------------------------------------- */
+
+
+
