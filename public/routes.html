@@ -499,26 +499,31 @@
         },
         methods: {
             likeRoute(route) {
-                const currentUserID = window.currentUser?.id || 'defaultUserID';
-                const isLiked = route.isLiked;
+            const currentUserID = window.currentUser?.id || 'defaultUserID';
+            const isLiked = route.isLiked;
 
-                const endpoint = isLiked
-                    ? `https://app-907670644284.us-central1.run.app/api/posts/unlike?id=${route.postID}`
-                    : `https://app-907670644284.us-central1.run.app/api/posts/like?id=${route.postID}`;
+            // Immediately toggle the like status on the frontend
+            route.isLiked = !isLiked;
+            route.likeCount += isLiked ? -1 : 1;
 
-                axios.put(endpoint, { userID: currentUserID })
-                    .then(response => {
-                        console.log("Like/unlike updated successfully:", response.data);
+            const endpoint = isLiked
+                ? `https://app-907670644284.us-central1.run.app/api/posts/unlike?id=${route.postID}`
+                : `https://app-907670644284.us-central1.run.app/api/posts/like?id=${route.postID}`;
 
-                        // Toggle like status and update like count
-                        route.isLiked = !isLiked;
-                        route.likeCount += isLiked ? -1 : 1;
-                    })
-                    .catch(error => {
-                        console.error("Error updating like/unlike:", error);
-                        alert("Failed to update like/unlike. Please try again.");
-                    });
-            },
+            // Send the request to update the like status in the backend
+            axios.put(endpoint, { userID: currentUserID })
+                .then(response => {
+                    console.log("Like/unlike updated successfully:", response.data);
+                })
+                .catch(error => {
+                    console.error("Error updating like/unlike:", error);
+                    alert("Failed to update like/unlike. Please try again.");
+
+                    // Revert the like status and count on error
+                    route.isLiked = isLiked;
+                    route.likeCount += isLiked ? 1 : -1;
+                });
+        },
             calculateTimeSince(timestamp) {
                 if (!timestamp) return 'Just Now';
 
@@ -690,17 +695,17 @@
             }
         },
         template: `
-        <div v-for="route in routes" :key="route.postID">
+                <div v-for="route in routes" :key="route.postID">
             <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header d-flex justify-content-between align-items-start">
-                        <div>
-                            <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
-                            <h6 class="modal-author text-muted">
-                                by <a :href="'homepage.html?id=' + route.userID" class="text-decoration-none">{{ route.username }}</a>
-                            </h6>
-                        </div>
+                            <div>
+                                <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
+                                <h6 class="modal-author text-muted">
+                                    by <a :href="'homepage.html?id=' + route.userID" class="text-decoration-none">{{ route.username }}</a>
+                                </h6>
+                            </div>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -733,6 +738,7 @@
                                 </button>
                             </div>
                             <br>
+
                             <!-- Comments Section -->
                             <div class="mb-3 mt-3">
                                 <textarea class="form-control mb-2" placeholder="Add a comment..." rows="2" v-model="newCommentText[route.postID]"></textarea>
@@ -742,14 +748,15 @@
                                 </button>
                             </div>
                             <h6>Comments ({{ route.commentsList.length }})</h6>
+
                             <div v-if="route.commentsList && route.commentsList.length > 0">
                                 <div v-for="(comment, index) in sortCommentsByDate(route.commentsList)" :key="index" class="mb-3">
-                                <div class="comment-bubble">
-                                    <strong>
-                                        <a :href="'homepage.html?id=' + comment.userID" class="text-decoration-none">{{ comment.username }}</a>
-                                    </strong>
-                                    <p>{{ comment.text }}</p>
-                                </div>
+                                    <div class="comment-bubble">
+                                        <strong>
+                                            <a :href="'homepage.html?id=' + comment.userID" class="text-decoration-none">{{ comment.username }}</a>
+                                        </strong>
+                                        <p>{{ comment.text }}</p>
+                                    </div>
                                     <div class="comment-time text-muted">
                                         {{ calculateTimeSince(comment.createdAt) }}
                                     </div>
