@@ -1,0 +1,220 @@
+@import 'footer/footer_style.css';
+@import 'navbar/navbar_style.css';
+
+/* General Styles */
+body {
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 0;
+    font-family: 'Open Sans', sans-serif;
+}
+
+/* Sample Header */
+.sample-header {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background-image: url('resources/route_photos/friends_header.jpg'); /* Update with a relevant image */
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Header Overlay */
+.sample-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Header Content */
+.sample-header-section {
+    position: relative;
+    z-index: 1;
+    padding: 0 20px;
+    max-width: 800px;
+}
+
+.sample-header-section h1 {
+    font-weight: 700;
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.sample-header-section h2 {
+    font-weight: 300;
+    font-size: 1.5rem;
+    font-family: 'Open Sans', sans-serif;
+}
+
+/* Main Content Wrapper */
+.sample-section-wrap {
+    width: 100%;
+    background-color: #fff;
+}
+
+.sample-section {
+    width: 100%;
+    padding: 40px 20px;
+}
+
+/* Search Input */
+.input-group .form-control {
+    border-radius: 25px 0 0 25px;
+}
+
+.input-group .btn {
+    border-radius: 0 25px 25px 0;
+}
+
+.input-group:focus-within {
+    box-shadow: 0 0 0 0.2rem rgba(255, 123, 0, 0.25);
+}
+
+.input-group .form-control:focus,
+.input-group .btn:focus {
+    box-shadow: none;
+}
+
+/* Friend Cards */
+.friend-card {
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.friend-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+}
+
+.friend-card .card-body {
+    display: flex;
+    align-items: center;
+}
+
+.friend-card .profile-pic {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.friend-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.friend-card .truncate-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}
+
+.friend-card .flex-grow-1 {
+    margin-right: auto;
+}
+
+.friend-card .btn {
+    border-radius: 25px;
+    margin-bottom: 5px;
+}
+
+.friend-card .btn i {
+    margin-right: 5px;
+}
+
+.friend-card .follow-btn {
+    width: 120px;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: #ff7b00;
+    border: none;
+    color: #fff;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #e06600;
+    color: #fff;
+}
+
+.btn-outline-primary {
+    border-color: #ff7b00;
+    color: #ff7b00;
+}
+
+.btn-outline-primary:hover {
+    background-color: #ff7b00;
+    color: #fff;
+}
+
+.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #fff;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    color: #fff;
+}
+
+/* Adjustments for Mobile */
+@media (max-width: 576px) {
+    .friend-card .card-body {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .friend-card .follow-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .friend-card .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Headings */
+h2 {
+    margin-top: 40px;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+/* No Results Text */
+.no-results {
+    font-size: 1.2rem;
+    color: #555;
+    margin-top: 20px;
+}
