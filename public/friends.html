@@ -8,13 +8,13 @@
     <title>MapPalette - Friends</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <!-- Updated CSS Styles -->
-    <link rel="stylesheet" href="search.css">
+    <!-- Friends CSS Styles -->
+    <link rel="stylesheet" href="friends.css">
 
     <!-- Firebase -->
     <script type="module" src="firebase.js"></script>
@@ -24,26 +24,10 @@
 
     <!-- Axios for HTTP Requests -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
-    <style>
-        #app-container {
-            background-image: url('resources/leaves.png');
-            /* Replace with your image path if different */
-            background-size: cover;
-            /* Ensures the image covers the entire background */
-            background-repeat: no-repeat;
-            /* Prevents the image from repeating */
-            background-attachment: fixed;
-            /* Keeps the background fixed during scrolling */
-            background-position: center;
-            /* Centers the background image */
-        }
-    </style>
 </head>
 
 <body>
     <div id="app">
-
         <!-- Loading Spinner -->
         <div id="loading-spinner" class="text-center"
             style="display: flex; align-items: center; justify-content: center; height: 100vh;">
@@ -54,51 +38,59 @@
 
         <!-- Main Content, Hidden Initially -->
         <div id="app-container" style="display: none;">
-
             <!-- Navbar -->
-            <nav-bar :user_profile="current-user"></nav-bar>
+            <nav-bar :user_profile="userProfile"></nav-bar>
 
             <!-- Feed Header -->
-            <div class="sample-header">
+            <header class="sample-header">
                 <div class="sample-header-section">
                     <h1>Friends</h1>
                     <h2>Connect and engage with your running community.</h2>
                 </div>
-            </div>
+            </header>
 
-            <!-- Friends and Other Users Section -->
-            <div class="container-fluid sample-section">
-                <div class="row">
-                    <div class="col-md-4">
-                        <p>Search for friends or users:</p>
-                        <input type="text" v-model="searchQuery" placeholder="Name" class="form-control mb-3">
-
-                    </div>
-                </div>
-                <div class="row">
-                    <hr>
-                    <h1>Your Friends ({{friends.length}})</h1>
-
-                    <!-- Friends Section with Load More -->
-                    <div v-if="filteredFriends.length > 0" class="col-md-4 mb-4"
-                        v-for="friend in filteredFriends.slice(0, displayedFriends)" :key="friend.id">
-                        <friend-card :friend="friend" @confirm-unfollow="confirmUnfollow" :disabled="disableButtons"
-                            @open-profile="openProfile"></friend-card>
-                    </div>
-                    <p v-else>No friends match your search.</p>
-                    <div class="text-center" v-if="displayedFriends < filteredFriends.length">
-                        <button class="btn btn-outline-primary" @click="loadMoreFriends">Load More</button>
+            <!-- Main Content Wrapper -->
+            <div class="sample-section-wrap">
+                <div class="container-fluid sample-section">
+                    <!-- Search Bar -->
+                    <div class="row align-items-center mb-4">
+                        <!-- Search Input -->
+                        <div class="col-md-6 mb-2 mb-md-0">
+                            <div class="input-group">
+                                <input type="text" class="form-control" v-model="searchQuery"
+                                    placeholder="Search for friends or users..." @keyup.enter="applyFilters">
+                                <button class="btn btn-primary" @click="applyFilters">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Other Users Section with Load More -->
-                    <h1>Other Users ({{otherUsers.length}})</h1>
-                    <div v-if="filteredOtherUsers.length > 0" class="col-md-4 mb-4"
-                        v-for="user in filteredOtherUsers.slice(0, displayedOtherUsers)" :key="user.id">
-                        <other-user-card :user="user" @follow="followUser" :disabled="disableButtons"></other-user-card>
+                    <!-- Friends Section -->
+                    <div class="row">
+                        <h2>Your Friends ({{ friends.length }})</h2>
+                        <div v-if="filteredFriends.length > 0" class="col-md-4 mb-4"
+                            v-for="friend in filteredFriends.slice(0, displayedFriends)" :key="friend.id">
+                            <friend-card :friend="friend" @confirm-unfollow="confirmUnfollow" :disabled="disableButtons"
+                                @open-profile="openProfile"></friend-card>
+                        </div>
+                        <p v-else class="no-results">No friends match your search.</p>
+                        <div class="text-center" v-if="displayedFriends < filteredFriends.length">
+                            <button class="btn btn-outline-primary" @click="loadMoreFriends">Load More</button>
+                        </div>
                     </div>
-                    <p v-else>No other users match your search.</p>
-                    <div class="text-center" v-if="displayedOtherUsers < filteredOtherUsers.length">
-                        <button class="btn btn-outline-primary" @click="loadMoreOtherUsers">Load More</button>
+
+                    <!-- Other Users Section -->
+                    <div class="row">
+                        <h2>Other Users ({{ otherUsers.length }})</h2>
+                        <div v-if="filteredOtherUsers.length > 0" class="col-md-4 mb-4"
+                            v-for="user in filteredOtherUsers.slice(0, displayedOtherUsers)" :key="user.id">
+                            <other-user-card :user="user" @follow="followUser" :disabled="disableButtons"></other-user-card>
+                        </div>
+                        <p v-else class="no-results">No other users match your search.</p>
+                        <div class="text-center" v-if="displayedOtherUsers < filteredOtherUsers.length">
+                            <button class="btn btn-outline-primary" @click="loadMoreOtherUsers">Load More</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -110,7 +102,8 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="unfollowModalLabel">Confirm Unfollow</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             Are you sure you want to unfollow <strong>{{ friendToUnfollow?.username }}</strong>?
@@ -125,280 +118,268 @@
 
             <!-- Footer -->
             <site-footer></site-footer>
-
         </div>
     </div>
-</body>
 
-<script>
-    // Main Vue App
-    const app = Vue.createApp({
-        data() {
-            return {
-                currentUser: null,
-                friends: [],
-                otherUsers: [],
-                searchQuery: '',
-                displayedFriends: 6,
-                displayedOtherUsers: 6,
-                friendToUnfollow: null,
-                disableButtons: false
-            };
-        },
-        computed: {
-            // happens at the search bar level, fiters the name by lower case.
-            filteredFriends() {
-                return this.friends.filter(friend =>
-                    friend.username.toLowerCase().includes(this.searchQuery.toLowerCase())
-                );
-            },
-            filteredOtherUsers() {
-                return this.otherUsers.filter(user =>
-                    user.username.toLowerCase().includes(this.searchQuery.toLowerCase()) && (!user.isProfilePrivate || user.isFollowing)
-                );
-            }
-        },
-        methods: {
-            // Show modal to confirm unfollow action
-            confirmUnfollow(friend) {
-                this.friendToUnfollow = friend;
-                const unfollowModal = new bootstrap.Modal(document.getElementById('unfollowModal'));
-                unfollowModal.show();
-            },
-
-            // Unfollow confirmed action
-            unfollowConfirmed() {
-                const friendId = this.friendToUnfollow.id;
-                const currentUserId = this.currentUser.id;
-
-                // Optimistic UI Update
-                this.friends = this.friends.filter(f => f.id !== friendId);
-                this.otherUsers.push(this.friendToUnfollow);
-                const previousFriendToUnfollow = this.friendToUnfollow;
-                this.friendToUnfollow = null;
-
-                const unfollowModal = bootstrap.Modal.getInstance(document.getElementById('unfollowModal'));
-                unfollowModal.hide();
-
-                // Send DELETE API request for unfollow
-                axios.delete(`https://app-907670644284.us-central1.run.app/api/unfollow?id=${friendId}`, {
-                    data: { userID: currentUserId }
-                })
-                    .then(response => {
-                        console.log(`Successfully unfollowed user with ID: ${friendId}`);
-                    })
-                    .catch(error => {
-                        console.error('Error unfollowing user:', error);
-                        alert('An error occurred while trying to unfollow the user. Please try again.');
-                        // Revert UI update if unfollow fails
-                        this.otherUsers = this.otherUsers.filter(u => u.id !== friendId);
-                        this.friends.push(previousFriendToUnfollow);
-                    });
-            },
-
-
-            // Follow user action
-            followUser(user) {
-                const friendId = user.id;
-                const currentUserId = this.currentUser.id;  // Assuming currentUser.id holds the ID of the logged-in user
-
-                console.log(`followed friend id: ${friendId}`)
-                console.log(`my id: ${currentUserId}`)
-
-                // Optimistically update UI
-                this.otherUsers = this.otherUsers.filter(u => u.id !== friendId);
-                this.friends.unshift(user);
-
-                // Send API request for follow with required data in the body
-                axios.post(`https://app-907670644284.us-central1.run.app/api/follow?id=${friendId}`, {
-                    userID: currentUserId
-                })
-                    .then(response => {
-                        console.log(`Successfully followed user with ID: ${friendId}`);
-                    })
-                    .catch(error => {
-                        console.error('Error following user:', error);
-                        alert('An error occurred while trying to follow the user. Please try again.');
-                        // Optionally, revert the UI update on failure
-                    });
-            },
-
-            loadMoreFriends() {
-                this.displayedFriends += 6;
-            },
-
-            loadMoreOtherUsers() {
-                this.displayedOtherUsers += 6;
-            },
-
-            openProfile(user) {
-                alert('Opening profile for ' + user.username);
-                // Implement actual profile navigation here
-            }
-        },
-
-        mounted() {
-            const loadingSpinner = document.getElementById('loading-spinner');
-            const appContainer = document.getElementById('app-container');
-
-            const checkUser = (resolve) => {
-                const userCheckInterval = setInterval(() => {
-                    if (window.currentUser) {
-                        this.currentUser = window.currentUser;
-                        clearInterval(userCheckInterval);
-                        resolve();
+    <!-- Vue App and Components -->
+    <script>
+        // Main Vue App
+        const app = Vue.createApp({
+            data() {
+                return {
+                    currentUser: null,
+                    friends: [],
+                    otherUsers: [],
+                    searchQuery: '',
+                    displayedFriends: 6,
+                    displayedOtherUsers: 6,
+                    friendToUnfollow: null,
+                    disableButtons: false,
+                    userProfile: {
+                        avatar: ''
                     }
-                }, 100);
-            };
+                };
+            },
+            computed: {
+                filteredFriends() {
+                    return this.friends.filter(friend =>
+                        friend.username.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    );
+                },
+                filteredOtherUsers() {
+                    return this.otherUsers.filter(user =>
+                        user.username.toLowerCase().includes(this.searchQuery.toLowerCase()) &&
+                        (!user.isProfilePrivate || user.isFollowing)
+                    );
+                }
+            },
+            methods: {
+                // Show modal to confirm unfollow action
+                confirmUnfollow(friend) {
+                    this.friendToUnfollow = friend;
+                    const unfollowModal = new bootstrap.Modal(document.getElementById('unfollowModal'));
+                    unfollowModal.show();
+                },
+                // Unfollow confirmed action
+                unfollowConfirmed() {
+                    const friendId = this.friendToUnfollow.id;
+                    const currentUserId = this.currentUser.id;
 
-            new Promise(checkUser)
-                .then(() => {
-                    loadingSpinner.style.display = 'none';
-                    appContainer.style.display = 'block';
+                    // Optimistic UI Update
+                    this.friends = this.friends.filter(f => f.id !== friendId);
+                    this.otherUsers.push(this.friendToUnfollow);
+                    const previousFriendToUnfollow = this.friendToUnfollow;
+                    this.friendToUnfollow = null;
 
-                    return axios.get(`https://app-907670644284.us-central1.run.app/api/users/getcondensed/${this.currentUser.id}`);
-                })
-                .then(response => {
-                    response.data.forEach(user => {
-                        // Map userID to id for consistency
-                        user.id = user.userID;
+                    const unfollowModal = bootstrap.Modal.getInstance(document.getElementById('unfollowModal'));
+                    unfollowModal.hide();
 
-                        if (user.id !== this.currentUser.id) { // if its not the current user, push to either friends/other users
-                            // Check isFollowing value to categorize user
-                            if (user.isFollowing === true || user.isFollowing === 'true') {
-                                // Push directly into this.friends
-                                this.friends.push(user);
-                            } else {
-                                // Push directly into this.otherUsers
-                                this.otherUsers.push(user);
-                            }
+                    // Send DELETE API request for unfollow
+                    axios.delete(`https://app-907670644284.us-central1.run.app/api/unfollow?id=${friendId}`, {
+                        data: { userID: currentUserId }
+                    })
+                        .then(response => {
+                            console.log(`Successfully unfollowed user with ID: ${friendId}`);
+                        })
+                        .catch(error => {
+                            console.error('Error unfollowing user:', error);
+                            alert('An error occurred while trying to unfollow the user. Please try again.');
+                            // Revert UI update if unfollow fails
+                            this.otherUsers = this.otherUsers.filter(u => u.id !== friendId);
+                            this.friends.push(previousFriendToUnfollow);
+                        });
+                },
+                // Follow user action
+                followUser(user) {
+                    const friendId = user.id;
+                    const currentUserId = this.currentUser.id;
+
+                    // Optimistically update UI
+                    this.otherUsers = this.otherUsers.filter(u => u.id !== friendId);
+                    this.friends.unshift(user);
+
+                    // Send API request for follow
+                    axios.post(`https://app-907670644284.us-central1.run.app/api/follow?id=${friendId}`, {
+                        userID: currentUserId
+                    })
+                        .then(response => {
+                            console.log(`Successfully followed user with ID: ${friendId}`);
+                        })
+                        .catch(error => {
+                            console.error('Error following user:', error);
+                            alert('An error occurred while trying to follow the user. Please try again.');
+                            // Optionally, revert the UI update on failure
+                        });
+                },
+                loadMoreFriends() {
+                    this.displayedFriends += 6;
+                },
+                loadMoreOtherUsers() {
+                    this.displayedOtherUsers += 6;
+                },
+                applyFilters() {
+                    // Method to handle search input (optional if needed)
+                },
+                openProfile(user) {
+                    alert('Opening profile for ' + user.username);
+                    // Implement actual profile navigation here
+                }
+            },
+            mounted() {
+                const loadingSpinner = document.getElementById('loading-spinner');
+                const appContainer = document.getElementById('app-container');
+
+                const checkUser = (resolve) => {
+                    const userCheckInterval = setInterval(() => {
+                        if (window.currentUser) {
+                            this.currentUser = window.currentUser;
+                            // Set user profile avatar if available
+                            this.userProfile.avatar = window.currentUser.profilePicture || 'resources/download.jpeg';
+                            clearInterval(userCheckInterval);
+                            resolve();
                         }
+                    }, 100);
+                };
 
+                new Promise(checkUser)
+                    .then(() => {
+                        loadingSpinner.style.display = 'none';
+                        appContainer.style.display = 'block';
+
+                        return axios.get(`https://app-907670644284.us-central1.run.app/api/users/getcondensed/${this.currentUser.id}`);
+                    })
+                    .then(response => {
+                        response.data.forEach(user => {
+                            // Map userID to id for consistency
+                            user.id = user.userID;
+
+                            if (user.id !== this.currentUser.id) {
+                                // Check isFollowing value to categorize user
+                                if (user.isFollowing === true || user.isFollowing === 'true') {
+                                    this.friends.push(user);
+                                } else {
+                                    this.otherUsers.push(user);
+                                }
+                            }
+                        });
+
+                        console.log('Friends Array:', this.friends);
+                        console.log('Other Users Array:', this.otherUsers);
+                    })
+                    .catch(error => {
+                        console.error("Error loading data:", error);
                     });
-
-                    // Log the updated arrays
-                    console.log('Friends Array:', this.friends);
-                    console.log('Other Users Array:', this.otherUsers);
-                })
-                .catch(error => {
-                    console.error("Error loading data:", error);
-                });
-        }
-
-
-    });
-
-    app.component("friend-card", {
-        props: ['friend', 'disabled'],
-        template: `
-    <div class="card friend-card h-100">
-      <div class="card-body d-flex align-items-center">
-<img :src="friend.profilePicture" alt="Friend Profile" class="profile-pic me-3">
-        <div class="flex-grow-1">
-<h5 class="card-title mb-1 truncate-text" :title="friend.username">
-  {{ friend.username }}
-  <span v-if="friend.newFriend" class="text-danger ms-2" style="font-weight: bold;">New!</span>
-</h5>
-        </div>
-        <div class="d-flex flex-column">
-          <button class="btn mb-2" :class="{'btn-outline-danger': hovering, 'btn-success': !hovering}"
-            @click="requestUnfollow" @mouseover="hovering = true" @mouseleave="hovering = false" :disabled="disabled">
-            <i :class="hovering ? 'fas fa-user-minus me-1' : 'fas fa-check me-1'"></i>
-            {{ hovering ? 'Unfollow' : 'Following' }}
-          </button>
-          <button class="btn btn-outline-primary follow-btn" :disabled="disabled" @click='openProfile'>
-            <i class="fas fa-user me-1"></i> View Profile
-          </button>
-        </div>
-      </div>
-    </div>
-  `,
-        data() {
-            return {
-                hovering: false
-            };
-        },
-        methods: {
-            requestUnfollow() {
-                this.$emit('confirm-unfollow', this.friend);
-            },
-            openProfile() {
-                this.$emit('open-profile', this.friend);
             }
-        }
-    });
+        });
 
+        // Friend Card Component
+        app.component("friend-card", {
+            props: ['friend', 'disabled'],
+            template: `
+            <div class="card friend-card h-100">
+                <div class="card-body">
+                    <img :src="friend.profilePicture" alt="Friend Profile" class="profile-pic me-3">
+                    <div class="flex-grow-1">
+                        <h5 class="card-title mb-1 truncate-text" :title="friend.username">
+                            {{ friend.username }}
+                            <span v-if="friend.newFriend" class="text-danger ms-2" style="font-weight: bold;">New!</span>
+                        </h5>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <button class="btn mb-2" :class="{'btn-outline-danger': hovering, 'btn-success': !hovering}"
+                            @click="requestUnfollow" @mouseover="hovering = true" @mouseleave="hovering = false" :disabled="disabled">
+                            <i :class="hovering ? 'fas fa-user-minus me-1' : 'fas fa-check me-1'"></i>
+                            {{ hovering ? 'Unfollow' : 'Following' }}
+                        </button>
+                        <button class="btn btn-outline-primary follow-btn" :disabled="disabled" @click='openProfile'>
+                            <i class="fas fa-user me-1"></i> View Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `,
+            data() {
+                return {
+                    hovering: false
+                };
+            },
+            methods: {
+                requestUnfollow() {
+                    this.$emit('confirm-unfollow', this.friend);
+                },
+                openProfile() {
+                    this.$emit('open-profile', this.friend);
+                }
+            }
+        });
 
-    app.component('other-user-card', {
-        props: ['user', 'disabled'],
-        template: `
-    <div class="card friend-card h-100">
-      <div class="card-body d-flex align-items-center">
-<img :src="user.profilePicture" alt="User Profile" class="profile-pic me-3">
-        <div class="flex-grow-1">
-          <h5 class="card-title mb-1">{{ user.username }}</h5>
-        </div>
-        <div class="d-flex flex-column">
-          <button class="btn follow-btn mb-2"
-            :class="{
-              'btn-outline-primary': !isFollowing && !followSuccess,
-              'btn-success': followSuccess && !transitionComplete,
-              'btn-outline-danger': transitionComplete
-            }"
-            @click="follow" :disabled="disabled || isFollowing">
-            <i v-if="!followSuccess" :class="isFollowing ? 'fas fa-spinner fa-spin' : 'fas fa-user-plus me-1'"></i>
-            <i v-else-if="followSuccess && !transitionComplete" class="fas fa-check me-1"></i>
-            <i v-else class="fas fa-user-minus me-1"></i>
-            <span v-if="!followSuccess">{{ isFollowing ? 'Following...' : 'Follow' }}</span>
-            <span v-else-if="followSuccess && !transitionComplete">Followed</span>
-            <span v-else>Unfollow</span>
-          </button>
-          <button class="btn btn-outline-primary follow-btn" :disabled="disabled" @click='openProfile'>
-            <i class="fas fa-user me-1"></i> View Profile
-          </button>
-        </div>
-      </div>
-    </div>
-  `,
-        data() {
-            return {
-                isFollowing: false,
-                followSuccess: false,
-                transitionComplete: false
-            };
-        },
-        methods: {
-            follow() {
-                this.isFollowing = true;
-                this.$root.disableButtons = true;
-                setTimeout(() => {
-                    this.followSuccess = true;
-                    this.$emit('follow', this.user);
+        // Other User Card Component
+        app.component('other-user-card', {
+            props: ['user', 'disabled'],
+            template: `
+            <div class="card friend-card h-100">
+                <div class="card-body">
+                    <img :src="user.profilePicture" alt="User Profile" class="profile-pic me-3">
+                    <div class="flex-grow-1">
+                        <h5 class="card-title mb-1">{{ user.username }}</h5>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <button class="btn follow-btn mb-2"
+                            :class="{
+                                'btn-outline-primary': !isFollowing && !followSuccess,
+                                'btn-success': followSuccess && !transitionComplete,
+                                'btn-outline-danger': transitionComplete
+                            }"
+                            @click="follow" :disabled="disabled || isFollowing">
+                            <i v-if="!followSuccess" :class="isFollowing ? 'fas fa-spinner fa-spin' : 'fas fa-user-plus me-1'"></i>
+                            <i v-else-if="followSuccess && !transitionComplete" class="fas fa-check me-1"></i>
+                            <i v-else class="fas fa-user-minus me-1"></i>
+                            <span v-if="!followSuccess">{{ isFollowing ? 'Following...' : 'Follow' }}</span>
+                            <span v-else-if="followSuccess && !transitionComplete">Followed</span>
+                            <span v-else>Unfollow</span>
+                        </button>
+                        <button class="btn btn-outline-primary follow-btn" :disabled="disabled" @click='openProfile'>
+                            <i class="fas fa-user me-1"></i> View Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `,
+            data() {
+                return {
+                    isFollowing: false,
+                    followSuccess: false,
+                    transitionComplete: false
+                };
+            },
+            methods: {
+                follow() {
+                    this.isFollowing = true;
+                    this.$root.disableButtons = true;
                     setTimeout(() => {
-                        this.transitionComplete = true;
-                        this.$root.disableButtons = false;
+                        this.followSuccess = true;
+                        this.$emit('follow', this.user);
+                        setTimeout(() => {
+                            this.transitionComplete = true;
+                            this.$root.disableButtons = false;
+                        }, 1000);
                     }, 1000);
-                }, 1000);
-            },
-            openProfile() {
-                this.$emit('open-profile', this.user);
+                },
+                openProfile() {
+                    this.$emit('open-profile', this.user);
+                }
             }
-        }
-    });
+        });
 
-</script>
+        app.mount('#app');
+    </script>
 
-<script src="navbar/navbar.js"></script>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- import footer from footer.js -->
-<script src="footer/footer.js"></script>
-
-<script>
-    app.mount('#app')
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Navbar and Footer Scripts -->
+    <script src="navbar/navbar.js"></script>
+    <script src="footer/footer.js"></script>
 </body>
-
-</html>
 
 </html>

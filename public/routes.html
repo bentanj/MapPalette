@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <!-- Updated CSS Styles -->
-    <link rel="stylesheet" href="search.css">
+    <link rel="stylesheet" href="routes.css">
 
     <!-- Firebase -->
     <script type="module" src="firebase.js"></script>
@@ -39,46 +39,46 @@
         <!-- Main Content, Hidden Initially -->
         <div id="app-container" style="display: none;">
             <!-- Navbar -->
-            <nav-bar></nav-bar>
+            <nav-bar :user_profile="userProfile"></nav-bar>
 
             <!-- Feed Header -->
-            <div class="sample-header">
-                <div class="sample-header-section">
+            <header class="sample-header">
+                <div class="sample-header-section text-center text-white">
                     <h1>Routes</h1>
-                    <h2>Discover, share, and engage with creative running routes.</h2>
+                    <p>Discover, share, and engage with creative running routes</p>
                 </div>
-            </div>
+            </header>
 
             <!-- Main Content Wrapper -->
             <div class="sample-section-wrap">
                 <div class="container-fluid sample-section">
                     <!-- Your main content (Vue components) -->
                     <div>
-                        <!-- Filter, Search, and Badge Row -->
-                        <div class="row align-items-center mb-2">
-
+                        <!-- Filter and Search Bar -->
+                        <div class="row align-items-center mb-4">
                             <!-- Search Input -->
-                            <div class="col-4">
-                                <p>Search for a route:</p>
-                                <input type="text" class="form-control" v-model="searchQuery" @input="applyFilters"
-                                    placeholder="Route Name">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" v-model="searchQuery"
+                                        placeholder="Search for a route..." @keyup.enter="applyFilters"
+                                        ref="searchInput">
+                                    <button class="btn btn-outline-secondary" v-if="searchQuery" @click="clearSearch">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button class="btn btn-primary" @click="applyFilters">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
                             </div>
 
-
-                            <!-- Badge (Positioned to the left of Filter Button) -->
-                            <div class="col-auto ms-auto">
-                                <span v-if="filters.sortOption" class="badge">
-                                    {{ filters.sortOption }}
-                                    <span @click="removeFilter()" class="ms-1">&times;</span>
-                                </span>
-                            </div>
 
                             <!-- Filter Options Button -->
-                            <div class="col-auto">
-                                <div class="dropdown">
+                            <div class="col-md-6 text-md-end">
+                                <div class="dropdown d-inline-block">
                                     <button class="btn filter-btn dropdown-toggle" type="button" id="filterDropdown"
                                         data-bs-toggle="dropdown" aria-expanded="false">
-                                        Sort By
+                                        <i class="fas fa-filter"></i>
+                                        {{ filters.sortOption ? filters.sortOption : 'Sort By' }}
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
                                         <!-- Sort by Distance -->
@@ -86,12 +86,18 @@
                                             <h6 class="dropdown-header">Distance</h6>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="#" @click="setFilter('Shortest')">Shortest to
-                                                Longest</a>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Shortest')">
+                                                <span v-if="filters.sortOption === 'Shortest'"><i
+                                                        class="fas fa-check me-2"></i></span>
+                                                Shortest to Longest
+                                            </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="#" @click="setFilter('Longest')">Longest to
-                                                Shortest</a>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Longest')">
+                                                <span v-if="filters.sortOption === 'Longest'"><i
+                                                        class="fas fa-check me-2"></i></span>
+                                                Longest to Shortest
+                                            </a>
                                         </li>
 
                                         <!-- Sort by Popularity -->
@@ -99,12 +105,18 @@
                                             <h6 class="dropdown-header">Popularity</h6>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="#" @click="setFilter('Most Popular')">Most
-                                                Popular</a>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Most Popular')">
+                                                <span v-if="filters.sortOption === 'Most Popular'"><i
+                                                        class="fas fa-check me-2"></i></span>
+                                                Most Popular
+                                            </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="#" @click="setFilter('Least Popular')">Least
-                                                Popular</a>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Least Popular')">
+                                                <span v-if="filters.sortOption === 'Least Popular'"><i
+                                                        class="fas fa-check me-2"></i></span>
+                                                Least Popular
+                                            </a>
                                         </li>
 
                                         <!-- Sort by Time Created -->
@@ -112,10 +124,18 @@
                                             <h6 class="dropdown-header">Time Created</h6>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" @click="setFilter('Newest')">Newest</a>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Newest')">
+                                                <span v-if="filters.sortOption === 'Newest'"><i
+                                                        class="fas fa-check me-2"></i></span>
+                                                Newest
+                                            </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" @click="setFilter('Oldest')">Oldest</a>
+                                            <a class="dropdown-item" href="#" @click="setFilter('Oldest')">
+                                                <span v-if="filters.sortOption === 'Oldest'"><i
+                                                        class="fas fa-check me-2"></i></span>
+                                                Oldest
+                                            </a>
                                         </li>
 
                                         <!-- Reset Button -->
@@ -123,14 +143,16 @@
                                             <hr class="dropdown-divider">
                                         </li>
                                         <li>
-                                            <a class="dropdown-item text-danger" @click="resetFilters()">Reset
-                                                Filters</a>
+                                            <a class="dropdown-item text-danger" @click="resetFilters()">
+                                                <i class="fas fa-times me-2"></i>Reset Filters
+                                            </a>
                                         </li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
-                        <hr>
+
+
                         <!-- Modals -->
                         <route-modals :routes="filteredRoutes"></route-modals>
 
@@ -147,15 +169,14 @@
                 </div>
             </div>
 
+            <!-- Back to Top Button -->
             <button @click="scrollToTop" class="btn back-to-top">
                 <i class="fas fa-chevron-up"></i>
             </button>
 
             <!-- Footer -->
             <site-footer></site-footer>
-
         </div>
-
     </div>
 
 
@@ -176,7 +197,10 @@
                 displayedRoutes: 8,
                 userName: 'You',
                 searchQuery: '',
-                isLoading: true
+                isLoading: true,
+                userProfile: {
+                    avatar: ''
+                }
             };
         },
         mounted() {
@@ -186,11 +210,15 @@
             // Check every 100ms if window.currentUser is populated
             const userCheckInterval = setInterval(() => {
                 if (window.currentUser) {
-                    console.log(window.currentUser);
+                    console.log("User data found:", window.currentUser);
                     clearInterval(userCheckInterval); // Stop checking once loaded
 
                     // Fetch all posts with userID once the currentUser is available
                     this.fetchAllPosts(window.currentUser.id);
+
+                    // Set user profile avatar if available
+                    this.userProfile.avatar = window.currentUser.profilePicture;
+                    console.log("Profile picture URL set to:", this.userProfile.avatar); // Confirm URL in console
                 }
             }, 100);
         },
@@ -206,7 +234,6 @@
             }
         },
         methods: {
-            // fetches all
             fetchAllPosts(userID) {
                 const loadingSpinner = document.getElementById('loading-spinner');
                 const appContainer = document.getElementById('app-container');
@@ -214,18 +241,25 @@
                 loadingSpinner.style.display = 'flex';
                 appContainer.style.display = 'none';
 
+                // Fetch liked posts and all posts in parallel
+                Promise.all([
+                    axios.get(`https://app-907670644284.us-central1.run.app/api/users/${userID}/likedPosts`),
+                    axios.get(`https://app-907670644284.us-central1.run.app/api/allposts?userID=${userID}`)
+                ])
+                    .then(([likedPostsResponse, allPostsResponse]) => {
+                        const likedPostIDs = likedPostsResponse.data.likedPostIDs;
+                        const likedPostsSet = new Set(likedPostIDs);
 
-                axios.get(`https://app-907670644284.us-central1.run.app/api/allposts?userID=${userID}`)
-                    .then(response => {
-                        this.routes = response.data.map(route => ({
+                        this.routes = allPostsResponse.data.map(route => ({
                             ...route,
                             modalId: 'modal-' + route.postID,
                             timeSince: this.calculateTimeSince(new Date(route.createdAt._seconds * 1000)),
                             username: route.username || 'Unknown User',
                             commentsList: [], // Initialize comments list
-                            isLiked: route.likedBy.includes(userID) // Set isLiked based on likedBy array
+                            isLiked: likedPostsSet.has(route.postID)
                         }));
 
+                        // Proceed with fetching user data and comments
                         // Extract unique user IDs from routes
                         const userIDs = [...new Set(this.routes.map(route => route.userID))];
 
@@ -234,11 +268,11 @@
                             axios.get(`https://app-907670644284.us-central1.run.app/api/${id}`)
                                 .then(userResponse => ({
                                     id,
-                                    username: userResponse.data.username // Adjust property as needed
+                                    username: userResponse.data.username
                                 }))
                         );
 
-                        Promise.all(userPromises).then(users => {
+                        return Promise.all(userPromises).then(users => {
                             // Create a userMap for userID to username
                             const userMap = {};
                             users.forEach(user => {
@@ -267,7 +301,38 @@
                             );
 
                             // Wait for all comments to be fetched
-                            return Promise.all(commentPromises);
+                            return Promise.all(commentPromises).then(() => {
+                                // Collect all unique userIDs from comments
+                                const commentUserIDs = new Set();
+                                this.routes.forEach(route => {
+                                    route.commentsList.forEach(comment => {
+                                        commentUserIDs.add(comment.userID);
+                                    });
+                                });
+
+                                // Fetch usernames for comment authors
+                                const commentUserPromises = Array.from(commentUserIDs).map(id =>
+                                    axios.get(`https://app-907670644284.us-central1.run.app/api/${id}`)
+                                        .then(userResponse => ({
+                                            id,
+                                            username: userResponse.data.username
+                                        }))
+                                );
+
+                                return Promise.all(commentUserPromises).then(commentUsers => {
+                                    // Update userMap with comment users
+                                    commentUsers.forEach(user => {
+                                        userMap[user.id] = user.username;
+                                    });
+
+                                    // Assign usernames to comments
+                                    this.routes.forEach(route => {
+                                        route.commentsList.forEach(comment => {
+                                            comment.username = userMap[comment.userID] || 'Unknown User';
+                                        });
+                                    });
+                                });
+                            });
                         })
                             .then(() => {
                                 // All data is loaded, apply filters and show content
@@ -284,7 +349,7 @@
                             });
                     })
                     .catch(error => {
-                        console.error("Error fetching routes data:", error);
+                        console.error("Error fetching data:", error);
                         this.isLoading = false;
                         loadingSpinner.style.display = 'none';
                         appContainer.style.display = 'block';
@@ -368,6 +433,12 @@
                     top: 0,
                     behavior: 'smooth',
                 });
+            },
+            clearSearch() {
+                this.searchQuery = '';
+                this.applyFilters();
+                // Refocus on the search input
+                this.$refs.searchInput.focus();
             }
         }
     });
@@ -388,14 +459,14 @@
         // Location will be the first waypoint's address
         template: `
 <div class="col-md-6 mb-4" v-for="route in routes" :key="route.postID">
-  <div class="card post-card" @click="openModal(route)">
+  <div class="card post-card h-100" @click="openModal(route)">
     <div class="row g-0 h-100">
       <!-- Image Column -->
-      <div class="col-4">
-        <img :src="route.image" class="img-fluid h-100 w-100" :alt="route.title" style="object-fit: cover;">
+      <div class="col-12 col-md-4">
+        <img :src="route.image" class="img-fluid w-100" :alt="route.title" style="object-fit: cover; height: 100%;">
       </div>
       <!-- Text Content Column -->
-      <div class="col-8 d-flex flex-column">
+      <div class="col-12 col-md-8 d-flex flex-column">
         <div class="card-body flex-grow-1">
           <h5 class="card-title truncate-1-line">{{ route.title }}</h5>
           <p class="card-text truncate-2-lines">{{ route.description }}</p>
@@ -421,29 +492,11 @@
         data() {
             return {
                 newCommentText: {},
-                likedRoutes: {},
                 lastApiCallTime: 0,
                 disabledActions: {},
                 shareableLinks: {},
                 showShareModal: {}
             };
-        },
-        mounted() {
-            if (window.currentUser) {
-                const currentUserID = window.currentUser.id;
-
-                // Fetch user's liked posts and populate `likedRoutes`
-                axios.get(`https://app-907670644284.us-central1.run.app/api/users/${currentUserID}/likedPosts`)
-                    .then(response => {
-                        const likedPostIDs = response.data.likedPostIDs;
-                        likedPostIDs.forEach(postID => {
-                            this.likedRoutes[postID] = true; // Mark these posts as liked
-                        });
-                    })
-                    .catch(error => {
-                        console.error("Error fetching liked posts:", error);
-                    });
-            }
         },
         methods: {
             likeRoute(route) {
@@ -459,7 +512,7 @@
                         console.log("Like/unlike updated successfully:", response.data);
 
                         // Toggle like status and update like count
-                        this.likedRoutes[route.postID] = !isLiked;
+                        route.isLiked = !isLiked;
                         route.likeCount += isLiked ? -1 : 1;
                     })
                     .catch(error => {
@@ -507,6 +560,7 @@
                 if (!commentText) return; // Exit if no comment text
 
                 const currentUserID = window.currentUser.id;
+                const currentUsername = window.currentUser.username || 'You';
 
                 // Disable the comment button while posting
                 if (!this.disabledActions[route.postID]) {
@@ -529,7 +583,7 @@
                             text: commentText,
                             likes: 0,
                             createdAt: response.data.createdAt, // Use createdAt from response
-                            username: window.currentUser?.username || 'You'
+                            username: currentUsername
                         };
 
                         // Ensure Vue detects the change by using Vue's reactive methods
@@ -639,7 +693,7 @@
         template: `
         <div v-for="route in routes" :key="route.postID">
             <div class="modal fade" :id="route.modalId" tabindex="-1" :aria-labelledby="route.modalId + 'Label'" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
+                <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header d-flex justify-content-between align-items-start">
                             <div>
