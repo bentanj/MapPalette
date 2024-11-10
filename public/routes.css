@@ -325,12 +325,6 @@ body {
     margin-top: 5px;
 }
 
-/* Input Fields */
-.form-control {
-    border-radius: 25px;
-    padding: 10px 20px;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
     .post-card {
@@ -338,27 +332,30 @@ body {
     }
 }
 
-/* Input Group Focus Effect */
+/* Search Input */
+.input-group .form-control {
+    border-radius: 25px 0 0 25px;
+}
+
+.input-group .btn-outline-secondary {
+    border-radius: 0;
+}
+
+.input-group .btn-primary {
+    border-radius: 0 25px 25px 0;
+}
+
+/* Hover and Focus Styles */
 .input-group:focus-within {
-    box-shadow: 0 0 0 0.2rem rgba(255, 123, 0, 0.25);
-    /* Orange outline */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     border-radius: 25px;
 }
 
+/* Ensure no default outline for a clean look */
 .input-group .form-control:focus,
 .input-group .btn:focus {
+    outline: none;
     box-shadow: none;
-}
-
-/* Clear Search Button */
-.input-group .btn-outline-secondary {
-    border-color: #ced4da;
-    color: #6c757d;
-}
-
-.input-group .btn-outline-secondary:hover {
-    background-color: #e9ecef;
-    color: #495057;
 }
 
 
