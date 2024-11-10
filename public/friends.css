@@ -14,7 +14,7 @@ body {
     position: relative;
     width: 100%;
     height: 400px;
-    background-image: url('resources/route_photos/friends_header.jpg'); /* Update with a relevant image */
+    background-image: url('resources/route_photos/run.jpg');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
@@ -52,7 +52,7 @@ body {
     font-family: 'Open Sans', sans-serif;
 }
 
-.sample-header-section h2 {
+.sample-header-section p {
     font-weight: 300;
     font-size: 1.5rem;
     font-family: 'Open Sans', sans-serif;
@@ -69,21 +69,28 @@ body {
     padding: 40px 20px;
 }
 
-/* Search Input */
 .input-group .form-control {
     border-radius: 25px 0 0 25px;
 }
 
-.input-group .btn {
+.input-group .btn-outline-secondary {
+    border-radius: 0;
+}
+
+.input-group .btn-primary {
     border-radius: 0 25px 25px 0;
 }
 
+/* Hover and Focus Styles */
 .input-group:focus-within {
-    box-shadow: 0 0 0 0.2rem rgba(255, 123, 0, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-radius: 25px;
 }
 
+/* Ensure no default outline for a clean look */
 .input-group .form-control:focus,
 .input-group .btn:focus {
+    outline: none;
     box-shadow: none;
 }
 
@@ -125,66 +132,16 @@ body {
     max-width: 200px;
 }
 
-.friend-card .flex-grow-1 {
-    margin-right: auto;
-}
-
-.friend-card .btn {
-    border-radius: 25px;
-    margin-bottom: 5px;
-}
-
-.friend-card .btn i {
-    margin-right: 5px;
-}
-
 .friend-card .follow-btn {
     width: 120px;
 }
 
-/* Button Styles */
-.btn-primary {
-    background-color: #ff7b00;
-    border: none;
-    color: #fff;
-    transition: background-color 0.3s;
+.friend-card .btn {
+    border-radius: 25px;
 }
 
-.btn-primary:hover {
-    background-color: #e06600;
-    color: #fff;
-}
-
-.btn-outline-primary {
-    border-color: #ff7b00;
-    color: #ff7b00;
-}
-
-.btn-outline-primary:hover {
-    background-color: #ff7b00;
-    color: #fff;
-}
-
-.btn-outline-danger {
-    border-color: #dc3545;
-    color: #dc3545;
-}
-
-.btn-outline-danger:hover {
-    background-color: #dc3545;
-    color: #fff;
-}
-
-.btn-success {
-    background-color: #28a745;
-    border-color: #28a745;
-    color: #fff;
-}
-
-.btn-success:hover {
-    background-color: #218838;
-    border-color: #1e7e34;
-    color: #fff;
+.friend-card .btn i {
+    margin-right: 5px;
 }
 
 /* Adjustments for Mobile */
@@ -203,18 +160,4 @@ body {
         width: 100%;
         margin-bottom: 10px;
     }
-}
-
-/* Headings */
-h2 {
-    margin-top: 40px;
-    margin-bottom: 20px;
-    font-weight: 700;
-}
-
-/* No Results Text */
-.no-results {
-    font-size: 1.2rem;
-    color: #555;
-    margin-top: 20px;
 }
