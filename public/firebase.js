@@ -60,23 +60,47 @@ document.getElementById('login-button')?.addEventListener('click', (e) => {
 const signupForm = document.getElementById('signupForm');
 signupForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('email').value;
-  const username = document.getElementById('username').value;
+  const email = document.getElementById('email').value.trim();
+  const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
   const birthday = document.getElementById('birthday').value;
   const gender = document.getElementById('gender').value;
   const profilePicture = document.getElementById('profilePicture').files[0];
 
+  // Validate each field
+  if (!email || !username || !password || !confirmPassword || !birthday || !gender) {
+    alert("Please fill out all fields.");
+    return;
+  }
+
+  // Email format and domain validation
+  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailPattern.test(email)) {
+    alert("Please enter a valid email address with a legitimate domain.");
+    return;
+  }
+
+  // Password match check
   if (password !== confirmPassword) {
     alert("Passwords do not match.");
     return;
   }
 
   try {
+    // Retrieve the default profile picture URL
+    let profilePicURL = '';
+    if (profilePicture) {
+      profilePicURL = await uploadProfilePicture(user, profilePicture);
+    } else {
+      // Set default profile picture URL from Firebase Storage if no picture is uploaded
+      const defaultProfileRef = ref(storage, 'profile_pictures/default.jpg');
+      profilePicURL = await getDownloadURL(defaultProfileRef);
+    }
+
+    // Create the user account with Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    const profilePicURL = profilePicture ? await uploadProfilePicture(user, profilePicture) : '';
 
     // Create user document with attributes and initialize subcollections
     await setDoc(doc(db, `users/${user.uid}`), {
@@ -85,11 +109,12 @@ signupForm?.addEventListener('submit', async (e) => {
       birthday,
       gender,
       profilePicture: profilePicURL,
-      numFollowers: 0,  // Initialize numFollowers to 0
-      numFollowing: 0,   // Initialize numFollowing to 0
-      isProfilePrivate: false, // Default privacy setting
-      isPostPrivate: false     // Default post privacy setting
+      numFollowers: 0,
+      numFollowing: 0,
+      isProfilePrivate: false,
+      isPostPrivate: false
     });
+
     startSessionTimeout(); // Start session timeout on signup
     alert("You've signed up successfully! Welcome to MapPalette :)");
     window.location.href = 'homepage.html';
@@ -98,7 +123,6 @@ signupForm?.addEventListener('submit', async (e) => {
     alert("Signup failed: " + error.message);
   }
 });
-
 
 // Login
 const loginForm = document.getElementById('login-form');
