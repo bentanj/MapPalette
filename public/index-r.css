@@ -312,6 +312,87 @@
 }
 
 /* --------------------------------------------------------------------------------------------------------------------------------------- */
+/* KEY FEATURES */
+/* KEY FEATURES */
+@media (max-width: 575.98px) {
+    .key-features-section {
+        padding: 2rem 0;
+        overflow: hidden; /* Prevent potential overflow during animation */
+    }
+
+    .key-features-content {
+        padding: 0 1rem;
+    }
+
+    .key-features-content h2 {
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .key-features-content .row {
+        margin-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* More specific selectors to override Bootstrap */
+    .key-features-content .row > .col-sm-4 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        padding: 1rem;
+        margin-bottom: 1rem; /* Reduced from 1.5rem */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        min-height: 180px; /* Set consistent height */
+        opacity: 0;
+        transform: translateY(30px); /* Reduced from 50px */
+        transition: opacity 0.8s ease-out, transform 0.6s ease-out;
+    }
+
+    .features-image {
+        width: 40px;
+        height: 40px;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .key-features-content .col-sm-4 h4 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .key-features-content .col-sm-4 p {
+        font-size: 0.95rem;
+        line-height: 1.4;
+        margin-bottom: 0;
+        max-width: 280px;
+    }
+
+    .key-features-content .col-sm-4:hover {
+        transform: scale(1.02);
+        transition: transform 0.3s ease;
+    }
+}
+
+/* Additional breakpoint to catch exactly 576px */
+@media (width: 576px) {
+    .key-features-content .row > .col-sm-4 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        min-height: 180px;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------------------------------------------------- */
 /* REVIEWS SECTION */
 @media (max-width: 576px) {
     /* Gallery Section Container Adjustments */
@@ -398,5 +479,176 @@
 }
 
 /* --------------------------------------------------------------------------------------------------------------------------------------- */
+/* STEPPER SECTION */
+@media (max-width: 576px) {
+    /* Stepper Section Container */
+    .stepper-section {
+        padding: 2rem 0;
+    }
+
+    .stepper-section h2 {
+        font-size: 1.75rem;
+        margin-bottom: 2rem;
+    }
+
+    .stepper-wrapper {
+        padding: 20px 10px;
+        max-width: 100%;
+    }
+
+    /* Stepper Items */
+    .stepper-item {
+        gap: 1rem;
+        padding-bottom: 1.5rem;
+    }
+
+    /* Adjust vertical line for mobile */
+    .stepper-item:not(:last-child)::before {
+        left: 12px; /* Adjust based on smaller counter size */
+    }
+
+    /* Step Counter Circle */
+    .step-counter {
+        width: 26px;
+        height: 26px;
+        font-size: 0.9rem;
+    }
+
+    /* Step Content */
+    .step-content {
+        margin-top: 0;
+    }
+
+    .step-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .step-description {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin-bottom: 0.4rem;
+    }
+
+    .step-details {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    /* Container padding adjustments */
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    /* Column adjustments */
+    .col-md-10 {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* Hover effect adjustment for touch devices */
+    .stepper-item:hover .step-counter {
+        transform: scale(1.1); /* Slightly reduced scale for mobile */
+        transition: transform 0.2s ease;
+    }
+}
 
 
+/* --------------------------------------------------------------------------------------------------------------------------------------- */
+/* ABOUT US SECTION */
+@media (max-width: 576px) {
+    /* About Us Section Container */
+    .about-us {
+        padding: 2rem 0;
+    }
+
+    /* Section Header */
+    .about-us h2 {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .about-us-description {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin: 1rem 1.5rem;
+    }
+
+    /* Carousel Container */
+    .team-carousel {
+        padding: 0 1rem;
+    }
+
+    .carousel-inner {
+        min-height: 400px; /* Minimum height to prevent collapsing */
+    }
+
+    .carousel-item {
+        text-align: center;
+        padding: 1rem 0;
+    }
+
+    /* Team Member Image */
+    .person-image {
+        width: 200px; /* Fixed width */
+        height: 200px; /* Fixed height */
+        object-fit: cover; /* Maintain aspect ratio */
+        margin: 0 auto;
+        border-radius: 8px;
+    }
+
+    /* Team Member Details */
+    .person-name {
+        font-size: 1.25rem;
+        margin: 12px 0 8px 0;
+    }
+
+    .person-description {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Carousel Controls */
+    .about-us .carousel-control-prev,
+    .about-us .carousel-control-next {
+        width: 15%;
+        opacity: 0.8;
+    }
+
+    .about-us .carousel-control-prev {
+        left: -10px;
+    }
+
+    .about-us .carousel-control-next {
+        right: -10px;
+    }
+
+    .about-us .carousel-control-prev-icon,
+    .about-us .carousel-control-next-icon {
+        width: 2rem;
+        height: 2rem;
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 50%;
+    }
+
+    /* Container adjustments */
+    .about-us .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* Description breaks adjustment */
+    .about-us-description br {
+        display: none;
+    }
+
+    /* Column size adjustment */
+    .about-us .col-sm-5 {
+        width: 100%;
+        padding: 0;
+    }
+}
