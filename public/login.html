@@ -162,6 +162,16 @@
             </div>
           </a>
       <!-- <h3 class="app-name">Login</h3> -->
+
+      <!-- Error Alert Container -->
+      <div class="alert-container">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" id="loginErrorAlert" style="display: none;">
+            <strong>Login failed!</strong> Please check the following issues:
+            <ul class="alert-list" id="loginErrorList"></ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      </div>
+
       <form id = 'login-form'>
           <div class="mb-3">
           <label for="email" class="form-label">Email</label>

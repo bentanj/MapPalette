@@ -251,12 +251,20 @@
 
             <!-- Alert Container -->
             <div class="alert-container">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorAlert">
-                    <strong>Please fix the following errors:</strong>
-                    <ul class="alert-list" id="errorList"></ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </div>
+              <!-- Error Alert -->
+              <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorAlert">
+                  <strong>Sorry! You are unable to sign in because:</strong>
+                  <ul class="alert-list" id="errorList"></ul>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+          
+              <!-- Success Alert -->
+              <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert" style="display: none;">
+                  <strong>Signup successful!</strong> You have successfully signed up. Redirecting you to the homepage...
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+          </div>
+          
 
             <!-- Profile Picture Upload -->
             <div class="profile-upload-container">
