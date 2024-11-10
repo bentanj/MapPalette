@@ -53,7 +53,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-left: auto; /* This pushes the nav items to the right */
+    margin-left: auto;
 }
 
 /* Common button styles */
@@ -96,8 +96,27 @@
     transform: translateY(0px) !important;
 }
 
-/* Mobile responsive styles */
+/* Override Bootstrap's navbar-expand-sm behavior */
 @media (max-width: 576px) {
+    /* Force mobile layout */
+    .navbar-expand-sm {
+        flex-wrap: wrap !important;
+    }
+
+    .navbar-expand-sm .navbar-collapse {
+        flex-basis: 100% !important;
+        flex-grow: 1 !important;
+        display: none !important;
+    }
+
+    .navbar-expand-sm .navbar-collapse.show {
+        display: block !important;
+    }
+
+    .navbar-expand-sm .navbar-toggler {
+        display: block !important;
+    }
+
     .navbar {
         padding: 0.5rem;
     }
@@ -120,9 +139,9 @@
 
     .navbar .navbar-nav {
         gap: 8px;
-        flex-direction: column;
+        flex-direction: column !important;
         width: 100%;
-        margin-left: 0; /* Reset margin for mobile view */
+        margin-left: 0;
     }
 
     .nav-link.btn {
@@ -136,12 +155,17 @@
     }
 }
 
+@media (min-width: 577px) {
+    .navbar-expand-sm .navbar-collapse {
+        display: flex !important;
+    }
+
+    .navbar-expand-sm .navbar-toggler {
+        display: none !important;
+    }
+}
+
 /* Add smooth transition for navbar collapse */
 .navbar-collapse {
     transition: height 0.3s ease;
-}
-
-/* Make sure the menu shows properly when open on mobile */
-.navbar-collapse.show {
-    display: block;
 }
