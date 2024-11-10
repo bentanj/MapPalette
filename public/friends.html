@@ -24,6 +24,21 @@
 
     <!-- Axios for HTTP Requests -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <style>
+        #app-container {
+            background-image: url('resources/leaves.png');
+            /* Replace with your image path if different */
+            background-size: cover;
+            /* Ensures the image covers the entire background */
+            background-repeat: no-repeat;
+            /* Prevents the image from repeating */
+            background-attachment: fixed;
+            /* Keeps the background fixed during scrolling */
+            background-position: center;
+            /* Centers the background image */
+        }
+    </style>
 </head>
 
 <body>
@@ -41,7 +56,7 @@
         <div id="app-container" style="display: none;">
 
             <!-- Navbar -->
-            <nav-bar></nav-bar>
+            <nav-bar :user_profile="current-user"></nav-bar>
 
             <!-- Feed Header -->
             <div class="sample-header">
@@ -139,7 +154,7 @@
             },
             filteredOtherUsers() {
                 return this.otherUsers.filter(user =>
-                    user.username.toLowerCase().includes(this.searchQuery.toLowerCase())&&(!user.isProfilePrivate || user.isFollowing)
+                    user.username.toLowerCase().includes(this.searchQuery.toLowerCase()) && (!user.isProfilePrivate || user.isFollowing)
                 );
             }
         },
@@ -153,32 +168,32 @@
 
             // Unfollow confirmed action
             unfollowConfirmed() {
-            const friendId = this.friendToUnfollow.id;
-            const currentUserId = this.currentUser.id;
+                const friendId = this.friendToUnfollow.id;
+                const currentUserId = this.currentUser.id;
 
-            // Optimistic UI Update
-            this.friends = this.friends.filter(f => f.id !== friendId);
-            this.otherUsers.push(this.friendToUnfollow);
-            const previousFriendToUnfollow = this.friendToUnfollow;
-            this.friendToUnfollow = null;
+                // Optimistic UI Update
+                this.friends = this.friends.filter(f => f.id !== friendId);
+                this.otherUsers.push(this.friendToUnfollow);
+                const previousFriendToUnfollow = this.friendToUnfollow;
+                this.friendToUnfollow = null;
 
-            const unfollowModal = bootstrap.Modal.getInstance(document.getElementById('unfollowModal'));
-            unfollowModal.hide();
+                const unfollowModal = bootstrap.Modal.getInstance(document.getElementById('unfollowModal'));
+                unfollowModal.hide();
 
-            // Send DELETE API request for unfollow
-            axios.delete(`https://app-907670644284.us-central1.run.app/api/unfollow?id=${friendId}`, {
-                data: { userID: currentUserId }
-            })
-                .then(response => {
-                    console.log(`Successfully unfollowed user with ID: ${friendId}`);
+                // Send DELETE API request for unfollow
+                axios.delete(`https://app-907670644284.us-central1.run.app/api/unfollow?id=${friendId}`, {
+                    data: { userID: currentUserId }
                 })
-                .catch(error => {
-                    console.error('Error unfollowing user:', error);
-                    alert('An error occurred while trying to unfollow the user. Please try again.');
-                    // Revert UI update if unfollow fails
-                    this.otherUsers = this.otherUsers.filter(u => u.id !== friendId);
-                    this.friends.push(previousFriendToUnfollow);
-                });
+                    .then(response => {
+                        console.log(`Successfully unfollowed user with ID: ${friendId}`);
+                    })
+                    .catch(error => {
+                        console.error('Error unfollowing user:', error);
+                        alert('An error occurred while trying to unfollow the user. Please try again.');
+                        // Revert UI update if unfollow fails
+                        this.otherUsers = this.otherUsers.filter(u => u.id !== friendId);
+                        this.friends.push(previousFriendToUnfollow);
+                    });
             },
 
 
@@ -278,7 +293,7 @@
         template: `
     <div class="card friend-card h-100">
       <div class="card-body d-flex align-items-center">
-<img :src="friend.profilePicture || 'default-profile.png'" alt="Friend Profile" class="profile-pic me-3">
+<img :src="friend.profilePicture" alt="Friend Profile" class="profile-pic me-3">
         <div class="flex-grow-1">
 <h5 class="card-title mb-1 truncate-text" :title="friend.username">
   {{ friend.username }}
@@ -319,7 +334,7 @@
         template: `
     <div class="card friend-card h-100">
       <div class="card-body d-flex align-items-center">
-<img :src="user.profilePicture || 'default-profile.png'" alt="User Profile" class="profile-pic me-3">
+<img :src="user.profilePicture" alt="User Profile" class="profile-pic me-3">
         <div class="flex-grow-1">
           <h5 class="card-title mb-1">{{ user.username }}</h5>
         </div>

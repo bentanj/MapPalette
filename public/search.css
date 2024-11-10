@@ -4,7 +4,7 @@
 
 /* General Styles */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
     background-color: #f0f2f5;
     margin: 0;
     padding: 0;
@@ -138,15 +138,16 @@ body {
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
 }
 
+.post-card .col-4 img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+  }
+  
+
 .card-footer {
     background-color: #f8f9fa;
     border-top: none;
-}
-
-/* Card Body Flex Layout */
-.card-body {
-    display: flex;
-    align-items: flex-start;
 }
 
 /* Image Box */
@@ -191,25 +192,6 @@ body {
     text-overflow: ellipsis;
     max-height: 1.5em; /* Adjust as needed */
 }
-
-/* Optional Card Height */
-.post-card {
-    max-height: 300px;
-    /* Adjust as needed */
-}
-
-/* Responsive Adjustments */
-@media (max-width: 576px) {
-    .card-body {
-        flex-direction: column;
-    }
-
-    .image-box {
-        width: 100%;
-        height: auto;
-    }
-}
-
 
 /* Modal */
 .modal-content {
