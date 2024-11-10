@@ -46,14 +46,7 @@ body {
     color: #fff;
 }
 
-@media (max-width: 576px) {
-    .back-to-top {
-        width: 40px;
-        height: 40px;
-        bottom: 15px;
-        right: 15px;
-    }
-}
+
 
 
 /* Responsive */

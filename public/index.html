@@ -10,8 +10,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- Additional External CSS -->
     <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index-r.css">
     <!-- Vue -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <link rel="preload" as="image" href="./resources/index/run-background0.jpeg">
+    <link rel="preload" as="image" href="./resources/index/run-background1.jpeg">
+    <link rel="preload" as="image" href="./resources/index/run-background2.jpg">
+    <link rel="preload" as="image" href="./resources/index/run-background3.jpeg">
+    <link rel="preload" as="image" href="./resources/index/run-background4.jpeg">
+    <link rel="preload" as="image" href="./resources/index/run-background5.jpeg">
+    <link rel="preload" as="image" href="./resources/index/run-background6.jpg">
+    <link rel="preload" as="image" href="./resources/index/run-background7.jpeg">
     
 
   <style>
@@ -60,24 +70,27 @@
   
     /* hero carousel background images */
     .hero-carousel-item:nth-child(1) {
-        background-image: url('./resources/index/run-background.jpeg');
+        background-image: url('./resources/index/run-background0.jpeg');
     } 
     .hero-carousel-item:nth-child(2) {
-        background-image: url('./resources/index/run-background.jpeg');
+        background-image: url('./resources/index/run-background1.jpeg');
     }
     .hero-carousel-item:nth-child(3) {
-        background-image: url('./resources/index/run-background.jpeg');
-    }
-    .hero-carousel-item:nth-child(4) {
-        background-image: url('./resources/index/run-background.jpeg');
+        background-image: url('./resources/index/run-background2.jpg');
     } 
-    .hero-carousel-item:nth-child(5) {
-        background-image: url('./resources/index/run-background.jpeg');
+    .hero-carousel-item:nth-child(4) {
+        background-image: url('./resources/index/run-background3.jpeg');
     }
+    .hero-carousel-item:nth-child(5) {
+        background-image: url('./resources/index/run-background4.jpeg');
+    } 
     .hero-carousel-item:nth-child(6) {
-        background-image: url('./resources/index/run-background.jpeg');
+        background-image: url('./resources/index/run-background5.jpeg');
     }
     .hero-carousel-item:nth-child(7) {
+        background-image: url('./resources/index/run-background6.jpg');
+    }
+    .hero-carousel-item:nth-child(8) {
         background-image: url('./resources/index/run-background.jpeg');
     }
       
@@ -89,67 +102,120 @@
         z-index: 1;
     }
 
-    /* Slide 0 - Bottom Up Fade Design */
+    /* Shutter Reveal Design for Slide 0 */
+    .slide-0 .hero-title,
+    .slide-0 .hero-subtitle,
+    .slide-0 .hero-btn-group {
+        position: relative;
+        opacity: 0;
+        text-align: center;
+        visibility: hidden;
+    }
+
     .slide-0 .hero-title {
         position: absolute;
         left: 50%;
         top: 35%;
         width: 100%;
-        text-align: center;
-        transform: translate(-50%, 100px);
-        opacity: 0;
-        transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+        transform: translate(-50%, -50%);
+        clip-path: inset(0 50% 0 50%);
     }
 
     .slide-0 .hero-subtitle {
         position: absolute;
         left: 50%;
         top: 55%;
-        transform: translate(-50%, 100px);
-        opacity: 0;
-        transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.2s;
+        width: 100%;
+        transform: translate(-50%, -50%);
+        clip-path: inset(0 50% 0 50%);
     }
 
     .slide-0 .hero-btn-group {
         position: absolute;
         left: 50%;
         bottom: 19%;
-        transform: translate(-50%, 100px);
-        opacity: 0;
-        transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.4s;
-    }
-  
-    /* Slide 1 - Split Design */
-    .slide-1 .hero-title {
-        position: absolute;
-        left: 10%;
-        top: 30%;
-        max-width: 500px;
-        transform: translateX(-100vw);
-        opacity: 0;
-        transition: transform 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+        width: 100%;
+        transform: translate(-50%, 0);
+        clip-path: inset(0 50% 0 50%);
     }
 
-    .slide-1 .hero-subtitle {
+    /* Add pseudo-elements for shutter effect */
+    .slide-0 .hero-title::before,
+    .slide-0 .hero-subtitle::before,
+    .slide-0 .hero-btn-group::before {
+        content: '';
         position: absolute;
-        right: 10%;
-        top: 40%;
-        transform: translateX(100vw);
-        opacity: 0;
-        transition: transform 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
-    }
-
-    .slide-1 .hero-btn-group {
-        position: absolute;
-        bottom: 19%;
+        top: 0;
         left: 50%;
-        transform: translate(-50%, 100px);
-        opacity: 0;
-        transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+        height: 100%;
+        transform: translateX(-50%) scaleX(1);
+        transform-origin: right;
+        /* Updated from rgba(255, 255, 255, 0.2) to a brighter value */
+        background: rgba(255, 255, 255, 0.5);
+        z-index: 1;
     }
 
-    /* Slide 2 - Diagonal Design */
-    .slide-2 .hero-title {
+    .slide-0 .hero-title::before { width: 60%; }
+    /*.slide-0 .hero-subtitle::before { width: 27%; }*/
+    /*.slide-0 .hero-btn-group::before { width: 23%; }*/
+
+    /* Animation for the shutter effect */
+    @keyframes shutterReveal {
+        0% {
+            opacity: 0;
+            visibility: hidden;
+            clip-path: inset(0 50% 0 50%);
+        }
+        100% {
+            opacity: 1;
+            visibility: visible;
+            clip-path: inset(0 0 0 0);
+        }
+    }
+
+    @keyframes shutterSlideBefore {
+        0% {
+            transform: translateX(-50%) scaleX(1);
+        }
+        100% {
+            transform: translateX(-50%) scaleX(0);
+        }
+    }
+
+    /* Classes for animations */
+    .slide-0 .hero-title.animate {
+        animation: shutterReveal 1.7s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+    }
+    .slide-0 .hero-subtitle.animate {
+        animation: shutterReveal 1.5s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+    }
+    .slide-0 .hero-btn-group.animate {
+        animation: shutterReveal 1.2s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+    }
+
+    .slide-0 .hero-title.animate::before {
+        animation: shutterSlideBefore 1.7s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+    }
+    .slide-0 .hero-subtitle.animate::before {
+        animation: shutterSlideBefore 1.5s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+    }
+    .slide-0 .hero-btn-group.animate::before  {
+        animation: shutterSlideBefore 1.2s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+    }
+
+    /* Add animation delays */
+    .slide-0 .hero-subtitle.animate,
+    .slide-0 .hero-subtitle.animate::before {
+        animation-delay: 0.2s;
+    }
+
+    .slide-0 .hero-btn-group.animate,
+    .slide-0 .hero-btn-group.animate::before {
+        animation-delay: 0.4s;
+    }
+
+    /* Slide 1 - Diagonal Design */
+    .slide-1 .hero-title {
         position: absolute;
         left: 50%;
         top: 30%;
@@ -158,7 +224,7 @@
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    .slide-2 .hero-subtitle {
+    .slide-1 .hero-subtitle {
         position: absolute;
         left: 50%;
         top: 50%;
@@ -167,7 +233,7 @@
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    .slide-2 .hero-btn-group {
+    .slide-1 .hero-btn-group {
         position: absolute;
         left: 50%;
         bottom: 19%;
@@ -176,36 +242,38 @@
         transition: all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1);
     }
 
-    /* Slide 3 - Cascade Design */
-    .slide-3 .hero-title {
+    /* Slide 2 - Bottom Up Fade Design */
+    .slide-2 .hero-title {
         position: absolute;
         left: 50%;
         top: 30%;
-        transform: translate(-50%, -200px);
+        width: 100%;
+        text-align: center;
+        transform: translate(-50%, 100px);
         opacity: 0;
-        transition: all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1);
+        transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
     }
 
-    .slide-3 .hero-subtitle {
+    .slide-2 .hero-subtitle {
         position: absolute;
         left: 50%;
         top: 50%;
-        transform: translate(-50%, -200px);
+        transform: translate(-50%, 100px);
         opacity: 0;
-        transition: all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1) 0.2s;
+        transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.2s;
     }
 
-    .slide-3 .hero-btn-group {
+    .slide-2 .hero-btn-group {
         position: absolute;
         left: 50%;
         bottom: 19%;
-        transform: translate(-50%, -200px);
+        transform: translate(-50%, 100px);
         opacity: 0;
-        transition: all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1) 0.4s;
+        transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.4s;
     }
 
-    /* Slide 4 - Corner Design */
-    .slide-4 .hero-title {
+    /* Slide 3 - Corner Design */
+    .slide-3 .hero-title {
         position: absolute;
         left: 10%;
         top: 20%;
@@ -215,7 +283,7 @@
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    .slide-4 .hero-subtitle {
+    .slide-3 .hero-subtitle {
         position: absolute;
         right: 10%;
         bottom: 40%;
@@ -225,7 +293,7 @@
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
     }
 
-    .slide-4 .hero-btn-group {
+    .slide-3 .hero-btn-group {
         position: absolute;
         left: 50%;
         bottom: 19%;
@@ -234,36 +302,36 @@
         transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s;
     }
 
-    /* Slide 5 - Spiral Design */
-    .slide-5 .hero-title {
+    /* Slide 4 - Cascade Design */
+    .slide-4 .hero-title {
         position: absolute;
         left: 50%;
         top: 30%;
-        transform: translate(-50%, -50%) rotate(180deg);
+        transform: translate(-50%, -200px);
         opacity: 0;
-        transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1);
     }
 
-    .slide-5 .hero-subtitle {
+    .slide-4 .hero-subtitle {
         position: absolute;
         left: 50%;
         top: 50%;
-        transform: translate(-50%, -50%) rotate(-180deg);
+        transform: translate(-50%, -200px);
         opacity: 0;
-        transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
+        transition: all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1) 0.2s;
     }
 
-    .slide-5 .hero-btn-group {
+    .slide-4 .hero-btn-group {
         position: absolute;
         left: 50%;
         bottom: 19%;
-        transform: translate(-50%, -50%) rotate(180deg);
+        transform: translate(-50%, -200px);
         opacity: 0;
-        transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s;
+        transition: all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1) 0.4s;
     }
 
-    /* Slide 6 - Zoom Design */
-    .slide-6 .hero-title {
+    /* Slide 5 - Zoom Design */
+    .slide-5 .hero-title {
         position: absolute;
         left: 50%;
         top: 30%;
@@ -272,7 +340,7 @@
         transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
     }
 
-    .slide-6 .hero-subtitle {
+    .slide-5 .hero-subtitle {
         position: absolute;
         left: 50%;
         top: 50%;
@@ -281,7 +349,7 @@
         transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.2s;
     }
 
-    .slide-6 .hero-btn-group {
+    .slide-5 .hero-btn-group {
         position: absolute;
         left: 50%;
         bottom: 19%;
@@ -290,25 +358,68 @@
         transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.4s;
     }
 
+    /* Slide 6 - Spiral Design */
+    .slide-6 .hero-title {
+        position: absolute;
+        left: 50%;
+        top: 30%;
+        transform: translate(-50%, -50%) rotate(180deg);
+        opacity: 0;
+        transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .slide-6 .hero-subtitle {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) rotate(-180deg);
+        opacity: 0;
+        transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
+    }
+
+    .slide-6 .hero-btn-group {
+        position: absolute;
+        left: 50%;
+        bottom: 19%;
+        transform: translate(-50%, -50%) rotate(180deg);
+        opacity: 0;
+        transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s;
+    }
+
+
+    /* Slide 7 - Split Design */
+    .slide-7 .hero-title {
+        position: absolute;
+        left: 15%;
+        top: 30%;
+        max-width: 500px;
+        transform: translateX(-100vw);
+        opacity: 0;
+        transition: transform 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+    }
+
+    .slide-7 .hero-subtitle {
+        position: absolute;
+        right: 12%;
+        top: 40%;
+        transform: translateX(100vw);
+        opacity: 0;
+        transition: transform 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+    }
+
+    .slide-7 .hero-btn-group {
+        position: absolute;
+        bottom: 19%;
+        left: 50%;
+        transform: translate(-50%, 100px);
+        opacity: 0;
+        transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+    }
+
     /* Active slide animations */
-    .slide-0.active .hero-title,
-    .slide-0.active .hero-subtitle {
-        transform: translate(-50%, -50%);
-        opacity: 1;
-    }
-
-    .slide-0.active .hero-btn-group {
-        transform: translate(-50%, 0);
-        opacity: 1;
-    }
-
-    .slide-1.active .hero-title {
-        transform: translateX(0);
-        opacity: 1;
-    }
-
+    .slide-1.active .hero-title,
     .slide-1.active .hero-subtitle {
-        transform: translateX(0);
+        transform: translate(-50%, -50%) rotate(0) scale(1);
         opacity: 1;
     }
 
@@ -319,7 +430,7 @@
 
     .slide-2.active .hero-title,
     .slide-2.active .hero-subtitle {
-        transform: translate(-50%, -50%) rotate(0) scale(1);
+        transform: translate(-50%, -50%);
         opacity: 1;
     }
 
@@ -329,34 +440,49 @@
     }
 
     .slide-3.active .hero-title,
-    .slide-3.active .hero-subtitle,
-    .slide-3.active .hero-btn-group {
-        transform: translate(-50%, 0);
-        opacity: 1;
-    }
-
-    .slide-4.active .hero-title,
-    .slide-4.active .hero-subtitle {
+    .slide-3.active .hero-subtitle {
         transform: scale(1);
         opacity: 1;
     }
 
-    .slide-4.active .hero-btn-group {
+    .slide-3.active .hero-btn-group {
         transform: translate(-50%, 0) scale(1);
         opacity: 1;
     }
 
-    .slide-5.active .hero-title,
-    .slide-5.active .hero-subtitle,
-    .slide-5.active .hero-btn-group {
-        transform: translate(-50%, -50%) rotate(0);
+    .slide-4.active .hero-title,
+    .slide-4.active .hero-subtitle,
+    .slide-4.active .hero-btn-group {
+        transform: translate(-50%, 0);
         opacity: 1;
     }
 
     .slide-6.active .hero-title,
     .slide-6.active .hero-subtitle,
     .slide-6.active .hero-btn-group {
+        transform: translate(-50%, -50%) rotate(0);
+        opacity: 1;
+    }
+
+    .slide-5.active .hero-title,
+    .slide-5.active .hero-subtitle,
+    .slide-5.active .hero-btn-group {
         transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    .slide-7.active .hero-title {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .slide-7.active .hero-subtitle {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .slide-7.active .hero-btn-group {
+        transform: translate(-50%, 0);
         opacity: 1;
     }
   
@@ -498,6 +624,21 @@
     .col-sm-4:hover {
         background-color: #f1f1f1;
         transform: scale(1.05);
+    }
+
+    .key-features-content .col-sm-4 {
+        text-align: center;
+    }
+    
+    .features-image {
+        width: 50px;
+        height: 50px;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        /* Center the image */
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
     }
 
 
@@ -842,9 +983,9 @@
     <nav-bar></nav-bar>
     <div style="padding-top: 67px">
         <!-- Hero Section -->
-        <div id="heroMainCarousel" class="carousel slide hero-main-carousel" data-bs-ride="carousel" data-bs-interval="4000">
+        <div id="heroMainCarousel" class="carousel slide hero-main-carousel" data-bs-ride="carousel" data-bs-interval="4000" data-bs-pause="false">
             <div class="hero-carousel-inner carousel-inner">
-                <!-- Slide 0 - Bottom-Up Design -->
+                <!-- Slide 0 - Spiral Unfold Design -->
                 <div class="carousel-item hero-carousel-item slide-0 active">
                     <div class="hero-slide-content">
                         <h1 class="hero-title">Explore the World with MapPalette</h1>
@@ -856,20 +997,8 @@
                     </div>
                 </div>
 
-                <!-- Slide 1 - Split Design -->
+                <!-- Slide 1 - Diagonal Design -->
                 <div class="carousel-item hero-carousel-item slide-1">
-                    <div class="hero-slide-content">
-                        <h1 class="hero-title">Compete with fellow runners!</h1>
-                        <p class="hero-subtitle">Rack up points and top the leaderboard</p>
-                        <div class="hero-btn-group">
-                            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
-                            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 2 - Diagonal Design -->
-                <div class="carousel-item hero-carousel-item slide-2">
                     <div class="hero-slide-content">
                         <h1 class="hero-title">Create imaginative designs with our route mapping tool!</h1>
                         <p class="hero-subtitle">Turn your running routes into works of art</p>
@@ -880,11 +1009,11 @@
                     </div>
                 </div>
 
-                <!-- Slide 3 - Cascade Design -->
-                <div class="carousel-item hero-carousel-item slide-3">
+                <!-- Slide 2 - Bottom-Up Design -->
+                <div class="carousel-item hero-carousel-item slide-2">
                     <div class="hero-slide-content">
-                        <h1 class="hero-title">Mission and Vision</h1>
-                        <p class="hero-subtitle">Making fitness fun and creative for everyone</p>
+                        <h1 class="hero-title">Why Choose Us?</h1>
+                        <p class="hero-subtitle">Experience running like never before — track, create, and share your unique routes</p>
                         <div class="hero-btn-group">
                             <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
                             <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
@@ -892,8 +1021,8 @@
                     </div>
                 </div>
 
-                <!-- Slide 4 - Corner Design -->
-                <div class="carousel-item hero-carousel-item slide-4">
+                <!-- Slide 3 - Corner Design -->
+                <div class="carousel-item hero-carousel-item slide-3">
                     <div class="hero-slide-content">
                         <h1 class="hero-title">Share your routes with friends!</h1>
                         <p class="hero-subtitle">Connect with fellow runners and share your creative routes</p>
@@ -904,8 +1033,32 @@
                     </div>
                 </div>
 
-                <!-- Slide 5 - Spiral Design -->
+                <!-- Slide 4 - Cascade Design -->
+                <div class="carousel-item hero-carousel-item slide-4">
+                    <div class="hero-slide-content">
+                        <h1 class="hero-title">Mission and Vision</h1>
+                        <p class="hero-subtitle">Making fitness fun and creative for everyone</p>
+                        <div class="hero-btn-group">
+                            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
+                            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 5 - Zoom Design -->
                 <div class="carousel-item hero-carousel-item slide-5">
+                    <div class="hero-slide-content">
+                        <h1 class="hero-title">View the top weekly routes!</h1>
+                        <p class="hero-subtitle">Get inspired by the most popular routes of the week</p>
+                        <div class="hero-btn-group">
+                            <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
+                            <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 6 - Spiral Design -->
+                <div class="carousel-item hero-carousel-item slide-6">
                     <div class="hero-slide-content">
                         <h1 class="hero-title">Join Our Growing Community!</h1>
                         <p class="hero-subtitle">Be part of a creative fitness revolution</p>
@@ -916,11 +1069,11 @@
                     </div>
                 </div>
 
-                <!-- Slide 6 - Zoom Design -->
-                <div class="carousel-item hero-carousel-item slide-6">
+                <!-- Slide 7 - Split Design -->
+                <div class="carousel-item hero-carousel-item slide-7">
                     <div class="hero-slide-content">
-                        <h1 class="hero-title">View the top weekly routes!</h1>
-                        <p class="hero-subtitle">Get inspired by the most popular routes of the week</p>
+                        <h1 class="hero-title">Compete with fellow runners!</h1>
+                        <p class="hero-subtitle">Rack up points and top the leaderboard</p>
                         <div class="hero-btn-group">
                             <a href="signup.html" class="btn btn-primary mx-2">Get Started</a>
                             <a href="login.html" class="btn btn-outline-light mx-2">Login</a>
@@ -941,13 +1094,14 @@
 
             <!-- Carousel Indicators -->
             <div class="hero-carousel-indicators carousel-indicators">
-                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 0"></button>
-                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="1" aria-label="Slide 7"></button>
                 <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="2" aria-label="Slide 2"></button>
-                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="3" aria-label="Slide 3"></button>
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="3" aria-label="Slide 1"></button>
                 <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="4" aria-label="Slide 4"></button>
-                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="5" aria-label="Slide 5"></button>
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="5" aria-label="Slide 3"></button>
                 <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="6" aria-label="Slide 6"></button>
+                <button type="button" data-bs-target="#heroMainCarousel" data-bs-slide-to="7" aria-label="Slide 5"></button>
             </div>
         </div>
 
@@ -974,7 +1128,7 @@
                     <div class="col-sm-4">
                         <img class="features-image" src="./resources/index/features/integration.png" alt="">
                         <h4>Seamless Integration</h4>
-                        <p>Connect with fitness apps like Strava to track your runs.</p>
+                        <p>Connect with Google Maps to track your runs real-time.</p>
                     </div>
                 </div>
             </div>
@@ -1293,6 +1447,57 @@
             },
         }
     })
+
+    // HERO CAROUSEL
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize elements
+        const firstSlide = document.querySelector('.slide-0');
+        
+        // Get the carousel element
+        const carouselElement = document.getElementById('heroMainCarousel');
+        
+        // Get the elements we want to animate
+        const title = firstSlide.querySelector('.hero-title');
+        const subtitle = firstSlide.querySelector('.hero-subtitle');
+        const btnGroup = firstSlide.querySelector('.hero-btn-group');
+        
+        // Force a browser reflow
+        firstSlide.offsetHeight;
+        
+        // Add active class to first slide
+        firstSlide.classList.add('active');
+        
+        // Add event listener for when slide animation ends
+        carouselElement.addEventListener('slid.bs.carousel', function() {
+            // Reset the carousel cycle if it stopped
+            const bsCarousel = bootstrap.Carousel.getInstance(carouselElement);
+            if (bsCarousel) {
+                bsCarousel.cycle();
+            }
+        });
+    
+        // Small delay to ensure elements are hidden before animation starts
+        setTimeout(() => {
+            title.classList.add('animate');
+            subtitle.classList.add('animate');
+            btnGroup.classList.add('animate');
+        }, 100);
+    
+        // Add pause and resume on hover if desired
+        carouselElement.addEventListener('mouseenter', function() {
+            const bsCarousel = bootstrap.Carousel.getInstance(carouselElement);
+            if (bsCarousel) {
+                bsCarousel.pause();
+            }
+        });
+    
+        carouselElement.addEventListener('mouseleave', function() {
+            const bsCarousel = bootstrap.Carousel.getInstance(carouselElement);
+            if (bsCarousel) {
+                bsCarousel.cycle();
+            }
+        });
+    });
 
     // FADE-IN SCROLL EFFECT
     document.addEventListener('DOMContentLoaded', function () {
