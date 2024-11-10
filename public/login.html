@@ -100,6 +100,49 @@
         max-width: 90%;
       }
     }
+
+    .btn {
+       transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+       transform: translateY(-2px);
+       box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+       background: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+       color: white;
+    }
+
+    .form-control:hover, .form-select:hover {
+       border-color: #FF6B6B;
+       box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.1);
+       transform: translateY(-1px);
+       background-color: #fff;
+       transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+       border-color: #FF6B6B;
+       box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
+       transform: translateY(-1px);
+    }
+
+    .form-label {
+       transition: all 0.3s ease;
+       display: inline-block;
+    }
+
+    .form-control:hover + .form-label,
+    .form-select:hover + .form-label,
+    .form-control:focus + .form-label,
+    .form-select:focus + .form-label {
+       color: #FF6B6B;
+       transform: translateX(5px);
+    }
+
+    .text-center a:hover {
+       text-decoration: underline;
+       color: #FF6B6B;
+    }
   </style>
 </head>
 <body>
@@ -119,6 +162,16 @@
             </div>
           </a>
       <!-- <h3 class="app-name">Login</h3> -->
+
+      <!-- Error Alert Container -->
+      <div class="alert-container">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" id="loginErrorAlert" style="display: none;">
+            <strong>Login failed!</strong> Please check the following issues:
+            <ul class="alert-list" id="loginErrorList"></ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      </div>
+
       <form id = 'login-form'>
           <div class="mb-3">
           <label for="email" class="form-label">Email</label>
@@ -129,7 +182,10 @@
           <input type="password" class="form-control" id="password" placeholder="Enter your password">
           </div>
           <div class="d-grid">
-          <button type="submit" class="btn">Login</button>
+            <button type="submit" class="btn" id="loginButton">
+              <span id="loginButtonText">Login</span>
+              <span id="loginSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+            </button>
           </div>
           <div class="text-center mt-3">
             <a href="#" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">Forgot your password?</a> |
