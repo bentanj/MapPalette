@@ -30,10 +30,11 @@
     <div id="app">
         <!-- Loading Spinner -->
         <div id="loading-spinner" class="text-center"
-            style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+            style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column;">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
+            <p class="mt-3">{{ currentQuote }}</p>
         </div>
 
         <!-- Main Content, Hidden Initially -->
@@ -199,28 +200,46 @@
                 isLoading: true,
                 userProfile: {
                     avatar: ''
-                }
+                },
+                quotes: [
+                    "Run like there's a fire behind you.",
+                    "One run can change your day, many runs can change your life.",
+                    "The only bad run is the one that didn’t happen.",
+                    "Running is the greatest metaphor for life because you get out of it what you put into it.",
+                    "Pain is temporary, pride is forever.",
+                    "The miracle isn’t that I finished. The miracle is that I had the courage to start.",
+                    "You’re only one run away from a good mood.",
+                    "Run when you can, walk if you have to, crawl if you must; just never give up.",
+                    "Don’t dream of winning, train for it."
+                ],
+                currentQuote: ""
             };
         },
         mounted() {
             const loadingSpinner = document.getElementById('loading-spinner');
             const appContainer = document.getElementById('app-container');
 
+            // Display a random quote initially
+            this.displayRandomQuote();
+
+            // Change the quote every 5 seconds
+            setInterval(this.displayRandomQuote, 5000);
+
             // Check every 100ms if window.currentUser is populated
             const userCheckInterval = setInterval(() => {
                 if (window.currentUser) {
                     console.log("User data found:", window.currentUser);
-                    clearInterval(userCheckInterval); // Stop checking once loaded
+                    clearInterval(userCheckInterval);
 
-                    // Fetch all posts with userID once the currentUser is available
+                    // Fetch posts after loading user data
                     this.fetchAllPosts(window.currentUser.id);
 
                     // Set user profile avatar if available
                     this.userProfile.avatar = window.currentUser.profilePicture;
-                    console.log("Profile picture URL set to:", this.userProfile.avatar); // Confirm URL in console
                 }
             }, 100);
         },
+
         created() {
             // Initial check if window.currentUser is already available
             if (window.currentUser) {
@@ -233,6 +252,10 @@
             }
         },
         methods: {
+            displayRandomQuote() {
+                const randomIndex = Math.floor(Math.random() * this.quotes.length);
+                this.currentQuote = this.quotes[randomIndex];
+            },
             fetchAllPosts(userID) {
                 const loadingSpinner = document.getElementById('loading-spinner');
                 const appContainer = document.getElementById('app-container');
@@ -499,31 +522,31 @@
         },
         methods: {
             likeRoute(route) {
-            const currentUserID = window.currentUser?.id || 'defaultUserID';
-            const isLiked = route.isLiked;
+                const currentUserID = window.currentUser?.id || 'defaultUserID';
+                const isLiked = route.isLiked;
 
-            // Immediately toggle the like status on the frontend
-            route.isLiked = !isLiked;
-            route.likeCount += isLiked ? -1 : 1;
+                // Immediately toggle the like status on the frontend
+                route.isLiked = !isLiked;
+                route.likeCount += isLiked ? -1 : 1;
 
-            const endpoint = isLiked
-                ? `https://app-907670644284.us-central1.run.app/api/posts/unlike?id=${route.postID}`
-                : `https://app-907670644284.us-central1.run.app/api/posts/like?id=${route.postID}`;
+                const endpoint = isLiked
+                    ? `https://app-907670644284.us-central1.run.app/api/posts/unlike?id=${route.postID}`
+                    : `https://app-907670644284.us-central1.run.app/api/posts/like?id=${route.postID}`;
 
-            // Send the request to update the like status in the backend
-            axios.put(endpoint, { userID: currentUserID })
-                .then(response => {
-                    console.log("Like/unlike updated successfully:", response.data);
-                })
-                .catch(error => {
-                    console.error("Error updating like/unlike:", error);
-                    alert("Failed to update like/unlike. Please try again.");
+                // Send the request to update the like status in the backend
+                axios.put(endpoint, { userID: currentUserID })
+                    .then(response => {
+                        console.log("Like/unlike updated successfully:", response.data);
+                    })
+                    .catch(error => {
+                        console.error("Error updating like/unlike:", error);
+                        alert("Failed to update like/unlike. Please try again.");
 
-                    // Revert the like status and count on error
-                    route.isLiked = isLiked;
-                    route.likeCount += isLiked ? 1 : -1;
-                });
-        },
+                        // Revert the like status and count on error
+                        route.isLiked = isLiked;
+                        route.likeCount += isLiked ? 1 : -1;
+                    });
+            },
             calculateTimeSince(timestamp) {
                 if (!timestamp) return 'Just Now';
 
