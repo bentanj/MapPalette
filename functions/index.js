@@ -234,6 +234,12 @@ app.delete('/api/posts', async (req, res) => {
 
 // Retrieve all posts from the posts collection and include username and profile picture
 app.get('/api/allposts', async (req, res) => {
+  const { userID: currentUserID } = req.query; // Assume userID of the current user is passed as a query parameter
+  
+  if (!currentUserID) {
+    return res.status(400).json({ message: 'User ID of the current user is required.' });
+  }
+
   try {
     const postsSnap = await db.collection('posts').get();
 
@@ -241,7 +247,6 @@ app.get('/api/allposts', async (req, res) => {
       return res.status(404).json({ message: 'No posts found.' });
     }
 
-    // Map through each document, fetch user data, and return post data with additional user info
     const posts = await Promise.all(postsSnap.docs.map(async (doc) => {
       const postData = { id: doc.id, ...doc.data() };
       const userID = postData.userID;
@@ -251,25 +256,23 @@ app.get('/api/allposts', async (req, res) => {
       const userSnap = await userRef.get();
       const userData = userSnap.exists ? userSnap.data() : { username: 'Unknown User', profilePicture: 'default-profile-picture-url' };
 
-      // Exclude posts if user has `isPostPrivate` set to true
-      if (userData && userData.isPostPrivate) return undefined;
+      // Exclude posts if the user has `isPostPrivate` set to true, except if the post belongs to the current user
+      if (userData && userData.isPostPrivate && userID !== currentUserID) return undefined;
 
       // Fetch the list of users who liked this post
       const likesSnap = await doc.ref.collection('likes').get();
       const likedUsers = likesSnap.docs.map(likeDoc => likeDoc.id);
 
-      // Add username and profile picture to the post data
       return {
         ...postData,
         username: userData.username || 'Unknown User',
         profilePicture: userData.profilePicture || 'default-profile-picture-url',
-        likedBy: likedUsers
+        likedBy: likedUsers,
       };
     }));
 
-    // Filter out any undefined results before sending the response
     const filteredPosts = posts.filter(post => post !== undefined && post !== null);
-    return res.status(200).json(filteredPosts);    
+    return res.status(200).json(filteredPosts);
   } catch (error) {
     console.error('Error fetching all posts:', error);
     return res.status(500).json({ message: 'Error fetching posts.' });
