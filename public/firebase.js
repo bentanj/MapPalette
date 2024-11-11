@@ -3,7 +3,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
-import { Firestore } from '@bountyrush/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -18,13 +17,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-
-// Initialize Firestore with @bountyrush/firestore instead of @google-cloud/firestore
-process.env.FIRESTORE_USE_REST_API = 'true';  // Set REST API mode for cold start improvements
-const db = new Firestore({
-    projectId: firebaseConfig.projectId,
-});
-
+const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Global user data storage
@@ -63,146 +56,56 @@ document.getElementById('login-button')?.addEventListener('click', (e) => {
 
 // Handle signup and login form submissions
 
-/* -------------------------------------------------------------------------- */
-/*                                sign up auth                                */
-/* -------------------------------------------------------------------------- */
-
 // Sign Up
 const signupForm = document.getElementById('signupForm');
-const errorAlert = document.getElementById('errorAlert');
-const errorList = document.getElementById('errorList');
-
 signupForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  errorList.innerHTML = ''; // Clear previous errors
-  errorAlert.style.display = 'none';
-
-  const email = document.getElementById('email').value.trim();
-  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value;
+  const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
   const birthday = document.getElementById('birthday').value;
   const gender = document.getElementById('gender').value;
   const profilePicture = document.getElementById('profilePicture').files[0];
 
-  // Array to collect all validation error messages
-  const errors = [];
-
-  // Validation checks
-  if (!email || !username || !password || !confirmPassword || !birthday || !gender) {
-    errors.push("Please fill out all fields.");
-  }
-
-  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if (!emailPattern.test(email)) {
-    errors.push("Please enter a valid email address with a legitimate domain.");
-  }
-
   if (password !== confirmPassword) {
-    errors.push("Passwords do not match.");
-  }
-
-  // If there are validation errors, display them and stop form submission
-  if (errors.length > 0) {
-    displayErrors(errors);
-    resetButtonState(); // Ensure button is re-enabled in case of errors
+    alert("Passwords do not match.");
     return;
   }
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+    const profilePicURL = profilePicture ? await uploadProfilePicture(user, profilePicture) : '';
 
-    // Profile picture handling
-    let profilePicURL = '';
-    if (profilePicture) {
-      profilePicURL = await uploadProfilePicture(user, profilePicture);
-    } else {
-      const defaultProfileRef = ref(storage, 'profile_pictures/default.jpg');
-      profilePicURL = await getDownloadURL(defaultProfileRef);
-    }
-
-    // Create user document in Firestore
+    // Create user document with attributes and initialize subcollections
     await setDoc(doc(db, `users/${user.uid}`), {
       email,
       username,
       birthday,
       gender,
       profilePicture: profilePicURL,
-      numFollowers: 0,
-      numFollowing: 0,
-      isProfilePrivate: false,
-      isPostPrivate: false
+      numFollowers: 0,  // Initialize numFollowers to 0
+      numFollowing: 0,   // Initialize numFollowing to 0
+      isProfilePrivate: false, // Default privacy setting
+      isPostPrivate: false     // Default post privacy setting
     });
-
-    // Show success alert and delay redirection
-    const successAlert = document.getElementById('successAlert');
-    successAlert.style.display = 'block';
-    document.querySelector('.signup-container').scrollTo({ top: 0, behavior: 'smooth' });
-
-    setTimeout(() => {
-      window.location.href = 'homepage.html';
-    }, 3000); // Redirect after 3 seconds
-
+    startSessionTimeout(); // Start session timeout on signup
+    alert("You've signed up successfully! Welcome to MapPalette :)");
+    window.location.href = 'homepage.html';
   } catch (error) {
     console.error('Signup error:', error);
-    displayErrors([`Signup failed: ${error.message}`]); // Pass error as array to displayErrors
-    resetButtonState(); // Reset the button in case of an error
+    alert("Signup failed: " + error.message);
   }
 });
 
-// Updated displayErrors function
-function displayErrors(errors) {
-  errors.forEach(error => {
-    const li = document.createElement('li');
-    li.textContent = error;
-    errorList.appendChild(li);
-  });
-  errorAlert.style.display = 'block';
-  document.querySelector('.signup-container').scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Reset button state after error or successful handling
-function resetButtonState() {
-  spinner.style.display = 'none';
-  buttonText.style.display = 'inline';
-  submitButton.disabled = false;
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                 Login auth                                 */
-/* -------------------------------------------------------------------------- */
 
 // Login
 const loginForm = document.getElementById('login-form');
-const loginErrorAlert = document.getElementById('loginErrorAlert');
-const loginErrorList = document.getElementById('loginErrorList');
-const loginButton = document.getElementById('loginButton');
-const loginSpinner = document.getElementById('loginSpinner');
-const loginButtonText = document.getElementById('loginButtonText');
-
 loginForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  loginErrorList.innerHTML = ''; // Clear previous errors
-  loginErrorAlert.style.display = 'none';
-
-  const email = document.getElementById('email').value.trim();
+  const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-
-  // Show spinner and disable button
-  loginSpinner.style.display = 'inline-block';
-  loginButtonText.style.display = 'none';
-  loginButton.disabled = true;
-
-  const errors = [];
-  if (!email) errors.push("Email is required.");
-  if (!password) errors.push("Password is required.");
-
-  if (errors.length > 0) {
-    displayLoginErrors(errors);
-    resetLoginButtonState();
-    return;
-  }
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
@@ -210,32 +113,9 @@ loginForm?.addEventListener('submit', async (e) => {
     window.location.href = 'homepage.html';
   } catch (error) {
     console.error('Login error:', error);
-    displayLoginErrors([`Login failed: ${error.message}`]);
-    resetLoginButtonState();
+    alert("Login failed: " + error.message);
   }
 });
-
-// Function to display errors in the login error alert
-function displayLoginErrors(errors) {
-  errors.forEach(error => {
-    const li = document.createElement('li');
-    li.textContent = error;
-    loginErrorList.appendChild(li);
-  });
-  loginErrorAlert.style.display = 'block';
-  document.querySelector('.login-container').scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Function to reset the login button state
-function resetLoginButtonState() {
-  loginSpinner.style.display = 'none';
-  loginButtonText.style.display = 'inline';
-  loginButton.disabled = false;
-}
-
-/* -------------------------------------------------------------------------- */
-/*                              Helper Functions                              */
-/* -------------------------------------------------------------------------- */
 
 // Helper function to fetch document IDs in a subcollection
 async function fetchSubcollectionIds(userId, subcollection) {
@@ -243,10 +123,6 @@ async function fetchSubcollectionIds(userId, subcollection) {
   const snapshot = await getDocs(subcollectionRef);
   return snapshot.docs.map(doc => doc.id); // Returns an array of document IDs
 }
-
-/* -------------------------------------------------------------------------- */
-/*                           Current user as Global                           */
-/* -------------------------------------------------------------------------- */
 
 // Handle session persistence and set global user data
 onAuthStateChanged(auth, async (user) => {
@@ -299,6 +175,25 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+// Upload profile picture and get URL
+async function uploadProfilePicture(user, file) {
+  const storageRef = ref(storage, `profile_pictures/${user.uid}/${file.name}`);
+  await uploadBytes(storageRef, file);
+  return await getDownloadURL(storageRef);
+}
+
+document.getElementById('logout')?.addEventListener('click', async () => {
+  try {
+    await signOut(auth); // Log out the user
+    window.currentUser = null; // Clear global user data
+    alert("Sad to see you leave, but love to watch you go (and run)! See you soon!");
+    window.location.href = "index.html"; // Redirect to login page
+  } catch (error) {
+    console.error("Logout failed:", error);
+    alert("An error occurred during logout.");
+  }
+});
+
 // Function to get user data by userID
 async function getCurrentUserObject() {
   return new Promise((resolve, reject) => {
@@ -337,33 +232,6 @@ export async function displayUserData() {
       return null;
   }
 }
-
-// Upload profile picture and get URL
-async function uploadProfilePicture(user, file) {
-  const storageRef = ref(storage, `profile_pictures/${user.uid}/${file.name}`);
-  await uploadBytes(storageRef, file);
-  return await getDownloadURL(storageRef);
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                Log out auth                                */
-/* -------------------------------------------------------------------------- */
-
-document.getElementById('logout')?.addEventListener('click', async () => {
-  try {
-    await signOut(auth); // Log out the user
-    window.currentUser = null; // Clear global user data
-    alert("Sad to see you leave, but love to watch you go (and run)! See you soon!");
-    window.location.href = "index.html"; // Redirect to login page
-  } catch (error) {
-    console.error("Logout failed:", error);
-    alert("An error occurred during logout.");
-  }
-});
-
-/* -------------------------------------------------------------------------- */
-/*                             Reset Password auth                            */
-/* -------------------------------------------------------------------------- */
 
 // Password reset functionality
 const resetPasswordForm = document.getElementById('reset-password-form');
