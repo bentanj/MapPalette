@@ -30,7 +30,7 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 990px) {
     .footer-wrapper .text-md-end {
         text-align: center !important;
         margin-top: 1rem;

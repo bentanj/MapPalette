@@ -76,7 +76,7 @@
                 <div class="container-fluid">
                     <div class="row">
                         <!-- Left sidebar -->
-                        <div class="col-lg-3 col-md-4">
+                        <div class="col-xl-3 col-md-4">
                             <div class="side-column bg-white p-4 rounded shadow-sm">
                                 <!-- Profile Summary -->
                                 <div class="mb-4 pb-3 border-bottom">
@@ -128,14 +128,14 @@
                                 <!-- Suggested Followers (shown when user has no following) -->
                                 <div v-if="userProfile.stats.following === 0" class="mb-4">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="text-uppercase fw-bold text-muted small mb-0">Suggested Runners</h6>
-                                        <div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <h6 class="text-uppercase fw-bold text-muted small mb-0">Suggested Runners</h6>
                                             <button @click="loadSuggestedUsers" 
                                                     class="btn btn-link btn-sm text-decoration-none p-0 me-2">
                                                 <i class="bi bi-arrow-clockwise"></i>
                                             </button>
-                                            <a href="friends.html" class="text-decoration-none small">See All</a>
                                         </div>
+                                        <a href="friends.html" class="text-decoration-none small">See All</a>
                                     </div>
                                     <div v-if="suggestedUsers.length > 0">
                                         <div v-for="user in suggestedUsers" :key="user.userID" class="mb-3 p-2 border rounded hover-shadow">
@@ -185,7 +185,7 @@
                         </div>
 
                         <!-- Main content area using vue components -->
-                        <div class="col-lg-8 col-md-8 content">
+                        <div class="col-xl-8 col-md-8 content">
                             <!-- New User Tutorial Section (show only if user has no friends/routes) -->
                             <div v-if="isNewUser && (!activities || activities.length === 0)" class="mb-4">
                                 <div class="card shadow-sm">
@@ -767,19 +767,6 @@
                             followers: 0
                         }
                     },
-                    quotes: [
-                        "Every mile is two in winter.",
-                        "The pain of running is temporary. The pride of finishing lasts forever.",
-                        "Run when you can, walk if you have to, crawl if you must, but never give up.",
-                        "It's not about being the best. It's about being better than you were yesterday.",
-                        "Running is the greatest metaphor for life, because you get out of it what you put into it.",
-                        "The only bad workout is the one that didn't happen.",
-                        "Your legs are not giving out. Your head is giving up. Keep going.",
-                        "There is no finish line. Just a new starting point.",
-                        "You don't have to go fast, you just have to go.",
-                        "The voice inside your head that says you can't do this is a liar."
-                    ],
-                    currentQuote: "",
                     heroStats: [
                         { 
                             id: 1, 
@@ -827,10 +814,6 @@
             mounted() {
                 const loadingSpinner = document.getElementById('loading-spinner');
                 const appContainer = document.getElementById('app-container');
-
-                // Display a random quote initially and start rotation
-                this.displayRandomQuote();
-                setInterval(this.displayRandomQuote, 5000);
 
                 const urlParams = new URLSearchParams(window.location.search);
                 this.postId = urlParams.get('id');
@@ -880,21 +863,11 @@
             },
 
             methods: {
-                displayRandomQuote() {
-                    const randomIndex = Math.floor(Math.random() * this.quotes.length);
-                    // Remove the quote temporarily to trigger re-animation
-                    this.currentQuote = '';
-                    // Use setTimeout to ensure the DOM has updated
-                    setTimeout(() => {
-                        this.currentQuote = this.quotes[randomIndex];
-                    }, 10);
-                },
                 async loadSuggestedUsers() {
                     if (!this.currentUser || !this.currentUser.id) {
                         console.log('Current user not available yet');
                         return;
                     }
-                    
                     try {
                         const response = await axios.get(`${this.API_ENDPOINT}/api/users/getcondensed/${this.currentUser.id}`);
                         
