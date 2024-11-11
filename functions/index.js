@@ -3,7 +3,11 @@ const { onRequest } = require('firebase-functions/v2/https');
 // const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { initializeApp, cert, applicationDefault} = require('firebase-admin/app');
 const { getStorage } = require('firebase-admin/storage');
-const { getFirestore, FieldValue } = require('firebase-admin/firestore'); // Modular import for Firestore
+const { FieldValue } = require('firebase-admin/firestore'); // Modular import for Firestore
+
+// Import Firestore from @bountyrush/firestore
+const { Firestore } = require('@bountyrush/firestore');
+
 require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const cors = require('cors');
@@ -21,8 +25,10 @@ initializeApp({
   storageBucket: 'gs://mappalette-9e0bd.appspot.com'
 });
 
-// Initialise firestore
-const db = getFirestore();
+// Initialize Firestore from @bountyrush/firestore with REST API mode enabled
+process.env.FIRESTORE_USE_REST_API = 'true';
+const db = new Firestore({ projectId: 'mappalette-9e0bd' }); // Replace with your actual project ID
+
 const bucket = getStorage().bucket();
 
 // Create Express app
