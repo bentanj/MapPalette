@@ -1,0 +1,43 @@
+/* Loading Spinner */
+#loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+.flashy-quote {
+    display: inline-block; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #9b59b6; /* Set a default end color to prevent black flash */
+}
+
+.flashy-quote:not(:empty) {
+    animation: rotateScaleColor 4s ease-in-out;
+}
+
+@keyframes rotateScaleColor {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) rotate(5deg);
+        color: #3498db;
+    }
+    20% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+        color: #e74c3c;
+    }
+    80% {
+        opacity: 1;
+        transform: scale(1.05) rotate(-5deg);
+        color: #2ecc71;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.8) rotate(5deg);
+        color: #9b59b6;
+    }
+}
