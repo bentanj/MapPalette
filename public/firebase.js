@@ -3,6 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+import { Firestore } from '@bountyrush/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -17,7 +18,13 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+
+// Initialize Firestore with @bountyrush/firestore instead of @google-cloud/firestore
+process.env.FIRESTORE_USE_REST_API = 'true';  // Set REST API mode for cold start improvements
+const db = new Firestore({
+    projectId: firebaseConfig.projectId,
+});
+
 const storage = getStorage(app);
 
 // Global user data storage
