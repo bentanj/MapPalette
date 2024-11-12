@@ -238,6 +238,8 @@ body {
 
 .modal-header .modal-title {
     font-weight: 700;
+    overflow-wrap: break-word; /* Handles long words or strings */
+    word-break: break-word; /* Ensures text breaks in smaller viewports */
 }
 
 .modal-header .modal-author {
