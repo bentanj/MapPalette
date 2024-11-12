@@ -453,26 +453,30 @@
                             <button
                                 class="btn btn-link p-0 action-button"
                                 @click.stop="likePost()"
-                                :class="{ 'liked': activity.isLiked }">
-                                <i :class="[activity.isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
+                                :class="{ 'liked': activity.isLiked }"
+                                data-action="like">
+                                <i :class="[activity.isLiked ? 'fas' : 'far', 'fa-thumbs-up']"></i>
                                 <span>{{ activity.isLiked ? 'Liked' : 'Like' }}</span>
                             </button>
                             <button
                                 class="btn btn-link p-0 action-button"
-                                @click.stop="$emit('open-modal', activity)">
-                                <i class="far fa-comment me-1"></i>
+                                @click.stop="$emit('open-modal', activity)"
+                                data-action="comment">
+                                <i class="far fa-comment"></i>
                                 <span>Comment</span>
                             </button>
                             <button
                                 class="btn btn-link p-0 action-button"
-                                @click.stop="useRoute">
-                                <i class="far fa-map me-1"></i>
+                                @click.stop="useRoute"
+                                data-action="use">
+                                <i class="far fa-map"></i>
                                 <span>Use</span>
                             </button>
                             <button
                                 class="btn btn-link p-0 action-button"
-                                @click.stop="handleShare">
-                                <i class="far fa-share-square me-1"></i>
+                                @click.stop="handleShare"
+                                data-action="share">
+                                <i class="far fa-share-square"></i>
                                 <span>Share</span>
                             </button>
                         </div>
@@ -687,20 +691,20 @@
                                 <!-- Action Buttons -->
                                 <div class="d-flex border-top border-bottom py-3">
                                     <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
-                                        <button class="btn btn-link p-0 action-button" 
+                                        <button class="btn btn-link p-0 action-button" data-action="like"
                                                 @click="likePost(activity.id)"
                                                 :class="{ 'liked': isLiked }"
                                                 :disabled="disabledActions.like">
                                             <i :class="[activity.isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
                                             <span>{{ activity.isLiked ? 'Liked' : 'Like' }}</span>
                                         </button>
-                                        <button class="btn btn-link p-0 action-button"
+                                        <button class="btn btn-link p-0 action-button" data-action="use"
                                                 @click="useRoute"
                                                 :disabled="disabledActions.use">
                                             <i class="far fa-map me-1"></i>
                                             <span>Use</span>
                                         </button>
-                                        <button class="btn btn-link p-0 action-button"
+                                        <button class="btn btn-link p-0 action-button" data-action="share"
                                                 @click="handleShare"
                                                 :disabled="disabledActions.share">
                                             <i class="far fa-share-square me-1"></i>
