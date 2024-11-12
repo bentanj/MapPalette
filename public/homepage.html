@@ -125,8 +125,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Suggested Followers (shown when user has no following) -->
-                                <div v-if="userProfile.stats.following === 0" class="mb-4">
+                                <!-- Suggested Followers (shown when user has no following and zero activities) -->
+                                <div v-if="shouldShowSuggestions" class="mb-4">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div class="d-flex align-items-center gap-2">
                                             <h6 class="text-uppercase fw-bold text-muted small mb-0">Suggested Runners</h6>
@@ -187,82 +187,91 @@
                         <!-- Main content area using vue components -->
                         <div class="col-xl-8 col-md-8 content">
                             <!-- New User Tutorial Section (show only if user has no friends/routes) -->
-                            <div v-if="isNewUser && (!activities || activities.length === 0)" class="mb-4">
-                                <div class="card shadow-sm">
-                                    <div class="card-body">
-                                        <h3 class="card-title mb-4">👋 Welcome to MapPalette!</h3>
-                                        <p class="card-text">Here's how to get started:</p>
-                                        
-                                        <div class="getting-started-steps">
-                                            <div class="step d-flex align-items-start mb-4">
-                                                <div class="step-icon me-3">
-                                                    <i class="bi bi-1-circle-fill fs-4 text-primary"></i>
-                                                </div>
-                                                <div>
-                                                    <h5>Draw Your First Route</h5>
-                                                    <p>Create your first running route by clicking "Draw Your Map!" in the quick actions menu.</p>
-                                                    <a href="addMaps.html" class="btn btn-primary">
-                                                        <i class="bi bi-map me-2"></i>Start Drawing
-                                                    </a>
+                            <div v-if="!isLoading">
+                                <!-- Welcome & No Activities Section -->
+                                <template v-if="activities.length === 0">
+                                    <!-- Welcome Section -->
+                                    <div class="mb-4">
+                                        <div class="card shadow-sm">
+                                            <div class="card-body">
+                                                <h3 class="card-title mb-4">👋 Welcome to MapPalette!</h3>
+                                                <p class="card-text">Here's how to get started:</p>
+                                                
+                                                <div class="getting-started-steps">
+                                                    <div class="step d-flex align-items-start mb-4">
+                                                        <div class="step-icon me-3">
+                                                            <i class="bi bi-1-circle-fill fs-4 text-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h5>Draw Your First Route</h5>
+                                                            <p>Create your first running route by clicking "Draw Your Map!" in the quick actions menu.</p>
+                                                            <a href="addMaps.html" class="btn btn-primary">
+                                                                <i class="bi bi-map me-2"></i>Start Drawing
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="step d-flex align-items-start mb-4">
+                                                        <div class="step-icon me-3">
+                                                            <i class="bi bi-2-circle-fill fs-4 text-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h5>Connect with Runners</h5>
+                                                            <p>Follow other runners to see their routes and activities in your feed.</p>
+                                                            <a href="friends.html" class="btn btn-primary">
+                                                                <i class="bi bi-people me-2"></i>Find Runners
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="step d-flex align-items-start">
+                                                        <div class="step-icon me-3">
+                                                            <i class="bi bi-3-circle-fill fs-4 text-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h5>Explore Routes</h5>
+                                                            <p>Discover popular running routes in your area and save them for later.</p>
+                                                            <a href="routes.html" class="btn btn-primary">
+                                                                <i class="bi bi-compass me-2"></i>Browse Routes
+                                                            </a>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
 
-                                            <div class="step d-flex align-items-start mb-4">
-                                                <div class="step-icon me-3">
-                                                    <i class="bi bi-2-circle-fill fs-4 text-primary"></i>
-                                                </div>
-                                                <div>
-                                                    <h5>Connect with Runners</h5>
-                                                    <p>Follow other runners to see their routes and activities in your feed.</p>
-                                                    <a href="friends.html" class="btn btn-primary">
+                                    <!-- No Activities Message -->
+                                    <div class="text-center py-4">
+                                        <div class="card shadow-sm">
+                                            <div class="card-body">
+                                                <h5 class="mb-3">No Activities Yet</h5>
+                                                <p class="text-muted">Follow other runners to see their activities here, or create your own route to share!</p>
+                                                <div class="mt-3">
+                                                    <a href="addMaps.html" class="btn btn-primary me-2">
+                                                        <i class="bi bi-map me-2"></i>Create Route
+                                                    </a>
+                                                    <a href="friends.html" class="btn btn-outline-primary">
                                                         <i class="bi bi-people me-2"></i>Find Runners
                                                     </a>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </template>
 
-                                            <div class="step d-flex align-items-start">
-                                                <div class="step-icon me-3">
-                                                    <i class="bi bi-3-circle-fill fs-4 text-primary"></i>
-                                                </div>
-                                                <div>
-                                                    <h5>Explore Routes</h5>
-                                                    <p>Discover popular running routes in your area and save them for later.</p>
-                                                    <a href="routes.html" class="btn btn-primary">
-                                                        <i class="bi bi-compass me-2"></i>Browse Routes
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="activity-feed">
-                                <div v-if="activities.length === 0 && !isLoading" class="text-center py-4">
-                                    <div class="card shadow-sm">
-                                        <div class="card-body">
-                                            <h5 class="mb-3">No Activities Yet</h5>
-                                            <p class="text-muted">Follow other runners to see their activities here, or create your own route to share!</p>
-                                            <div class="mt-3">
-                                                <a href="addMaps.html" class="btn btn-primary me-2">
-                                                    <i class="bi bi-map me-2"></i>Create Route
-                                                </a>
-                                                <a href="friends.html" class="btn btn-outline-primary">
-                                                    <i class="bi bi-people me-2"></i>Find Runners
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <activity-card
-                                    v-else
-                                    v-for="activity in activities"
-                                    :key="activity.id"
-                                    :activity="activity"
-                                    :current-user="currentUser"
-                                    @like="likeActivity"
-                                    @share="handleActivityShare"  
-                                    @open-modal="openActivityModal">
-                                </activity-card>
+                                <!-- Activity Cards -->
+                                <template v-else>
+                                    <activity-card
+                                        v-for="activity in activities"
+                                        :key="activity.id"
+                                        :activity="activity"
+                                        :current-user="currentUser"
+                                        @like="likeActivity"
+                                        @share="handleActivityShare"  
+                                        @open-modal="openActivityModal">
+                                    </activity-card>
+                                </template>
                             </div>
                         </div>
 
@@ -864,7 +873,11 @@
                 isNewUser() {
                     return (!this.activities || this.activities.length === 0) || 
                         (!this.userProfile.stats.following || this.userProfile.stats.following === 0);
-                }
+                },
+                shouldShowSuggestions() {
+                    return this.userProfile.stats.following === 0 || 
+                        (this.activities && this.activities.length === 0);
+                },
             },
 
             methods: {
@@ -1332,17 +1345,81 @@
                     }
                 },
 
-                viewRoute(route) {
-                    // Find the activity in `activities` that matches the route ID
-                    const matchedActivity = this.activities.find(activity => activity.id === route.id);
+                async viewRoute(route) {
+                    try {
+                        // Fetch the complete post data for the trending route
+                        const response = await axios.get(`${this.API_ENDPOINT}/api/posts/?id=${route.id}`);
+                        const post = response.data;
+                        
+                        if (!post) {
+                            console.error('No post data received');
+                            throw new Error('Post not found');
+                        }
 
-                    if (matchedActivity) {
-                        // Open the activity modal with the matched activity data
-                        this.openActivityModal(matchedActivity);
-                    } else {
-                        // Optional: fallback if no match found
-                        console.warn(`No matching activity found for route ID: ${route.id}`);
-                        alert('Activity details are currently unavailable.');
+                        // Create a complete activity object from the post data
+                        const activity = {
+                            id: post.postID,
+                            title: post.title,
+                            user: post.username || 'Unknown User',
+                            userImg: post.profilePicture || this.userProfile.avatar,
+                            date: this.calculateTimeSince(post.createdAt),
+                            location: post.waypoints[0].address,
+                            description: post.description,
+                            distance: `${post.distance} km`,
+                            time: post.time || '',
+                            mapImg: post.image,
+                            likes: post.likeCount,
+                            shares: post.shareCount,
+                            commentsList: [], // Initialize empty comments list
+                            isLiked: post.likedBy.includes(this.currentUser.id)
+                        };
+
+                        // Fetch comments for the post
+                        try {
+                            const commentsResponse = await axios.get(
+                                `${this.API_ENDPOINT}/api/posts/${post.postID}/comments`
+                            );
+                            const comments = commentsResponse.data;
+
+                            // Get unique user IDs from comments
+                            const commentUserIDs = [...new Set(comments.map(comment => comment.userID))];
+
+                            // Fetch user data for comment authors
+                            const commentUserPromises = commentUserIDs.map(userId =>
+                                axios.get(`${this.API_ENDPOINT}/api/${userId}`)
+                                    .then(response => ({
+                                        id: userId,
+                                        username: response.data.username
+                                    }))
+                                    .catch(() => ({
+                                        id: userId,
+                                        username: 'Unknown User'
+                                    }))
+                            );
+
+                            const commentUsers = await Promise.all(commentUserPromises);
+                            const commentUserMap = {};
+                            commentUsers.forEach(user => {
+                                commentUserMap[user.id] = user.username;
+                            });
+
+                            // Add usernames to comments
+                            activity.commentsList = comments.map(comment => ({
+                                ...comment,
+                                username: commentUserMap[comment.userID] || 'Unknown User'
+                            }));
+                        } catch (error) {
+                            if (error.response?.status !== 404) {
+                                console.error(`Error fetching comments:`, error);
+                            }
+                        }
+
+                        // Open the modal with the complete activity data
+                        this.selectedActivity = activity;
+                        
+                    } catch (error) {
+                        console.error('Error fetching route details:', error);
+                        this.$root.setAlert('error', 'Unable to load route details. Please try again.');
                     }
                 },
 
