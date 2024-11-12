@@ -38,7 +38,7 @@
     
             <!-- Profile Header Section -->
             <div class="main-content-wrapper">
-                <div class="profile-content-container" v-else>
+                <div class="profile-content-container">
                     <div class="profile-header">
                         <div class="cover-photo">
                             <img :src="userProfile.coverPhoto" alt="Cover Photo">
@@ -687,7 +687,7 @@
                         id: '',
                         username: '',
                         profilePicture: '',
-                        avatar: 'resources/default-profile-picture.jpg', // Initialize with default image
+                        avatar: ''
                         // Other properties if needed
                     },
                     currentUserId: '',
@@ -719,7 +719,7 @@
                         clearInterval(checkUser);
                         this.currentUser = window.currentUser;
                         this.currentUserId = this.currentUser.id;
-                        this.currentUser.avatar = this.currentUser.profilePicture || 'resources/default-profile-picture.jpg';
+                        this.currentUser.avatar = this.currentUser.profilePicture
 
                         // Call the async initialization method
                         this.initializeApp();
@@ -743,7 +743,7 @@
                         const response = await axios.get(`${this.API_ENDPOINT}/api/${userId}`);
                         this.userProfile = {
                             name: response.data.username,
-                            avatar: response.data.profilePicture || 'default-profile-picture.jpg',
+                            avatar: response.data.profilePicture,
                             coverPhoto: 'resources/coverphoto_profile.jpg',
                             bio: response.data.bio || '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
                             location: response.data.location || 'Singapore',
@@ -989,7 +989,7 @@
                 updateUserProfile(userData) {
                     this.userProfile = {
                         name: userData.username,
-                        avatar: userData.profilePicture || 'resources/download.jpeg',
+                        avatar: userData.profilePicture,
                         // Hardcoded elements
                         coverPhoto: 'resources/coverphoto_profile.jpg',
                         bio: '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
@@ -1086,6 +1086,13 @@
                         alert('Failed to update like. Please try again.');
                     }
                 },
+                // scroll up btn
+                scrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
             },
             computed: {
                 isCurrentUserProfile() {
