@@ -120,13 +120,23 @@
                                 <div v-if="currentTab === 'privacy'" class="settings-section">
                                     <h3 class="mb-4">Privacy</h3>
                                     
-                                    <!-- Keep Profile Private Checkbox -->
-                                    <div class="form-check mb-3">
+                                     <!-- Keep Profile Private Checkbox -->
+                                    <div class="form-check mb-3 privacy-checkbox-wrapper"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="right"
+                                        data-bs-html="true"
+                                        data-bs-custom-class="fancy-tooltip"
+                                        title="<div class='tooltip-icon'><i class='bi bi-shield-lock'></i></div>
+                                                <div class='tooltip-content'>
+                                                <h6>Profile Privacy</h6>
+                                                <p>When enabled, your profile will not be visible to all users</p>
+                                                </div>">
                                         <input 
                                             class="form-check-input" 
                                             type="checkbox" 
                                             v-model="privacySettings.keepProfilePrivate" 
                                             id="keepProfilePrivate"
+                                            @click="handlePrivacyCheckboxClick"
                                         >
                                         <label class="form-check-label" for="keepProfilePrivate">
                                             Keep Profile Private
@@ -134,12 +144,22 @@
                                     </div>
 
                                     <!-- Keep Post Private Checkbox -->
-                                    <div class="form-check mb-3">
+                                    <div class="form-check mb-3 privacy-checkbox-wrapper"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="right"
+                                        data-bs-html="true"
+                                        data-bs-custom-class="fancy-tooltip"
+                                        title="<div class='tooltip-icon'><i class='bi bi-eye-slash'></i></div>
+                                                <div class='tooltip-content'>
+                                                <h6>Post Privacy</h6>
+                                                <p>When enabled, your posts will not be visible to all users</p>
+                                                </div>">
                                         <input 
                                             class="form-check-input" 
                                             type="checkbox" 
                                             v-model="privacySettings.keepPostPrivate" 
                                             id="keepPostPrivate"
+                                            @click="handlePrivacyCheckboxClick"
                                         >
                                         <label class="form-check-label" for="keepPostPrivate">
                                             Keep Post Private
@@ -199,6 +219,52 @@
                     showAlert: false,
                     isLoading: true 
                 }
+            },
+            methods: {
+                initTooltips() {
+                    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                    tooltipTriggerList.forEach(el => {
+                        new bootstrap.Tooltip(el);
+                    });
+                },
+                switchTab(tabId) {
+                    this.currentTab = tabId;
+                    // Reinitialize tooltips after tab switch
+                    this.$nextTick(() => {
+                        this.initTooltips();
+                    });
+                },
+                handlePrivacyCheckboxClick() {
+                    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                    tooltips.forEach(el => {
+                        const tooltip = bootstrap.Tooltip.getInstance(el);
+                        if (tooltip) {
+                            tooltip.hide();
+                        }
+                    });
+                },
+            },
+            mounted() {
+                // Initialize tooltips after component is mounted
+                this.$nextTick(() => {
+                    this.initTooltips();
+                });
+            },
+            updated() {
+                // Reinitialize tooltips after component updates
+                this.$nextTick(() => {
+                    this.initTooltips();
+                });
+            },
+            beforeUnmount() {
+                // Cleanup tooltips
+                const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                tooltips.forEach(el => {
+                    const tooltip = bootstrap.Tooltip.getInstance(el);
+                    if (tooltip) {
+                        tooltip.dispose();
+                    }
+                });
             }
         });
     </script>
@@ -212,6 +278,8 @@
     <!--loading quotes-->
     <script src="loading-quotes/loading_quotes.js"></script>
     
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- Firebase functionality -->
     <script type="module">
         import { auth, storage, ref, uploadBytes, getDownloadURL, onAuthStateChanged } from './firebase.js';
@@ -280,6 +348,15 @@
                 },
     
                 savePrivacySettings() {
+                    // Dispose of any existing tooltips
+                    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                    tooltips.forEach(el => {
+                        const tooltip = bootstrap.Tooltip.getInstance(el);
+                        if (tooltip) {
+                            tooltip.hide();
+                        }
+                    });
+
                     const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
                     axios.put(`${API_ENDPOINT}/api/users/${this.currentUserId}/privacy`, {
                         isProfilePrivate: this.privacySettings.keepProfilePrivate,
@@ -349,6 +426,5 @@
         // Mount the app
         app.mount('#app');
     </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
