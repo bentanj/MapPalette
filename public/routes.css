@@ -184,6 +184,15 @@ body {
     margin-bottom: 15px;
 }
 
+/* Ensure text wraps within modal */
+.modal-body p, .modal-body div {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+
 .card-footer {
     background-color: #f8f9fa;
     border-top: none;
