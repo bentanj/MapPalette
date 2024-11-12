@@ -29,6 +29,8 @@
 <body>
     <div id="app">
         <!-- Loading Spinner -->
+
+        
         <div id="loading-spinner" class="text-center"
             style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column;">
             <div class="spinner-border text-primary" role="status">
@@ -159,7 +161,15 @@
 
                         <!-- Cards -->
                         <div class="row mt-4">
-                            <route-cards :routes="filteredRoutes"></route-cards>
+                            <template v-if="filteredRoutes.length > 0">
+                                <route-cards :routes="filteredRoutes"></route-cards>
+                            </template>
+                            <template v-else>
+                                <div class="text-center mt-4">
+                                    <p>Sorry! No routes found that matches your search 😢</p>
+                                    <p>Would you like to <a href="./addMaps.html">create</a> one?</p>
+                                </div>
+                            </template>
                         </div>
 
                         <!-- Load More Button -->
@@ -190,7 +200,7 @@
             return {
                 isDropdownOpen: false,
                 filters: {
-                    sortOption: null
+                    sortOption: 'Most Popular'
                 },
                 routes: [],
                 userMap: {},
@@ -679,7 +689,7 @@
                 }
 
                 // Generate the shareable link to `homepage.html` with the `postID`
-                const shareUrl = `${window.location.origin}/homepage.html?id=${route.postID}`;
+                const shareUrl = `${window.location.origin}/profile_page.html?id=${route.postID}`;
 
                 // Copy the share URL to the clipboard
                 navigator.clipboard.writeText(shareUrl)
@@ -726,7 +736,7 @@
                             <div>
                                 <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
                                 <h6 class="modal-author text-muted">
-                                    by <a :href="'homepage.html?id=' + route.userID" class="text-decoration-none">{{ route.username }}</a>
+                                    by <a :href="'profile_page.html?id=' + route.userID" class="text-decoration-none">{{ route.username }}</a>
                                 </h6>
                             </div>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -776,7 +786,7 @@
                                 <div v-for="(comment, index) in sortCommentsByDate(route.commentsList)" :key="index" class="mb-3">
                                     <div class="comment-bubble">
                                         <strong>
-                                            <a :href="'homepage.html?id=' + comment.userID" class="text-decoration-none">{{ comment.username }}</a>
+                                            <a :href="'profile_page.html?id=' + comment.userID" class="text-decoration-none">{{ comment.username }}</a>
                                         </strong>
                                         <p>{{ comment.text }}</p>
                                     </div>
@@ -801,6 +811,8 @@
 
 <!-- import footer from footer.js -->
 <script src="footer/footer.js"></script>
+
+<script src="loading-quotes/loading_quotes.js"></script>
 
 <script>
     app.mount('#app')
