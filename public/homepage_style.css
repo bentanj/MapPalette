@@ -404,6 +404,10 @@ body {
 /* Modal Body */
 .modal-body {
     padding: 30px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .modal-body textarea.form-control {
@@ -582,6 +586,46 @@ body {
         margin-bottom: 2rem;
     }
 
+    .post > header {
+        flex-direction: row !important; /* Override the column direction */
+        padding: 1.5rem;
+        align-items: flex-start;
+    }
+    
+    .post > header .title {
+        padding-right: 1rem;
+        padding-bottom: 0 !important;
+        flex: 1;
+    }
+    
+    .post > header .meta {
+        min-width: auto;
+        padding-left: 1rem;
+        text-align: right;
+        border-left: solid 1px var(--border-color);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .post > header .meta time.published {
+        margin-bottom: 0.5rem;
+    }
+    
+    .post > header .meta .d-flex {
+        flex-direction: row; 
+        align-items: center; 
+        gap: 0.5rem; 
+    }
+    
+    .post > header .meta img {
+        margin-top: 0; 
+    }
+    
+    .post footer .stats li {
+        margin-left: 1em;
+        padding-left: 1em;
+    }
 }
 
 @media (max-width: 768px) {
@@ -628,46 +672,6 @@ body {
 
     .content {
         padding-left: 1rem;
-    }
-    
-    .post > header {
-        flex-direction: row !important; /* Override the column direction */
-        padding: 1.5rem;
-        align-items: flex-start;
-    }
-    
-    .post > header .title {
-        padding-right: 1rem;
-        padding-bottom: 0 !important;
-        flex: 1;
-    }
-    
-    .post > header .meta {
-        min-width: auto;
-        padding-left: 1rem;
-        text-align: right;
-        border-left: solid 1px var(--border-color);
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-    }
-
-    .post > header .meta time.published {
-        margin-bottom: 0.5rem;
-    }
-    
-    .post > header .meta .d-flex {
-        flex-direction: column;
-        align-items: flex-end;
-    }
-    
-    .post > header .meta img {
-        margin-top: 0.5rem;
-    }
-    
-    .post footer .stats li {
-        margin-left: 1em;
-        padding-left: 1em;
     }
 }
 
