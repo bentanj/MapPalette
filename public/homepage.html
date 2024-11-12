@@ -531,8 +531,8 @@
                 this.$el.addEventListener('hidden.bs.modal', () => {
                     this.$emit('close');
                 });
-
-                // Use the preloaded comments
+                
+                // Load initial comments if available
                 if (this.activity.commentsList && this.activity.commentsList.length > 0) {
                     this.comments = this.activity.commentsList
                         .map(comment => ({
@@ -540,8 +540,8 @@
                             timeAgo: this.calculateTimeSince(comment.createdAt)
                         }))
                         .sort((a, b) => {
-                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
-                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
+                            const dateA = new Date(a.createdAt);
+                            const dateB = new Date(b.createdAt);
                             return dateB - dateA;
                         });
                 }
@@ -559,16 +559,7 @@
 
                 calculateTimeSince(timestamp) {
                     if (!timestamp) return 'Just now';
-
-                    let date;
-                    if (timestamp._seconds) {
-                        date = new Date(timestamp._seconds * 1000);
-                    } else if (typeof timestamp === 'string' || timestamp instanceof Date) {
-                        date = new Date(timestamp);
-                    } else {
-                        return 'Just now';
-                    }
-
+                    const date = new Date(timestamp);
                     const now = new Date();
                     const diffInSeconds = Math.floor((now - date) / 1000);
                     const intervals = [
@@ -579,13 +570,10 @@
                         { label: 'minute', seconds: 60 },
                         { label: 'second', seconds: 1 }
                     ];
-
                     for (const interval of intervals) {
                         const count = Math.floor(diffInSeconds / interval.seconds);
                         if (count >= 1) {
-                            return count === 1 
-                                ? `1 ${interval.label} ago` 
-                                : `${count} ${interval.label}s ago`;
+                            return `${count} ${interval.label}${count > 1 ? 's' : ''} ago`;
                         }
                     }
                     return 'Just now';
@@ -593,44 +581,25 @@
 
                 async submitComment() {
                     if (!this.newComment.trim()) return;
-
-                    const currentTime = Date.now();
-                    if (currentTime - this.lastApiCallTime < 1000) {
-                        return; // Rate limiting to prevent rapid submissions
-                    }
-                    this.lastApiCallTime = currentTime;
-                    this.disabledActions.comment = true;
-
                     try {
                         const response = await axios.post(
                             `${this.API_ENDPOINT}/api/posts/${this.activity.id}/comments`,
-                            {
-                                userID: window.currentUser.id,
-                                text: this.newComment
-                            }
+                            { userID: window.currentUser.id, text: this.newComment }
                         );
-
-                        // Add the new comment to the local list immediately
                         const newComment = {
                             id: response.data.id,
                             userID: window.currentUser.id,
                             text: this.newComment,
                             username: window.currentUser.username,
-                            createdAt: response.data.createdAt || new Date(),
+                            createdAt: new Date().toISOString(),
                             timeAgo: 'Just now'
                         };
-
-                        // Update both local comments and activity comments
                         this.comments.unshift(newComment);
                         this.activity.commentsList.unshift(newComment);
-
-                        this.newComment = ''; 
-
+                        this.newComment = '';
                     } catch (error) {
                         console.error('Error submitting comment:', error);
                         alert('Failed to submit comment. Please try again.');
-                    } finally {
-                        this.disabledActions.comment = false;
                     }
                 },
 
@@ -641,10 +610,18 @@
                     window.location.href = `addMaps.html?id=${this.activity.id}`;
                 },
                 handleShare() {
-                    // Update API and redirect
-                    const shareUrl = `homepage.html?id=${this.activity.id}`;
-                    this.$emit('share', this.activity); // Emit share event to parent
-                    window.location.href = shareUrl;
+                    // Generate the share URL
+                    const shareUrl = `${window.location.origin}/homepage.html?id=${this.activity.id}`;
+                    
+                    // Copy the URL to the clipboard
+                    navigator.clipboard.writeText(shareUrl)
+                        .then(() => {
+                            this.$root.setAlert('success', "Link copied to clipboard!");
+                        })
+                        .catch(err => {
+                            console.error("Failed to copy link: ", err);
+                            this.$root.setAlert('error', "Failed to copy link to clipboard.");
+                        });
                 },
             },
 
@@ -656,7 +633,9 @@
                             <div class="modal-header d-flex justify-content-between align-items-start">
                                 <div>
                                     <h5 class="modal-title">{{ activity.title }}</h5>
-                                    <h6 class="modal-author text-muted">by {{ activity.user }}</h6>
+                                    <h6 class="modal-author text-muted">                            
+                                        by <a :href="'profile_page.html?id=' + activity.userID" class="text-decoration-none">{{ activity.user }}</a>
+                                    </h6>
                                 </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
@@ -683,25 +662,16 @@
 
                                 <!-- Action Buttons -->
                                 <div class="d-flex border-top border-bottom py-3">
-                                    <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
-                                        <button class="btn btn-link p-0 action-button" 
-                                                @click="likePost(activity.id)"
-                                                :class="{ 'liked': isLiked }"
-                                                :disabled="disabledActions.like">
+                                    <div class="d-flex w-100 px-4" style="justify-content: space-between;">
+                                        <button class="btn btn-link p-0 action-button" @click="likePost(activity.id)" :class="{ 'liked': isLiked }" :disabled="disabledActions.like">
                                             <i :class="[activity.isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
                                             <span>{{ activity.isLiked ? 'Liked' : 'Like' }}</span>
                                         </button>
-
-                                        <button class="btn btn-link p-0 action-button"
-                                                @click="useRoute"
-                                                :disabled="disabledActions.use">
+                                        <button class="btn btn-link p-0 action-button" @click="useRoute" :disabled="disabledActions.use">
                                             <i class="far fa-map me-1"></i>
                                             <span>Use</span>
                                         </button>
-
-                                        <button class="btn btn-link p-0 action-button"
-                                                @click="handleShare"
-                                                :disabled="disabledActions.share">
+                                        <button class="btn btn-link p-0 action-button" @click="handleShare" :disabled="disabledActions.share">
                                             <i class="far fa-share-square me-1"></i>
                                             <span>Share</span>
                                         </button>
@@ -710,16 +680,9 @@
 
                                 <!-- Comments Section -->
                                 <div class="mt-4">                                    
-                                    <!-- New Comment Input -->
                                     <div class="mb-3">
-                                        <textarea class="form-control mb-2"
-                                                placeholder="Add a comment..."
-                                                rows="2"
-                                                v-model="newComment"
-                                                :disabled="disabledActions.comment"></textarea>
-                                        <button class="btn btn-primary"
-                                                @click="submitComment"
-                                                :disabled="disabledActions.comment">
+                                        <textarea class="form-control mb-2" placeholder="Add a comment..." rows="2" v-model="newComment" :disabled="disabledActions.comment"></textarea>
+                                        <button class="btn btn-primary" @click="submitComment" :disabled="disabledActions.comment">
                                             <span v-if="!disabledActions.comment">Post Comment</span>
                                             <span v-else>
                                                 <i class="fas fa-spinner fa-spin"></i> Posting...
@@ -729,29 +692,20 @@
 
                                     <h6>Comments ({{ comments.length }})</h6>
 
-                                    
-                                    <!-- Display comments if they exist -->
                                     <div v-if="comments && comments.length > 0">
                                         <div v-for="comment in displayedComments" :key="comment.id" class="mb-3">
                                             <div class="comment-bubble">
-                                                <strong>{{ comment.username }}</strong>
+                                                <strong><a :href="'profile_page.html?id=' + comment.userID" class="text-decoration-none">{{ comment.username }}</a></strong>
                                                 <p>{{ comment.text }}</p>
                                             </div>
                                             <div class="comment-time text-muted">
                                                 {{ calculateTimeSince(comment.createdAt) }}
                                             </div>
                                         </div>
-                                        <!-- Show More Comments Button -->
                                         <div v-if="hasMoreComments" class="text-center mt-3 mb-3">
-                                            <button 
-                                                @click="loadMoreComments" 
-                                                class="btn btn-outline-primary btn-sm">
-                                                Show {{ remainingCommentsCount }} more comments
-                                            </button>
+                                            <button @click="loadMoreComments" class="btn btn-outline-primary btn-sm">Show {{ remainingCommentsCount }} more comments</button>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Display prompt if no comments -->
                                     <div v-else>
                                         <p>No comments yet. Be the first to comment!</p>
                                     </div>
