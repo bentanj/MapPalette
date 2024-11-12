@@ -547,6 +547,37 @@ body {
     cursor: pointer;
 }
 
+/* scroll up btn */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    background-color: #185a9d;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+.back-to-top:hover {
+    background-color: #43cea2;
+}
+
+@media (max-width: 576px) {
+    .back-to-top {
+        width: 40px;
+        height: 40px;
+        bottom: 15px;
+        right: 15px;
+    }
+}
+
 /* custom */
 @media (max-width: 1199.98px) {
     .content {

@@ -278,6 +278,11 @@
                 </div>
             </div>
 
+            <!-- scroll up btn -->
+            <button @click="scrollToTop" class="btn back-to-top">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+
             <!-- Footer Section -->
             <site-footer></site-footer>
         </div>
@@ -1340,6 +1345,14 @@
                         alert('Activity details are currently unavailable.');
                     }
                 },
+
+                // scroll up btn
+                scrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
             }
         });
     </script>
