@@ -152,6 +152,7 @@
                                         @open-modal="openActivityModal">
                                     </activity-card>
                                 </div>
+
                                 <!-- Routes Tab -->
                                 <div v-if="currentTab === 'routes'">
                                     <div v-if="routes.length === 0 && !isLoading" class="text-center py-4">
@@ -185,7 +186,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
         
             <comment-modal
                 v-if="selectedActivity"
