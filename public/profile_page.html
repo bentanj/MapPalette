@@ -152,6 +152,7 @@
                                         @open-modal="openActivityModal">
                                     </activity-card>
                                 </div>
+
                                 <!-- Routes Tab -->
                                 <div v-if="currentTab === 'routes'">
                                     <div v-if="routes.length === 0 && !isLoading" class="text-center py-4">
@@ -185,23 +186,22 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
         
-        <comment-modal
-            v-if="selectedActivity"
-            :activity="selectedActivity"
-            @close="selectedActivity = null"
-            @like="likeActivity">
-        </comment-modal>
+            <comment-modal
+                v-if="selectedActivity"
+                :activity="selectedActivity"
+                @close="selectedActivity = null"
+                @like="likeActivity">
+            </comment-modal>
 
-        <!-- scroll up btn -->
-        <button @click="scrollToTop" class="btn back-to-top">
-            <i class="fas fa-chevron-up"></i>
-        </button>
-        
-        <!-- Footer Section -->
-        <site-footer></site-footer>
+            <!-- scroll up btn -->
+            <button @click="scrollToTop" class="btn back-to-top">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+            
+            <!-- Footer Section -->
+            <site-footer></site-footer>
+        </div>
     </div>
 
     <script>
@@ -581,7 +581,7 @@
                                                 :class="{ 'liked': isLiked }"
                                                 :disabled="disabledActions.like">
                                             <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
-                                            <span>Like</span>
+                                            <span>{{ isLiked ? 'Liked' : 'Like' }}</span>
                                         </button>
 
                                         <button class="btn btn-link p-0 action-button"
