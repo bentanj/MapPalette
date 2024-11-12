@@ -662,7 +662,7 @@
 
                                 <!-- Action Buttons -->
                                 <div class="d-flex border-top border-bottom py-3">
-                                    <div class="d-flex w-100 px-4" style="justify-content: space-between;">
+                                    <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
                                         <button class="btn btn-link p-0 action-button" @click="likePost(activity.id)" :class="{ 'liked': isLiked }" :disabled="disabledActions.like">
                                             <i :class="[activity.isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
                                             <span>{{ activity.isLiked ? 'Liked' : 'Like' }}</span>
