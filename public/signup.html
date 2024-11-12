@@ -388,23 +388,74 @@
         profileUpload.style.borderColor = '#FF6B6B';
     });
     profileUpload.addEventListener('dragleave', () => profileUpload.style.borderColor = '#ccc');
-    profileUpload.addEventListener('drop', (e) => {
+    // Update the drop event listener
+    profileUpload.addEventListener('drop', async (e) => {
         e.preventDefault();
-        handleProfileUpload(e.dataTransfer.files[0]);
+        
+        if (e.dataTransfer.files.length > 0) {
+            // If it's a real file, handle normally
+            handleProfileUpload(e.dataTransfer.files[0]);
+        } else if (e.dataTransfer.items.length > 0) {
+            const item = e.dataTransfer.items[0];
+            if (item.kind === 'string' && item.type === 'text/uri-list') {
+                item.getAsString(async (url) => {
+                    try {
+                        // Fetch the image from the URL
+                        const response = await fetch(url);
+                        const blob = await response.blob();
+                        
+                        // Convert blob to a File
+                        const file = new File([blob], "downloaded-image.jpg", { type: blob.type });
+                        handleProfileUpload(file); // Process the file as needed
+                    } catch (error) {
+                        console.error("Error fetching image:", error);
+                        alert("Unable to retrieve image from URL.");
+                    }
+                });
+            }
+        }
     });
+
     profileInput.addEventListener('change', () => handleProfileUpload(profileInput.files[0]));
 
+    // Updated handleProfileUpload function to accept static image formats and log file details
     function handleProfileUpload(file) {
-        if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+        // Log file details for debugging
+        console.log("File name:", file.name);
+        console.log("File type:", file.type);
+
+        // List of accepted image MIME types
+        const acceptedImageTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/jpg',
+            'image/bmp',
+            'image/webp',
+            'image/tiff'
+        ];
+
+        // List of accepted image extensions as a fallback check
+        const acceptedExtensions = ['.jpeg', '.jpg', '.png', '.bmp', '.webp', '.tiff'];
+
+        // Check if the file type is an accepted MIME type or if the file extension matches
+        const isAcceptedType = file && (acceptedImageTypes.includes(file.type) ||
+                                        acceptedExtensions.some(ext => file.name.toLowerCase().endsWith(ext)));
+
+        if (isAcceptedType) {
             const reader = new FileReader();
             reader.onload = (e) => {
                 profilePreview.src = e.target.result;
                 profilePreview.style.display = 'block';
                 uploadText.style.display = 'none';
+
+                // Programmatically assign the file to the input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                profileInput.files = dataTransfer.files; // Assign the file to the input field
             };
             reader.readAsDataURL(file);
         } else {
-            alert('Please select a valid image file (JPG/JPEG/PNG).');
+            alert('Please select a valid static image file (JPG, JPEG, PNG, BMP, WEBP, or TIFF).');
         }
     }
 
