@@ -160,11 +160,16 @@
                                         @open-modal="openActivityModal">
                                     </activity-card>
                                 </div>
-    
-                                <!-- Routes Tab -->
+                                <!-- Inside the Main Content Area under the "Routes Tab" -->
                                 <div v-if="currentTab === 'routes'">
                                     <div v-if="routes.length === 0 && !isLoading" class="text-center py-4">
-                                        <div class="card shadow-sm">
+                                        <div v-if="!isCurrentUserProfile" class="card shadow-sm">
+                                            <div class="card-body">
+                                                <h5 class="mb-3">No Routes Yet</h5>
+                                                <p class="text-muted">This user has not created any routes yet.</p>
+                                            </div>
+                                        </div>
+                                        <div v-else class="card shadow-sm">
                                             <div class="card-body">
                                                 <h5 class="mb-3">No Routes Yet</h5>
                                                 <p class="text-muted">Start creating your running routes!</p>
@@ -739,7 +744,7 @@
                 },
                 async loadUserProfile(userId) {
                     try {
-                        // Load specific user's profile and posts
+                        // Load specific user's profile
                         const response = await axios.get(`${this.API_ENDPOINT}/api/${userId}`);
                         this.userProfile = {
                             name: response.data.username,
@@ -755,20 +760,24 @@
                                 totalDistance: 0
                             }
                         };
+
+                        // Attempt to load user's posts
                         const postsResponse = await axios.get(`${this.API_ENDPOINT}/api/users/${userId}/posts`);
-                        this.posts = postsResponse.data;
+                        this.posts = postsResponse.data || []; // Handle empty response by setting an empty array
                         const totalDistance = this.posts.reduce(
                             (sum, post) => sum + (parseFloat(post.distance) || 0),
                             0
                         );
                         this.userProfile.stats.totalDistance = parseFloat(totalDistance.toFixed(1));
-
-                        // Process activities and routes
-                        await this.processActivitiesAndRoutes();
+                        
+                        // Process activities and routes if posts exist
+                        if (this.posts.length > 0) {
+                            await this.processActivitiesAndRoutes();
+                        }
                     } catch (error) {
                         console.error("Error loading profile:", error);
-                        // If there's an error, load current user's profile
-                        await this.loadCurrentUserProfile();
+                        // Show error message if any issue in loading the profile or posts
+                        this.userProfile.bio = "This user has no posts available.";
                     } finally {
                         this.isLoading = false;
                         this.checkFollowing();
@@ -1096,7 +1105,6 @@
             },
             computed: {
                 isCurrentUserProfile() {
-                    // If profileUserID is null or matches currentUserId, it's the current user's profile
                     return !profileUserID || profileUserID === this.currentUserId;
                 }
             },
