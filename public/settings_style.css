@@ -11,13 +11,6 @@
     margin-bottom: 2rem;
 }
 
-/* profile image */
-.profile-picture-container {
-    position: relative;
-    display: inline-block;
-    padding: 1rem;
-}
-
 #file-preview-wrapper {
     display: flex;
     justify-content: center;
@@ -49,8 +42,22 @@
 }
 
 .main-content-wrapper {
-    flex: 1;
-    padding-bottom: 3rem;
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Allow content to shrink if needed */
+}
+
+/* Adjust container-fluid to fill available space */
+.main-content-wrapper .container-fluid {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make the row fill available space */
+.main-content-wrapper .container-fluid .row {
+    flex: 1 0 auto;
 }
 
 /* settings sidebar styles */
@@ -106,6 +113,79 @@
     transform: rotate(90deg);
 }
 
+/* Enhanced Tooltip Styles */
+.fancy-tooltip {
+    --bs-tooltip-bg: rgba(255, 255, 255, 0.95);
+    --bs-tooltip-color: #333;
+    --bs-tooltip-padding-x: 1rem;
+    --bs-tooltip-padding-y: 0.75rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    max-width: 300px !important;
+}
+
+.fancy-tooltip .tooltip-arrow::before {
+    border-right-color: rgba(255, 255, 255, 0.95);
+}
+
+.fancy-tooltip .tooltip-icon {
+    color: var(--primary-color);
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.fancy-tooltip .tooltip-content {
+    padding: 0.25rem 0;
+}
+
+.fancy-tooltip .tooltip-content h6 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.fancy-tooltip .tooltip-content p {
+    color: #666;
+    font-size: 0.8rem;
+    margin-bottom: 0;
+    line-height: 1.4;
+}
+
+/* Privacy checkbox wrapper */
+.privacy-checkbox-wrapper {
+    background: white;
+    padding: 0.75rem 1rem;  
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin: 0;
+    display: flex;  
+    align-items: center;  
+}
+
+.privacy-checkbox-wrapper .form-check-input {
+    margin: 0;
+    margin-right: 0.75rem;
+    float: none;
+    flex-shrink: 0;  
+}
+
+.privacy-checkbox-wrapper .form-check-label {
+    padding-top: 2px;  
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+}
+
+.privacy-checkbox-wrapper:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-color: var(--primary-color);
+}
+
 /* form elements */
 .form-control {
     border-color: var(--border-color);
@@ -129,11 +209,6 @@
     padding: 0.75rem 1.5rem;
     font-weight: 500;
     transition: all 0.3s ease;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: linear-gradient(90deg, #185a9d, #43cea2);
-    transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
@@ -239,11 +314,6 @@
     background: linear-gradient(90deg, #43cea2, #185a9d);  
     border: none;
     transition: all 0.2s ease;
-}
-
-.save-password-btn:hover:not(:disabled) {
-    background: linear-gradient(90deg, #185a9d, #43cea2);  
-    transform: translateY(-1px);
 }
 
 .save-password-btn:disabled {
