@@ -141,7 +141,7 @@
                                         <div v-for="user in suggestedUsers" :key="user.userID" class="mb-3 p-2 border rounded hover-shadow">
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <div class="d-flex align-items-center">
-                                                    <img :src="user.profilePicture || 'resources/default-profile.png'" 
+                                                    <img :src="user.profilePicture"
                                                         :alt="user.username"
                                                         class="rounded-circle me-2"
                                                         style="width: 40px; height: 40px; object-fit: cover;">
@@ -1083,7 +1083,7 @@
                     this.userProfile = {
                         name: userData.username,
                         username: `@${userData.username}`,
-                        avatar: userData.profilePicture || 'resources/download.jpeg',
+                        avatar: userData.profilePicture,
                         stats: {
                             routes: userData.postsCreated?.length || 0,
                             following: userData.following?.length || 0,  

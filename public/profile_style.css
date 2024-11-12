@@ -154,6 +154,9 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .about-item i {
@@ -174,6 +177,8 @@
     background-color: var(--background-light);
     border-radius: 8px;
     transition: transform 0.2s ease;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .stat-item:hover {
@@ -220,6 +225,9 @@
 
 .route-info {
     padding: 15px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .route-info h5 {
