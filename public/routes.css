@@ -1,6 +1,12 @@
 @import 'footer/footer_style.css';
 @import 'navbar/navbar_style.css';
 
+/* Define Gradient Variables */
+:root {
+    --primary-gradient: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+    --primary-gradient-hover: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+}
+
 /* General Styles */
 body {
     background-color: #f0f2f5;
@@ -51,7 +57,6 @@ body {
     font-weight: 700;
     font-size: 3.5rem;
     margin-bottom: 10px;
-    /* Removed text-transform: uppercase; */
     font-family: 'Open Sans', sans-serif;
 }
 
@@ -60,7 +65,6 @@ body {
     font-size: 1.5rem;
     font-family: 'Open Sans', sans-serif;
 }
-
 
 .sample-section-wrap {
     width: 100%;
@@ -77,15 +81,15 @@ body {
     font-size: 1rem;
     padding: 0.5em 1em;
     height: 50px;
-    background-color: #185a9d;
+    background: var(--primary-gradient);
     color: #fff;
     border: none;
     border-radius: 25px;
-    transition: background-color 0.3s;
+    transition: background 0.3s;
 }
 
 .filter-btn:hover {
-    background-color: #43cea2;
+    background: var(--primary-gradient-hover);
     color: #fff;
 }
 
@@ -96,7 +100,7 @@ body {
     height: 50px;
     display: flex;
     align-items: center;
-    background-color: #ff7e5f;
+    background: var(--primary-gradient);
     color: #fff;
     border-radius: 25px;
 }
@@ -105,6 +109,10 @@ body {
     font-weight: bold;
     cursor: pointer;
     margin-left: 10px;
+}
+
+.badge:hover {
+    background: var(--primary-gradient-hover);
 }
 
 /* Back to Top Button */
@@ -116,17 +124,17 @@ body {
     border-radius: 50%;
     width: 50px;
     height: 50px;
-    background-color: #185a9d;
+    background: var(--primary-gradient);
     color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
     border: none;
-    transition: background-color 0.3s;
+    transition: background 0.3s;
 }
 
 .back-to-top:hover {
-    background-color: #43cea2;
+    background: var(--primary-gradient-hover);
 }
 
 @media (max-width: 576px) {
@@ -159,17 +167,13 @@ body {
     object-fit: cover;
     width: 100%;
     height: 200px;
-    /* Set a fixed height for mobile */
 }
 
 @media (min-width: 768px) {
-
-    /* For larger screens, ensure images take full height */
     .post-card img {
         height: 100%;
     }
 }
-
 
 .card-body {
     padding: 15px;
@@ -195,7 +199,6 @@ body {
 }
 
 /* Truncate Description */
-/* Truncate Description */
 .truncate-2-lines {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -207,7 +210,7 @@ body {
     min-height: 3em;
 }
 
-/*truncates the location*/
+/* Truncate Location */
 .truncate-1-line {
     display: -webkit-box;
     -webkit-line-clamp: 1;
@@ -216,7 +219,6 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     max-height: 1.5em;
-    /* Adjust as needed */
 }
 
 /* Modal */
@@ -225,7 +227,7 @@ body {
 }
 
 .modal-header {
-    background: linear-gradient(90deg, #ff7e5f, #feb47b);
+    background: var(--primary-gradient);
     color: #fff;
     border-bottom: none;
     border-top-left-radius: 15px;
@@ -249,7 +251,6 @@ body {
 #modal-pic {
     width: 100%;
     max-height: 400px;
-    /* Set maximum height */
     overflow: hidden;
     border-radius: 8px;
     margin-bottom: 20px;
@@ -261,16 +262,15 @@ body {
     object-fit: cover;
 }
 
-
 /* Action Buttons */
 .btn-link {
-    color: #185a9d;
+    color: #FF6B6B;
     font-weight: bold;
     transition: color 0.3s;
 }
 
 .btn-link:hover {
-    color: #43cea2;
+    color: #FFD54F;
     text-decoration: none;
 }
 
@@ -281,26 +281,23 @@ body {
     display: flex;
     align-items: center;
     text-decoration: none;
-    /* Remove underline */
 }
 
 .action-button:hover {
     transform: scale(1.05);
     text-decoration: none;
-    /* Ensure no underline on hover */
 }
-
 
 /* Primary Buttons */
 .btn-primary {
-    background-color: #185a9d;
+    background: var(--primary-gradient);
     border: none;
     color: #fff;
-    transition: background-color 0.3s;
+    transition: background 0.3s;
 }
 
 .btn-primary:hover {
-    background-color: #43cea2;
+    background: var(--primary-gradient-hover);
     color: #fff;
 }
 
@@ -351,13 +348,11 @@ body {
     border-radius: 25px;
 }
 
-/* Ensure no default outline for a clean look */
 .input-group .form-control:focus,
 .input-group .btn:focus {
     outline: none;
     box-shadow: none;
 }
-
 
 /* Spacing Adjustments */
 @media (max-width: 767.98px) {
