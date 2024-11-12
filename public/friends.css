@@ -2,12 +2,20 @@
 @import 'navbar/navbar_style.css';
 @import 'loading-quotes/loading_quotes_style.css';
 
+/* Define Gradient Variables */
+:root {
+    --primary-gradient: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+    --primary-gradient-hover: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+}
+
+
 /* General Styles */
 body {
-    background-color: #f0f2f5;
+    background-color: var(--background-color);
     margin: 0;
     padding: 0;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Roboto', sans-serif;
+    color: var(--text-color);
 }
 
 /* Adjust the main content container for fixed navbar */
@@ -15,8 +23,6 @@ body {
     padding-top: 60px; /* Adjust this value if navbar height changes */
 }
 
-
-/* Sample Header */
 .sample-header {
     position: relative;
     width: 100%;
@@ -25,12 +31,13 @@ body {
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
-    /* background-attachment: fixed; */
-    color: white;
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7); /* Added text shadow for readability */
 }
+
 /* Header Overlay */
 .sample-header::before {
     content: "";
@@ -39,7 +46,7 @@ body {
     right: 0;
     bottom: 0;
     left: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: #00000080;
 }
 
 /* Header Content */
@@ -54,6 +61,56 @@ body {
 
 .sample-header-section p {
     font-weight: 300;
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    color: #fff;
+    border-radius: 25px;
+    padding: 0.5em 1.5em;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background: var(--primary-gradient-hover);
+    color: #fff;
+}
+
+
+.btn-outline-primary {
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+    border-radius: 25px;
+    padding: 0.5em 1.5em;
+    font-size: 1rem;
+    transition: background 0.3s, color 0.3s, transform 0.2s;
+}
+
+.input-group .btn-primary {
+    background-color: #FF8E53 !important; /* Enforce orange color */
+}
+
+
+.btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.input-group .btn-primary {
+    background-color: #FF8E53; /* Set your orange color here */
+    border: none;
+    color: #fff;
+    border-radius: 0 25px 25px 0;
+    transition: background 0.3s;
+}
+
+.input-group .btn-primary:hover {
+    background-color: #FF6B3A; /* A darker orange for hover effect */
+    color: #fff;
 }
 
 .sample-section {

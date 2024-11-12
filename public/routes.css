@@ -14,8 +14,9 @@ body {
     background-color: #f0f2f5;
     margin: 0;
     padding: 0;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Roboto', sans-serif; /* Changed from 'Open Sans' to 'Roboto' */
 }
+
 
 /* Adjust the main content container for fixed navbar */
 #app-container {
@@ -36,6 +37,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7); /* Added text shadow for readability */
 }
 
 /* Header Overlay */
@@ -46,7 +48,7 @@ body {
     right: 0;
     bottom: 0;
     left: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: #00000080; /* Updated background */
 }
 
 /* Header Content */
@@ -62,7 +64,6 @@ body {
 .sample-header-section p {
     font-weight: 300;
 }
-
 .sample-section {
     padding: 40px 20px;
 }
@@ -183,6 +184,15 @@ body {
     margin-bottom: 15px;
 }
 
+/* Ensure text wraps within modal */
+.modal-body p, .modal-body div {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+
 .card-footer {
     background-color: #f8f9fa;
     border-top: none;
@@ -228,6 +238,8 @@ body {
 
 .modal-header .modal-title {
     font-weight: 700;
+    overflow-wrap: break-word; /* Handles long words or strings */
+    word-break: break-word; /* Ensures text breaks in smaller viewports */
 }
 
 .modal-header .modal-author {

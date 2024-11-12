@@ -406,6 +406,8 @@ body {
 
 .modal-header .modal-title {
     margin: 0;
+    overflow-wrap: break-word; /* Handles long words or strings */
+    word-break: break-word; /* Ensures text breaks in smaller viewports */
 }
 
 .modal-header .modal-author {
@@ -467,6 +469,8 @@ body {
     border-radius: 15px;
     max-width: 100%;
     word-wrap: break-word;
+    overflow-wrap: break-word; /* Handles long words or strings */
+    word-break: break-word; /* Ensures text breaks in smaller viewports */
     margin-bottom: 5px;
 }
 
