@@ -540,8 +540,8 @@
                             timeAgo: this.calculateTimeSince(comment.createdAt)
                         }))
                         .sort((a, b) => {
-                            const dateA = new Date(a.createdAt);
-                            const dateB = new Date(b.createdAt);
+                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
+                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
                             return dateB - dateA;
                         });
                 }
@@ -559,7 +559,14 @@
 
                 calculateTimeSince(timestamp) {
                     if (!timestamp) return 'Just now';
-                    const date = new Date(timestamp);
+                    let date;
+                    if (timestamp._seconds) {
+                        date = new Date(timestamp._seconds * 1000);
+                    } else if (typeof timestamp === 'string' || timestamp instanceof Date) {
+                        date = new Date(timestamp);
+                    } else {
+                        return 'Just now';
+                    }
                     const now = new Date();
                     const diffInSeconds = Math.floor((now - date) / 1000);
                     const intervals = [
@@ -573,7 +580,9 @@
                     for (const interval of intervals) {
                         const count = Math.floor(diffInSeconds / interval.seconds);
                         if (count >= 1) {
-                            return `${count} ${interval.label}${count > 1 ? 's' : ''} ago`;
+                            return count === 1 
+                                ? `1 ${interval.label} ago` 
+                                : `${count} ${interval.label}s ago`;                        
                         }
                     }
                     return 'Just now';
@@ -581,25 +590,40 @@
 
                 async submitComment() {
                     if (!this.newComment.trim()) return;
+
+                    const currentTime = Date.now();
+                    if (currentTime - this.lastApiCallTime < 1000) {
+                        return; // Rate limiting
+                    }
+                    this.lastApiCallTime = currentTime;
+                    this.disabledActions.comment = true;  // Disable the button
+
                     try {
                         const response = await axios.post(
                             `${this.API_ENDPOINT}/api/posts/${this.activity.id}/comments`,
-                            { userID: window.currentUser.id, text: this.newComment }
+                            {
+                                userID: window.currentUser.id,
+                                text: this.newComment
+                            }
                         );
+
                         const newComment = {
                             id: response.data.id,
                             userID: window.currentUser.id,
                             text: this.newComment,
                             username: window.currentUser.username,
-                            createdAt: new Date().toISOString(),
+                            createdAt: response.data.createdAt || new Date(),
                             timeAgo: 'Just now'
                         };
+
                         this.comments.unshift(newComment);
                         this.activity.commentsList.unshift(newComment);
                         this.newComment = '';
                     } catch (error) {
                         console.error('Error submitting comment:', error);
                         alert('Failed to submit comment. Please try again.');
+                    } finally {
+                        this.disabledActions.comment = false;  
                     }
                 },
 
@@ -663,15 +687,22 @@
                                 <!-- Action Buttons -->
                                 <div class="d-flex border-top border-bottom py-3">
                                     <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
-                                        <button class="btn btn-link p-0 action-button" @click="likePost(activity.id)" :class="{ 'liked': isLiked }" :disabled="disabledActions.like">
+                                        <button class="btn btn-link p-0 action-button" 
+                                                @click="likePost(activity.id)"
+                                                :class="{ 'liked': isLiked }"
+                                                :disabled="disabledActions.like">
                                             <i :class="[activity.isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
                                             <span>{{ activity.isLiked ? 'Liked' : 'Like' }}</span>
                                         </button>
-                                        <button class="btn btn-link p-0 action-button" @click="useRoute" :disabled="disabledActions.use">
+                                        <button class="btn btn-link p-0 action-button"
+                                                @click="useRoute"
+                                                :disabled="disabledActions.use">
                                             <i class="far fa-map me-1"></i>
                                             <span>Use</span>
                                         </button>
-                                        <button class="btn btn-link p-0 action-button" @click="handleShare" :disabled="disabledActions.share">
+                                        <button class="btn btn-link p-0 action-button"
+                                                @click="handleShare"
+                                                :disabled="disabledActions.share">
                                             <i class="far fa-share-square me-1"></i>
                                             <span>Share</span>
                                         </button>
@@ -681,8 +712,15 @@
                                 <!-- Comments Section -->
                                 <div class="mt-4">                                    
                                     <div class="mb-3">
-                                        <textarea class="form-control mb-2" placeholder="Add a comment..." rows="2" v-model="newComment" :disabled="disabledActions.comment"></textarea>
-                                        <button class="btn btn-primary" @click="submitComment" :disabled="disabledActions.comment">
+                                        <textarea class="form-control mb-2"
+                                                placeholder="Add a comment..."
+                                                rows="2"
+                                                v-model="newComment"
+                                                :disabled="disabledActions.comment">
+                                        </textarea>
+                                        <button class="btn btn-primary"
+                                                @click="submitComment"
+                                                :disabled="disabledActions.comment">
                                             <span v-if="!disabledActions.comment">Post Comment</span>
                                             <span v-else>
                                                 <i class="fas fa-spinner fa-spin"></i> Posting...
@@ -692,6 +730,7 @@
 
                                     <h6>Comments ({{ comments.length }})</h6>
 
+                                    <!-- Display comments if they exist -->
                                     <div v-if="comments && comments.length > 0">
                                         <div v-for="comment in displayedComments" :key="comment.id" class="mb-3">
                                             <div class="comment-bubble">
@@ -702,10 +741,16 @@
                                                 {{ calculateTimeSince(comment.createdAt) }}
                                             </div>
                                         </div>
+                                        <!-- Show More Comments Button -->
                                         <div v-if="hasMoreComments" class="text-center mt-3 mb-3">
-                                            <button @click="loadMoreComments" class="btn btn-outline-primary btn-sm">Show {{ remainingCommentsCount }} more comments</button>
+                                            <button 
+                                                @click="loadMoreComments" 
+                                                class="btn btn-outline-primary btn-sm">
+                                                Show {{ remainingCommentsCount }} more comments
+                                            </button>
                                         </div>
                                     </div>
+                                    <!-- Display prompt if no comments -->
                                     <div v-else>
                                         <p>No comments yet. Be the first to comment!</p>
                                     </div>
