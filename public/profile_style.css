@@ -101,7 +101,7 @@
 }
 
 .profile-actions .btn-primary {
-    background: linear-gradient(90deg, #43cea2, #185a9d);
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
     border: none;
     padding: 0.75rem 1.5rem;
     font-weight: 500;
@@ -109,7 +109,7 @@
 }
 
 .profile-actions .btn-primary:hover {
-    background: linear-gradient(90deg, #185a9d, #43cea2);
+    background: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
     transform: translateY(-2px);
 }
 

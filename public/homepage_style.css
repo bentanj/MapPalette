@@ -7,6 +7,11 @@
 /* loading quote styles */
 @import 'loading-quotes/loading_quotes_style.css';
 
+:root {
+    --primary-gradient: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+    --primary-gradient-hover: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+}
+
 /* General styles */
 body {
     min-height: 100vh;
@@ -390,7 +395,7 @@ body {
 }
 
 .modal-header {
-    background: linear-gradient(90deg, #ff7e5f, #feb47b);
+    background: var(--primary-gradient);
     color: #fff;
     display: flex;
     justify-content: space-between;
@@ -496,13 +501,13 @@ body {
 
 /* Primary Button */
 .btn-primary {
-    background: linear-gradient(90deg, #43cea2, #185a9d);
+    background: var(--primary-gradient);
     border: none;
     color: #fff;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(90deg, #185a9d, #43cea2);
+    background: var(--primary-gradient-hover);
     color: #fff;
 }
 
@@ -570,7 +575,7 @@ body {
     border-radius: 50%;
     width: 50px;
     height: 50px;
-    background-color: #185a9d;
+    background: var(--primary-gradient);
     color: #fff;
     display: flex;
     justify-content: center;
@@ -580,7 +585,7 @@ body {
 }
 
 .back-to-top:hover {
-    background-color: #43cea2;
+    background: var(--primary-gradient-hover);
 }
 
 @media (max-width: 576px) {
