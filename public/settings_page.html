@@ -353,7 +353,7 @@
                     tooltips.forEach(el => {
                         const tooltip = bootstrap.Tooltip.getInstance(el);
                         if (tooltip) {
-                            tooltip.hide();
+                            tooltip.dispose();
                         }
                     });
 

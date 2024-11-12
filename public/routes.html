@@ -29,15 +29,7 @@
 <body>
     <div id="app">
         <!-- Loading Spinner -->
-
-        
-        <div id="loading-spinner" class="text-center"
-            style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-3">{{ currentQuote }}</p>
-        </div>
+        <loading-quotes></loading-quotes>
 
         <!-- Main Content, Hidden Initially -->
         <div id="app-container" style="display: none;">
@@ -207,34 +199,12 @@
                 filteredRoutes: [],
                 displayedRoutes: 8,
                 searchQuery: '',
-                isLoading: true,
                 userProfile: {
                     avatar: ''
-                },
-                quotes: [
-                    "Run like there's a fire behind you.",
-                    "One run can change your day, many runs can change your life.",
-                    "The only bad run is the one that didn’t happen.",
-                    "Running is the greatest metaphor for life because you get out of it what you put into it.",
-                    "Pain is temporary, pride is forever.",
-                    "The miracle isn’t that I finished. The miracle is that I had the courage to start.",
-                    "You’re only one run away from a good mood.",
-                    "Run when you can, walk if you have to, crawl if you must; just never give up.",
-                    "Don’t dream of winning, train for it."
-                ],
-                currentQuote: ""
+                }
             };
         },
         mounted() {
-            const loadingSpinner = document.getElementById('loading-spinner');
-            const appContainer = document.getElementById('app-container');
-
-            // Display a random quote initially
-            this.displayRandomQuote();
-
-            // Change the quote every 5 seconds
-            setInterval(this.displayRandomQuote, 5000);
-
             // Check every 100ms if window.currentUser is populated
             const userCheckInterval = setInterval(() => {
                 if (window.currentUser) {
@@ -262,10 +232,6 @@
             }
         },
         methods: {
-            displayRandomQuote() {
-                const randomIndex = Math.floor(Math.random() * this.quotes.length);
-                this.currentQuote = this.quotes[randomIndex];
-            },
             fetchAllPosts(userID) {
                 const loadingSpinner = document.getElementById('loading-spinner');
                 const appContainer = document.getElementById('app-container');

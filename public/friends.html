@@ -43,8 +43,8 @@
 
 <body>
     <div id="app">
-        
 
+        
         <!-- Loading Spinner -->
         <div v-if="isLoading" id="loading-spinner" class="text-center"
             style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column;">
@@ -89,7 +89,7 @@
 
                 <div class="row">
                     <hr>
-                    <h1>Your Friends ({{filteredFriends.length}})</h1>
+                    <h1 class="text-center mb-4 mt-4">Your Friends ({{filteredFriends.length}})</h1>
 
                     <!-- Friends Section with Load More -->
                     <div v-if="filteredFriends.length > 0" class="col-md-4 col-sm-6 mb-4"
@@ -97,18 +97,18 @@
                         <friend-card :friend="friend" @confirm-unfollow="confirmUnfollow" :disabled="disableButtons"
                             @open-profile="openProfile"></friend-card>
                     </div>
-                    <p v-else>No friends match your search.</p>
+                    <p v-else class="text-center">No friends match your search.</p>
                     <div class="text-center" v-if="displayedFriends < filteredFriends.length">
                         <button class="btn btn-outline-primary mb-4" @click="loadMoreFriends">Load More</button>
                     </div>
 
                     <!-- Other Users Section with Load More -->
-                    <h1>Other Users ({{filteredOtherUsers.length}})</h1>
+                    <h1 class="text-center mb-4 mt-4">Other Users ({{filteredOtherUsers.length}})</h1>
                     <div v-if="filteredOtherUsers.length > 0" class="col-md-4 mb-4"
                         v-for="user in filteredOtherUsers.slice(0, displayedOtherUsers)" :key="user.id">
                         <other-user-card :user="user" @follow="followUser" :disabled="disableButtons"></other-user-card>
                     </div>
-                    <p v-else>No other users match your search.</p>
+                    <p v-else class="text-center"> No other users match your search.</p>
                     <div class="text-center" v-if="displayedOtherUsers < filteredOtherUsers.length">
                         <button class="btn btn-outline-primary" @click="loadMoreOtherUsers">Load More</button>
                     </div>
@@ -428,6 +428,7 @@
 
 <script src="navbar/navbar.js"></script>
 <script src="footer/footer.js"></script>
+<script src="loading-quotes/loading_quotes.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
