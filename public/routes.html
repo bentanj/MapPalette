@@ -199,7 +199,6 @@
                 filteredRoutes: [],
                 displayedRoutes: 8,
                 searchQuery: '',
-                isLoading: true,
                 userProfile: {
                     avatar: ''
                 },
@@ -208,7 +207,7 @@
         mounted() {
             const loadingSpinner = document.getElementById('loading-spinner');
             const appContainer = document.getElementById('app-container');
-
+          
             // Check every 100ms if window.currentUser is populated
             const userCheckInterval = setInterval(() => {
                 if (window.currentUser) {

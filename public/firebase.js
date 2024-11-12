@@ -169,14 +169,14 @@ function resetButtonState() {
 // Login
 const loginForm = document.getElementById('login-form');
 const loginErrorAlert = document.getElementById('loginErrorAlert');
-const loginErrorList = document.getElementById('loginErrorList');
+// const loginErrorList = document.getElementById('loginErrorList');
 const loginButton = document.getElementById('loginButton');
 const loginSpinner = document.getElementById('loginSpinner');
 const loginButtonText = document.getElementById('loginButtonText');
 
 loginForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  loginErrorList.innerHTML = ''; // Clear previous errors
+  // loginErrorList.innerHTML = ''; // Clear previous errors
   loginErrorAlert.style.display = 'none';
 
   const email = document.getElementById('email').value.trim();
@@ -213,7 +213,7 @@ function displayLoginErrors(errors) {
   errors.forEach(error => {
     const li = document.createElement('li');
     li.textContent = error;
-    loginErrorList.appendChild(li);
+    // loginErrorList.appendChild(li);
   });
   loginErrorAlert.style.display = 'block';
   document.querySelector('.login-container').scrollTo({ top: 0, behavior: 'smooth' });
