@@ -6,9 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MapPalette - Leaderboard</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="search.css">
+    <link rel="stylesheet" href="routes.css">
+    <link rel="stylesheet" href="navbar/navbar_style.css">
+    <link rel="stylesheet" href="footer/footer_style.css">
+    <link rel="stylesheet" href="loading-quotes/loading_quotes_style.css">
     <script type="module" src="firebase.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -191,83 +194,87 @@
 
 <body>
     <div id="app">
-        <nav-bar></nav-bar>
+        <loading-quotes v-if="isLoading"></loading-quotes>
 
-        <div class="content-wrapper">
-            <div class="leaderboard-container">
-                <h1 class="page-title">Leaderboard</h1>
-                
-                <!-- Top Players Section -->
-                <div class="row mb-5">
-                    <template v-for="(user, index) in topPlayers" :key="user.userID">
-                        <div class="col-md-4">
-                            <div 
-                                class="player-card"
-                                :class="{ 'current-user-card bounce': isCurrentUser(user.userID) }"
-                                @mouseenter="triggerConfetti(user.userID, index)">
-                                <div class="d-flex align-items-center">
-                                    <img :src="user.profilePicture" :alt="user.username" class="profile-pic me-3">
-                                    <div>
-                                        <h5 class="mb-1">{{ user.username }}</h5>
-                                        <span :class="'rank-badge rank-' + getRank(index)">{{ getRankDisplay(index) }}</span>
+        <div v-show="!isLoading">
+
+            <nav-bar :user_profile="currentUser"></nav-bar>
+
+            <div class="content-wrapper">
+                <div class="leaderboard-container">
+                    <h1 class="page-title">Leaderboard</h1>
+                    
+                    <!-- Top Players Section -->
+                    <div class="row mb-5">
+                        <template v-for="(user, index) in topPlayers" :key="user.userID">
+                            <div class="col-md-4">
+                                <div 
+                                    class="player-card"
+                                    :class="{ 'current-user-card bounce': isCurrentUser(user.userID) }"
+                                    @mouseenter="triggerConfetti(user.userID, index)">
+                                    <div class="d-flex align-items-center">
+                                        <img :src="user.profilePicture" :alt="user.username" class="profile-pic me-3">
+                                        <div>
+                                            <h5 class="mb-1">{{ user.username }}</h5>
+                                            <span :class="'rank-badge rank-' + getRank(index)">{{ getRankDisplay(index) }}</span>
+                                        </div>
+                                        <div class="ms-auto">
+                                            <i class="fas fa-trophy trophy-icon" 
+                                            :class="{'silver-trophy': index === 1, 'bronze-trophy': index === 2}"
+                                            style="font-size:55px; margin-right: 20px; margin-top: 20px;"></i>
+                                        </div>
                                     </div>
-                                    <div class="ms-auto">
-                                        <i class="fas fa-trophy trophy-icon" 
-                                           :class="{'silver-trophy': index === 1, 'bronze-trophy': index === 2}"
-                                           style="font-size:55px; margin-right: 20px; margin-top: 20px;"></i>
+                                    <div class="text-center mt-4 points-container">
+                                        <div class="points-circle">
+                                            <div class="fw-bold text-muted mb-1">Points</div>
+                                            <div class="fs-4">{{ formatPoints(user.points) }}</div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="text-center mt-4 points-container">
-                                    <div class="points-circle">
-                                        <div class="fw-bold text-muted mb-1">Points</div>
-                                        <div class="fs-4">{{ formatPoints(user.points) }}</div>
-                                    </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Leaderboard Table -->
+                    <div class="table-header">
+                        <div class="row align-items-center">
+                            <div class="col-1 col-sm-2">#</div>
+                            <div class="col-1 col-sm-1"></div><!-- Space for profile photo -->
+                            <div class="col-4 col-sm-3">Player Name</div>
+                            <div class="col-3">Points</div>
+                            <div class="col-3">Rank</div>
+                        </div>
+                    </div>
+
+                    <template v-for="(user, index) in remainingUsers" :key="user.userID">
+                        <div class="player-card" 
+                            :class="{ 'current-user-card': isCurrentUser(user.userID) }">
+                            <div class="row align-items-center">
+                                <div class="col-1 col-sm-2">{{ getSortedPosition(index) }}</div>
+                                <div class="col-1 col-sm-1">
+                                    <img :src="user.profilePicture" 
+                                        :alt="user.username" 
+                                        class="profile-pic" 
+                                        @click="goToProfile(user.userID)">
+                                </div>
+                                <div class="col-4 col-sm-3">
+                                    <span class="d-none d-sm-inline">{{ user.username }}</span>
+                                    <span class="d-sm-none text-truncate">{{ user.username }}</span>
+                                </div>
+                                <div class="col-3" :class="{ 'no-points': !hasPoints(user) }">
+                                    {{ formatPoints(user.points) }}
+                                </div>
+                                <div class="col-3">
+                                    <span :class="'rank-badge rank-' + getRank(getSortedPosition(index) - 1)">
+                                        {{ getRankDisplay(getSortedPosition(index) - 1) }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </template>
                 </div>
-
-                <!-- Leaderboard Table -->
-                <div class="table-header">
-                    <div class="row align-items-center">
-                        <div class="col-1 col-sm-2">#</div>
-                        <div class="col-1 col-sm-1"></div><!-- Space for profile photo -->
-                        <div class="col-4 col-sm-3">Player Name</div>
-                        <div class="col-3">Points</div>
-                        <div class="col-3">Rank</div>
-                    </div>
-                </div>
-
-                <template v-for="(user, index) in remainingUsers" :key="user.userID">
-                    <div class="player-card" 
-                         :class="{ 'current-user-card': isCurrentUser(user.userID) }">
-                        <div class="row align-items-center">
-                            <div class="col-1 col-sm-2">{{ getSortedPosition(index) }}</div>
-                            <div class="col-1 col-sm-1">
-                                <img :src="user.profilePicture" 
-                                     :alt="user.username" 
-                                     class="profile-pic" 
-                                     @click="goToProfile(user.userID)">
-                            </div>
-                            <div class="col-4 col-sm-3">
-                                <span class="d-none d-sm-inline">{{ user.username }}</span>
-                                <span class="d-sm-none text-truncate">{{ user.username }}</span>
-                            </div>
-                            <div class="col-3" :class="{ 'no-points': !hasPoints(user) }">
-                                {{ formatPoints(user.points) }}
-                            </div>
-                            <div class="col-3">
-                                <span :class="'rank-badge rank-' + getRank(getSortedPosition(index) - 1)">
-                                    {{ getRankDisplay(getSortedPosition(index) - 1) }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </template>
             </div>
         </div>
-
         <button @click="scrollToTop" class="btn back-to-top">
             <i class="fas fa-chevron-up"></i>
         </button>
@@ -280,7 +287,14 @@
             data() {
                 return {
                     users: [],
-                    baseURL: 'https://app-907670644284.us-central1.run.app'
+                    baseURL: 'https://app-907670644284.us-central1.run.app',
+                    isLoading: true,
+                    currentUser: {
+                        id: '',
+                        username: '',
+                        avatar: 'resources/default-profile-picture.jpg',
+                        profilePicture: 'resources/default-profile-picture.jpg'
+                    }
                 }
             },
             computed: {
@@ -369,14 +383,26 @@
                 }
             },
             async mounted() {
+                const initUser = (user) => {
+                    this.currentUser = {
+                        ...user,
+                        avatar: user.profilePicture || 'resources/default-profile-picture.jpg',
+                        profilePicture: user.profilePicture || 'resources/default-profile-picture.jpg'
+                    };
+                };
+
                 window.addEventListener('userLoaded', async () => {
-                    this.currentUser = window.currentUser;
-                    await this.fetchLeaderboardData();
+                    if (window.currentUser) {
+                        initUser(window.currentUser);
+                        await this.fetchLeaderboardData();
+                        this.isLoading = false;
+                    }
                 });
 
                 if (window.currentUser) {
-                    this.currentUser = window.currentUser;
+                    initUser(window.currentUser);
                     await this.fetchLeaderboardData();
+                    this.isLoading = false;
                 }
             }
         });
@@ -384,6 +410,8 @@
 
     <script src="navbar/navbar.js"></script>
     <script src="footer/footer.js"></script>
+    <script src="loading-quotes/loading_quotes.js"></script>
+
     <script>
         app.mount('#app')
     </script>
