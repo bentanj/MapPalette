@@ -1,5 +1,7 @@
 @import 'footer/footer_style.css';
 @import 'navbar/navbar_style.css';
+@import 'loading-quotes/loading_quotes_style.css';
+
 
 /* Define Gradient Variables */
 :root {
