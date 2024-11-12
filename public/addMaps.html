@@ -11,9 +11,6 @@
   <!-- icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-  <!-- VUE CDN -->
-  <script src='https://unpkg.com/vue@3/dist/vue.global.js'></script>
-
   <!-- CSS -->
   <link rel='stylesheet' href='addMaps.css'>
 
@@ -23,18 +20,16 @@
   <!-- Driver js -->
   <link rel="stylesheet" href="./node_modules/driver.js/dist/driver.css">
 
-  <script type="module" src="navbar/navbar.js"></script>
-
 </head>
 <body>
+  <div id="navbar-app">
+    <nav-bar :user_profile="userProfile"></nav-bar>
+  </div>
   <div id="app" class="container-fluid">
     <!-- Full-screen loading overlay -->
     <div v-if="submitting" class="loading-overlay active">
       <div class="loading-spinner"></div>
     </div>
- 
-    <!-- Footer Section -->
-    <nav-bar :user_profile="userProfile"></nav-bar>
 
     <!-- Alert Bar -->
     <div class="alert alert-dismissible fade" 
@@ -264,9 +259,35 @@
     <!-- Footer Section -->
     <site-footer></site-footer>
   </div>
-
   <!-- <script src='https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap' async defer></script> -->
+
+  <script src='https://unpkg.com/vue@3/dist/vue.global.js'></script>
+  <script>
+    window.app = Vue.createApp({
+        data() {
+            return {
+                userProfile: {
+                    avatar: '' // Will be updated when currentUser is available
+                }
+            }
+        },
+        created() {
+            // Check for currentUser and update userProfile
+            const checkUser = setInterval(() => {
+                if (window.currentUser) {
+                    this.userProfile.avatar = window.currentUser.profilePicture || '';
+                    clearInterval(checkUser);
+                }
+            }, 2000);
+        }
+    });
+    // Mount after DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        window.app.mount('#navbar-app');
+    });
+  </script>
   <script type="module" src="firebase.js"></script>
+  <script type="module" src="navbar/navbar.js"></script>
   <script type="module" src='addMaps.js'></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

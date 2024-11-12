@@ -1,7 +1,3 @@
-<!-- TODO:
-1. need to implement limit as to how many comments can show on the modal? same at homepage.
--->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,16 +29,16 @@
 <body>
     <div id="app">
         <!-- Loading Spinner -->
-        <loading-quotes></loading-quotes>
-
+        <loading-quotes v-if="isLoading"></loading-quotes>
+    
         <!-- main content-->
-        <div id="app-container" style="display: none;">
+        <div id="app-container" style="display: none;" v-show="!isLoading">
             <!-- Navbar -->
-            <nav-bar :user_profile="userProfile"></nav-bar>
-
+            <nav-bar :user_profile="currentUser"></nav-bar>
+    
             <!-- Profile Header Section -->
             <div class="main-content-wrapper">
-                <div v-else>
+                <div class="profile-content-container">
                     <div class="profile-header">
                         <div class="cover-photo">
                             <img :src="userProfile.coverPhoto" alt="Cover Photo">
@@ -60,14 +56,25 @@
                                     <p class="text-muted">{{ userProfile.bio || 'No bio yet' }}</p>
                                 </div>
                                 <div class="profile-actions">
-                                    <button class="btn btn-primary" onclick="window.location.href='settings_page.html'">
-                                        <i class="bi bi-pencil"></i> Edit Profile
-                                    </button>
+                                    <!-- Edit Profile button only shows if viewing own profile -->
+                                    <div v-if="isCurrentUserProfile">
+                                        <button class="btn btn-primary" onclick="window.location.href='settings_page.html'">
+                                            <i class="bi bi-pencil"></i> Edit Profile
+                                        </button>
+                                    </div>
+                                
+                                    <!-- Follow/Unfollow button only shows if viewing another user's profile -->
+                                    <div v-else>
+                                        <button class="btn btn-primary" @click="toggleFollow">
+                                            <i class="bi" :class="isFollowing ? 'bi-person-dash' : 'bi-person-plus'"></i>
+                                            {{ isFollowing ? 'Unfollow' : 'Follow' }}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
+    
                     <!-- Main Content -->
                     <div class="container mt-4">
                         <div class="row">
@@ -88,7 +95,7 @@
                                         </div>
                                     </div>
                                 </div>
-
+    
                                 <div class="card mb-4">
                                     <div class="card-body">
                                         <h5 class="card-title mb-3">Stats</h5>
@@ -113,7 +120,7 @@
                                     </div>
                                 </div>
                             </div>
-
+    
                             <!-- Main Content Area -->
                             <div class="col-lg-8">
                                 <!-- Profile Navigation -->
@@ -127,7 +134,7 @@
                                                 @click="currentTab = 'routes'">Routes</button>
                                     </div>
                                 </div>
-
+    
                                 <!-- Activities Tab -->
                                 <div v-if="currentTab === 'activities'" id="activity-feed">
                                     <div v-if="activities.length === 0 && !isLoading" class="text-center py-4">
@@ -153,11 +160,16 @@
                                         @open-modal="openActivityModal">
                                     </activity-card>
                                 </div>
-
-                                <!-- Routes Tab -->
+                                <!-- Inside the Main Content Area under the "Routes Tab" -->
                                 <div v-if="currentTab === 'routes'">
                                     <div v-if="routes.length === 0 && !isLoading" class="text-center py-4">
-                                        <div class="card shadow-sm">
+                                        <div v-if="!isCurrentUserProfile" class="card shadow-sm">
+                                            <div class="card-body">
+                                                <h5 class="mb-3">No Routes Yet</h5>
+                                                <p class="text-muted">This user has not created any routes yet.</p>
+                                            </div>
+                                        </div>
+                                        <div v-else class="card shadow-sm">
                                             <div class="card-body">
                                                 <h5 class="mb-3">No Routes Yet</h5>
                                                 <p class="text-muted">Start creating your running routes!</p>
@@ -188,20 +200,28 @@
                     </div>
                 </div>
             </div>
-        
+    
+            <!-- Comment Modal -->
             <comment-modal
                 v-if="selectedActivity"
                 :activity="selectedActivity"
                 @close="selectedActivity = null"
                 @like="likeActivity">
             </comment-modal>
-
+    
+            <!-- scroll up btn -->
+            <button @click="scrollToTop" class="btn back-to-top">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+            
             <!-- Footer Section -->
             <site-footer></site-footer>
         </div>
     </div>
 
     <script>
+        const profileUserID = new URLSearchParams(window.location.search).get('id');
+        console.log('USER ID IS: ',profileUserID);
         const { createApp } = Vue;
         
         // ActivityCard Component (copy exactly as is from homepage)
@@ -545,7 +565,9 @@
                             <div class="modal-header d-flex justify-content-between align-items-start">
                                 <div>
                                     <h5 class="modal-title">{{ activity.title }}</h5>
-                                    <h6 class="modal-author text-muted">by {{ activity.user }}</h6>
+                                    <h6 class="modal-author text-muted">
+                                        by <a :href="'profile_page.html?id=' + activity.userID" class="text-decoration-none">{{ activity.user }}</a>
+                                    </h6>
                                 </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
@@ -578,7 +600,7 @@
                                                 :class="{ 'liked': isLiked }"
                                                 :disabled="disabledActions.like">
                                             <i :class="[isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
-                                            <span>Like</span>
+                                            <span>{{ isLiked ? 'Liked' : 'Like' }}</span>
                                         </button>
 
                                         <button class="btn btn-link p-0 action-button"
@@ -623,7 +645,7 @@
                                     <div v-if="comments && comments.length > 0">
                                         <div v-for="comment in displayedComments" :key="comment.id" class="mb-3">
                                             <div class="comment-bubble">
-                                                <strong>{{ comment.username }}</strong>
+                                                <strong><a :href="'profile_page.html?id=' + comment.userID" class="text-decoration-none">{{ comment.username }}</a></strong>
                                                 <p>{{ comment.text }}</p>
                                             </div>
                                             <div class="comment-time text-muted">
@@ -662,12 +684,18 @@
             data() {
                 return {
                     isLoading: true,
-
+                    isFollowing: false,
                     currentTab: 'activities',
                     // api
                     API_ENDPOINT: 'https://app-907670644284.us-central1.run.app',
-                    currentUser: window.currentUser || null, // Initialize with window.currentUser
-                    currentUserId: window.currentUser?.id || null,
+                    currentUser: {
+                        id: '',
+                        username: '',
+                        profilePicture: '',
+                        avatar: ''
+                        // Other properties if needed
+                    },
+                    currentUserId: '',
                     selectedActivity: null,
                     lastApiCallTime: 0,
                     userProfile: {
@@ -691,50 +719,144 @@
                 }
             },
             mounted() {
-                const loadingSpinner = document.getElementById('loading-spinner');
-                const appContainer = document.getElementById('app-container');
-
-                const checkUser = setInterval(async () => {
+                const checkUser = setInterval(() => {
                     if (window.currentUser) {
                         clearInterval(checkUser);
-                        console.log('User data found:', window.currentUser);
-                        
                         this.currentUser = window.currentUser;
-                        this.currentUserId = window.currentUser.id;
-                        this.updateUserProfile(window.currentUser);
-                        
-                        try {
-                            // Fetch posts
-                            const response = await axios.get(
-                                `${this.API_ENDPOINT}/api/users/${window.currentUser.id}/posts`
-                            );
-                            console.log('Posts Data:', response.data);
-                            this.posts = response.data;
-                            
-                            // Update total distance
-                            const totalDistance = this.posts.reduce(
-                                (sum, post) => sum + (parseFloat(post.distance) || 0), 
-                                0
-                            );
-                            this.userProfile.stats.totalDistance = parseFloat(totalDistance.toFixed(1));
+                        this.currentUserId = this.currentUser.id;
+                        this.currentUser.avatar = this.currentUser.profilePicture
 
-                            // Process posts for activities and routes
-                            await this.processActivitiesAndRoutes();
-
-                        } catch (error) {
-                            console.error('Error loading content:', error);
-                        } finally {
-                            // Hide loading spinner and show content after everything is loaded
-                            if (loadingSpinner && appContainer) {
-                                loadingSpinner.style.display = 'none';
-                                appContainer.style.display = 'block';
-                            }
-                            this.isLoading = false;
-                        }
+                        // Call the async initialization method
+                        this.initializeApp();
                     }
                 }, 100);
             },
+
             methods: {
+                async initializeApp() {
+                    if (profileUserID && profileUserID !== this.currentUserId) {
+                        // Viewing someone else's profile
+                        await this.loadUserProfile(profileUserID);
+                    } else {
+                        // Viewing own profile
+                        await this.loadCurrentUserProfile();
+                    }
+                },
+                async loadUserProfile(userId) {
+                    try {
+                        // Load specific user's profile
+                        const response = await axios.get(`${this.API_ENDPOINT}/api/${userId}`);
+                        this.userProfile = {
+                            name: response.data.username,
+                            avatar: response.data.profilePicture,
+                            coverPhoto: 'resources/coverphoto_profile.jpg',
+                            bio: response.data.bio || '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
+                            location: response.data.location || 'Singapore',
+                            BirthdayDate: new Date(response.data.birthday).toLocaleDateString(),
+                            stats: {
+                                routes: 0,
+                                following: response.data.numFollowing,
+                                followers: response.data.numFollowers,
+                                totalDistance: 0
+                            }
+                        };
+
+                        // Attempt to load user's posts
+                        const postsResponse = await axios.get(`${this.API_ENDPOINT}/api/users/${userId}/posts`);
+                        this.posts = postsResponse.data || []; // Handle empty response by setting an empty array
+                        const totalDistance = this.posts.reduce(
+                            (sum, post) => sum + (parseFloat(post.distance) || 0),
+                            0
+                        );
+                        this.userProfile.stats.totalDistance = parseFloat(totalDistance.toFixed(1));
+                        
+                        // Process activities and routes if posts exist
+                        if (this.posts.length > 0) {
+                            await this.processActivitiesAndRoutes();
+                        }
+                    } catch (error) {
+                        console.error("Error loading profile:", error);
+                        // Show error message if any issue in loading the profile or posts
+                        this.userProfile.bio = "This user has no posts available.";
+                    } finally {
+                        this.isLoading = false;
+                        this.checkFollowing();
+                    }
+                },
+
+                async toggleFollow() {
+                    try {
+                        if (this.isFollowing) {
+                            // Currently following, so unfollow using DELETE method
+                            const endpoint = `${this.API_ENDPOINT}/api/unfollow?id=${profileUserID}`;
+                            console.log('Unfollow Endpoint:', endpoint);
+                            console.log('Payload:', { userID: this.currentUserId });
+
+                            await axios.delete(endpoint, {
+                                data: { userID: this.currentUserId }
+                            });
+                        } else {
+                            // Not following, so follow using POST method
+                            const endpoint = `${this.API_ENDPOINT}/api/follow?id=${profileUserID}`;
+                            console.log('Follow Endpoint:', endpoint);
+                            console.log('Payload:', { userID: this.currentUserId });
+
+                            await axios.post(endpoint, { userID: this.currentUserId });
+                        }
+
+                        // Update the following status and follower count
+                        this.isFollowing = !this.isFollowing;
+                        this.userProfile.stats.followers += this.isFollowing ? 1 : -1;
+                    } catch (error) {
+                        console.error('Error following/unfollowing user:', error);
+                    }
+                },
+
+                // Check if currentUser is following the profile user
+                checkFollowing() {
+                    if (this.currentUser && Array.isArray(this.currentUser.following)) {
+                        this.isFollowing = this.currentUser.following.includes(profileUserID);
+                    } else {
+                        this.isFollowing = false;
+                    }
+                },
+                async loadCurrentUserProfile() {
+                    this.userProfile = {
+                        name: this.currentUser.username,
+                        avatar: this.currentUser.avatar,
+                        coverPhoto: 'resources/coverphoto_profile.jpg',
+                        bio: this.currentUser.bio || '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
+                        location: this.currentUser.location || 'Singapore',
+                        BirthdayDate: new Date(this.currentUser.birthday).toLocaleDateString(),
+                        stats: {
+                            routes: 0,
+                            following: this.currentUser.numFollowing,
+                            followers: this.currentUser.numFollowers,
+                            totalDistance: 0
+                        }
+                    };
+
+                    try {
+                        // Fetch current user's posts
+                        const response = await axios.get(`${this.API_ENDPOINT}/api/users/${this.currentUserId}/posts`);
+                        this.posts = response.data;
+                        const totalDistance = this.posts.reduce(
+                            (sum, post) => sum + (parseFloat(post.distance) || 0),
+                            0
+                        );
+                        this.userProfile.stats.totalDistance = parseFloat(totalDistance.toFixed(1));
+
+                        // Process activities and routes
+                        await this.processActivitiesAndRoutes();
+                    } catch (error) {
+                        console.error('Error loading current user content:', error);
+                    } finally {
+                        this.isLoading = false;
+                        this.checkFollowing();
+                    }
+                },
+
+
                 displayRandomQuote() {
                     const randomIndex = Math.floor(Math.random() * this.quotes.length);
                     // Remove the quote temporarily to trigger re-animation
@@ -876,7 +998,7 @@
                 updateUserProfile(userData) {
                     this.userProfile = {
                         name: userData.username,
-                        avatar: userData.profilePicture || 'resources/download.jpeg',
+                        avatar: userData.profilePicture,
                         // Hardcoded elements
                         coverPhoto: 'resources/coverphoto_profile.jpg',
                         bio: '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
@@ -973,6 +1095,21 @@
                         alert('Failed to update like. Please try again.');
                     }
                 },
+                // scroll up btn
+                scrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+            },
+            computed: {
+                isCurrentUserProfile() {
+                    return !profileUserID || profileUserID === this.currentUserId;
+                }
+            },
+            created() {
+                this.checkFollowing(); // Run check during component creation
             }
         });
     </script>

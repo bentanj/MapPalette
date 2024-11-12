@@ -1,15 +1,35 @@
 /* Profile Header Styles */
 .main-content-wrapper {
     flex: 1;
-    padding-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 76px); 
+    padding-bottom: 0; 
 }
 
+/* Container for all profile content */
+.profile-content-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Profile header section */
 .profile-header {
-    background: white;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    padding-top: 76px; 
-    position: relative;
+    flex-shrink: 0; 
+}
+
+/* Main container adjustments */
+.container.mt-4 {
+    flex: 1;
+    margin-bottom: 3rem;
+}
+
+/* Ensure app container takes full height */
+#app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .cover-photo {
@@ -101,7 +121,7 @@
 }
 
 .profile-actions .btn-primary {
-    background: linear-gradient(90deg, #43cea2, #185a9d);
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
     border: none;
     padding: 0.75rem 1.5rem;
     font-weight: 500;
@@ -109,7 +129,7 @@
 }
 
 .profile-actions .btn-primary:hover {
-    background: linear-gradient(90deg, #185a9d, #43cea2);
+    background: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
     transform: translateY(-2px);
 }
 
@@ -154,6 +174,9 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .about-item i {
@@ -174,6 +197,8 @@
     background-color: var(--background-light);
     border-radius: 8px;
     transition: transform 0.2s ease;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .stat-item:hover {
@@ -220,6 +245,9 @@
 
 .route-info {
     padding: 15px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .route-info h5 {

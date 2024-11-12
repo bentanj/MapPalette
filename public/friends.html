@@ -8,13 +8,18 @@
     <title>MapPalette - Friends</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <!-- Updated CSS Styles -->
     <link rel="stylesheet" href="friends.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- Firebase -->
     <script type="module" src="firebase.js"></script>
@@ -43,27 +48,20 @@
 
 <body>
     <div id="app">
-
         <!-- Loading Spinner -->
-        <div v-if="isLoading" id="loading-spinner" class="text-center"
-            style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-3">{{ currentQuote }}</p> <!-- Display the current quote here -->
-        </div>
+        <loading-quotes v-if="isLoading"></loading-quotes>
 
         <!-- Main Content, Hidden Initially -->
-        <div v-if="!isLoading" id="app-container">
+        <div id="app-container">
 
             <!-- Navbar -->
             <nav-bar :user_profile="userProfile"></nav-bar>
 
             <!-- Feed Header -->
             <div class="sample-header">
-                <div class="sample-header-section">
+                <div class="sample-header-section text-center text-white">
                     <h1>Friends</h1>
-                    <h2>Connect and engage with your running community.</h2>
+                    <h2>Connect and engage with your running community</h2>
                 </div>
             </div>
 
@@ -88,26 +86,26 @@
 
                 <div class="row">
                     <hr>
-                    <h1>Your Friends ({{filteredFriends.length}})</h1>
+                    <h1 class="text-center mb-4 mt-4">Your Friends ({{filteredFriends.length}})</h1>
 
                     <!-- Friends Section with Load More -->
-                    <div v-if="filteredFriends.length > 0" class="col-md-4 mb-4"
+                    <div v-if="filteredFriends.length > 0" class="col-md-4 col-sm-6 mb-4"
                         v-for="friend in filteredFriends.slice(0, displayedFriends)" :key="friend.id">
                         <friend-card :friend="friend" @confirm-unfollow="confirmUnfollow" :disabled="disableButtons"
                             @open-profile="openProfile"></friend-card>
                     </div>
-                    <p v-else>No friends match your search.</p>
+                    <p v-else class="text-center">No friends match your search.</p>
                     <div class="text-center" v-if="displayedFriends < filteredFriends.length">
-                        <button class="btn btn-outline-primary" @click="loadMoreFriends">Load More</button>
+                        <button class="btn btn-outline-primary mb-4" @click="loadMoreFriends">Load More</button>
                     </div>
 
                     <!-- Other Users Section with Load More -->
-                    <h1>Other Users ({{filteredOtherUsers.length}})</h1>
+                    <h1 class="text-center mb-4 mt-4">Other Users ({{filteredOtherUsers.length}})</h1>
                     <div v-if="filteredOtherUsers.length > 0" class="col-md-4 mb-4"
                         v-for="user in filteredOtherUsers.slice(0, displayedOtherUsers)" :key="user.id">
                         <other-user-card :user="user" @follow="followUser" :disabled="disableButtons"></other-user-card>
                     </div>
-                    <p v-else>No other users match your search.</p>
+                    <p v-else class="text-center"> No other users match your search.</p>
                     <div class="text-center" v-if="displayedOtherUsers < filteredOtherUsers.length">
                         <button class="btn btn-outline-primary" @click="loadMoreOtherUsers">Load More</button>
                     </div>
@@ -133,7 +131,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Footer -->
             <site-footer></site-footer>
 
@@ -157,18 +154,6 @@
                 disableButtons: false,
                 userProfile: { avatar: '' },
                 isLoading: true, // Spinner is visible initially
-                quotes: [
-                    "Run like there's a fire behind you.",
-                    "One run can change your day, many runs can change your life.",
-                    "The only bad run is the one that didn’t happen.",
-                    "Running is the greatest metaphor for life because you get out of it what you put into it.",
-                    "Pain is temporary, pride is forever.",
-                    "The miracle isn’t that I finished. The miracle is that I had the courage to start.",
-                    "You’re only one run away from a good mood.",
-                    "Run when you can, walk if you have to, crawl if you must; just never give up.",
-                    "Don’t dream of winning, train for it."
-                ],
-                currentQuote: ""
             };
         },
         computed: {
@@ -185,10 +170,6 @@
             }
         },
         methods: {
-            displayRandomQuote() {
-                const randomIndex = Math.floor(Math.random() * this.quotes.length);
-                this.currentQuote = this.quotes[randomIndex];
-            },
             // Apply filters when the user clicks search or presses Enter
             applyFilters() {
                 this.searchQuery = this.searchInput;
@@ -278,13 +259,7 @@
         },
 
         mounted() {
-
-            // Display a random quote initially
-            this.displayRandomQuote();
-
-            // Change the quote every 5 seconds
-            setInterval(this.displayRandomQuote, 5000);
-
+            this.isLoading = true;
             const checkUser = (resolve) => {
                 const userCheckInterval = setInterval(() => {
                     if (window.currentUser) {
@@ -311,12 +286,11 @@
                 })
                 .catch(error => {
                     console.error("Error loading data:", error);
+                    this.isLoading = false; // Add this line to ensure loading stops even on error
                 })
                 .finally(() => {
-                    // Hide the spinner and show main content
-                    this.isLoading = false;
+                    this.isLoading = false; // Make sure this line is present and not commented out
                 });
-
         }
     });
 
@@ -357,7 +331,7 @@
             },
             openProfile() {
                 // Redirect to the profile page with the user's ID
-                window.location.href = `homepage.html?id=${this.friend.id}`;
+                window.location.href = `profile_page.html?id=${this.friend.id}`;
             }
         }
     });
@@ -416,18 +390,24 @@
             },
             openProfile() {
                 // Redirect to the profile page with the user's ID
-                window.location.href = `homepage.html?id=${this.user.id}`;
+                window.location.href = `profile_page.html?id=${this.user.id}`;
             }
         }
     });
-
-    // Mount the Vue app
-    app.mount('#app');
 </script>
 
+<!-- import navbar from navbar.js -->
 <script src="navbar/navbar.js"></script>
+
+<!-- import footer from footer.js -->
 <script src="footer/footer.js"></script>
+
+<!--loading quotes-->
+<script src="loading-quotes/loading_quotes.js"></script>
+
+<script>
+    app.mount('#app')
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

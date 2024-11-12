@@ -125,8 +125,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Suggested Followers (shown when user has no following) -->
-                                <div v-if="userProfile.stats.following === 0" class="mb-4">
+                                <!-- Suggested Followers (shown when user has no following and zero activities) -->
+                                <div v-if="shouldShowSuggestions" class="mb-4">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div class="d-flex align-items-center gap-2">
                                             <h6 class="text-uppercase fw-bold text-muted small mb-0">Suggested Runners</h6>
@@ -141,7 +141,7 @@
                                         <div v-for="user in suggestedUsers" :key="user.userID" class="mb-3 p-2 border rounded hover-shadow">
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <div class="d-flex align-items-center">
-                                                    <img :src="user.profilePicture || 'resources/default-profile.png'" 
+                                                    <img :src="user.profilePicture"
                                                         :alt="user.username"
                                                         class="rounded-circle me-2"
                                                         style="width: 40px; height: 40px; object-fit: cover;">
@@ -187,82 +187,91 @@
                         <!-- Main content area using vue components -->
                         <div class="col-xl-8 col-md-8 content">
                             <!-- New User Tutorial Section (show only if user has no friends/routes) -->
-                            <div v-if="isNewUser && (!activities || activities.length === 0)" class="mb-4">
-                                <div class="card shadow-sm">
-                                    <div class="card-body">
-                                        <h3 class="card-title mb-4">👋 Welcome to MapPalette!</h3>
-                                        <p class="card-text">Here's how to get started:</p>
-                                        
-                                        <div class="getting-started-steps">
-                                            <div class="step d-flex align-items-start mb-4">
-                                                <div class="step-icon me-3">
-                                                    <i class="bi bi-1-circle-fill fs-4 text-primary"></i>
-                                                </div>
-                                                <div>
-                                                    <h5>Draw Your First Route</h5>
-                                                    <p>Create your first running route by clicking "Draw Your Map!" in the quick actions menu.</p>
-                                                    <a href="addMaps.html" class="btn btn-primary">
-                                                        <i class="bi bi-map me-2"></i>Start Drawing
-                                                    </a>
+                            <div v-if="!isLoading">
+                                <!-- Welcome & No Activities Section -->
+                                <template v-if="activities.length === 0">
+                                    <!-- Welcome Section -->
+                                    <div class="mb-4">
+                                        <div class="card shadow-sm">
+                                            <div class="card-body">
+                                                <h3 class="card-title mb-4">👋 Welcome to MapPalette!</h3>
+                                                <p class="card-text">Here's how to get started:</p>
+                                                
+                                                <div class="getting-started-steps">
+                                                    <div class="step d-flex align-items-start mb-4">
+                                                        <div class="step-icon me-3">
+                                                            <i class="bi bi-1-circle-fill fs-4 text-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h5>Draw Your First Route</h5>
+                                                            <p>Create your first running route by clicking "Draw Your Map!" in the quick actions menu.</p>
+                                                            <a href="addMaps.html" class="btn btn-primary">
+                                                                <i class="bi bi-map me-2"></i>Start Drawing
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="step d-flex align-items-start mb-4">
+                                                        <div class="step-icon me-3">
+                                                            <i class="bi bi-2-circle-fill fs-4 text-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h5>Connect with Runners</h5>
+                                                            <p>Follow other runners to see their routes and activities in your feed.</p>
+                                                            <a href="friends.html" class="btn btn-primary">
+                                                                <i class="bi bi-people me-2"></i>Find Runners
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="step d-flex align-items-start">
+                                                        <div class="step-icon me-3">
+                                                            <i class="bi bi-3-circle-fill fs-4 text-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h5>Explore Routes</h5>
+                                                            <p>Discover popular running routes in your area and save them for later.</p>
+                                                            <a href="routes.html" class="btn btn-primary">
+                                                                <i class="bi bi-compass me-2"></i>Browse Routes
+                                                            </a>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
 
-                                            <div class="step d-flex align-items-start mb-4">
-                                                <div class="step-icon me-3">
-                                                    <i class="bi bi-2-circle-fill fs-4 text-primary"></i>
-                                                </div>
-                                                <div>
-                                                    <h5>Connect with Runners</h5>
-                                                    <p>Follow other runners to see their routes and activities in your feed.</p>
-                                                    <a href="friends.html" class="btn btn-primary">
+                                    <!-- No Activities Message -->
+                                    <div class="text-center py-4">
+                                        <div class="card shadow-sm">
+                                            <div class="card-body">
+                                                <h5 class="mb-3">No Activities Yet</h5>
+                                                <p class="text-muted">Follow other runners to see their activities here, or create your own route to share!</p>
+                                                <div class="mt-3">
+                                                    <a href="addMaps.html" class="btn btn-primary me-2">
+                                                        <i class="bi bi-map me-2"></i>Create Route
+                                                    </a>
+                                                    <a href="friends.html" class="btn btn-outline-primary">
                                                         <i class="bi bi-people me-2"></i>Find Runners
                                                     </a>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </template>
 
-                                            <div class="step d-flex align-items-start">
-                                                <div class="step-icon me-3">
-                                                    <i class="bi bi-3-circle-fill fs-4 text-primary"></i>
-                                                </div>
-                                                <div>
-                                                    <h5>Explore Routes</h5>
-                                                    <p>Discover popular running routes in your area and save them for later.</p>
-                                                    <a href="routes.html" class="btn btn-primary">
-                                                        <i class="bi bi-compass me-2"></i>Browse Routes
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="activity-feed">
-                                <div v-if="activities.length === 0 && !isLoading" class="text-center py-4">
-                                    <div class="card shadow-sm">
-                                        <div class="card-body">
-                                            <h5 class="mb-3">No Activities Yet</h5>
-                                            <p class="text-muted">Follow other runners to see their activities here, or create your own route to share!</p>
-                                            <div class="mt-3">
-                                                <a href="addMaps.html" class="btn btn-primary me-2">
-                                                    <i class="bi bi-map me-2"></i>Create Route
-                                                </a>
-                                                <a href="friends.html" class="btn btn-outline-primary">
-                                                    <i class="bi bi-people me-2"></i>Find Runners
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <activity-card
-                                    v-else
-                                    v-for="activity in activities"
-                                    :key="activity.id"
-                                    :activity="activity"
-                                    :current-user="currentUser"
-                                    @like="likeActivity"
-                                    @share="handleActivityShare"  
-                                    @open-modal="openActivityModal">
-                                </activity-card>
+                                <!-- Activity Cards -->
+                                <template v-else>
+                                    <activity-card
+                                        v-for="activity in activities"
+                                        :key="activity.id"
+                                        :activity="activity"
+                                        :current-user="currentUser"
+                                        @like="likeActivity"
+                                        @share="handleActivityShare"  
+                                        @open-modal="openActivityModal">
+                                    </activity-card>
+                                </template>
                             </div>
                         </div>
 
@@ -277,6 +286,11 @@
                     </div>
                 </div>
             </div>
+
+            <!-- scroll up btn -->
+            <button @click="scrollToTop" class="btn back-to-top">
+                <i class="fas fa-chevron-up"></i>
+            </button>
 
             <!-- Footer Section -->
             <site-footer></site-footer>
@@ -371,14 +385,18 @@
                                 </ul>
                             </div>
                         </div>
-                        <p>by {{ activity.user }}</p>
+                        <p>
+                            by <a :href="'profile_page.html?id=' + activity.userID" class="text-decoration-none">{{ activity.user }}</a>
+                        </p>
                     </div>
                     <div class="meta">
                         <time class="published">{{ activity.date }}</time>
                         <div class="d-flex align-items-center justify-content-end mt-2">
                             <span class="me-2">{{ activity.user }}</span>
-                            <img :src="activity.userImg" alt="Profile" class="rounded-circle" 
-                                style="width: 40px; height: 40px; object-fit: cover;">
+                            <a :href="'profile_page.html?id=' + activity.userID">
+                                <img :src="activity.userImg" alt="Profile" class="rounded-circle" 
+                             style="width: 40px; height: 40px; object-fit: cover;">
+                            </a>
                         </div>
                     </div>
                 </header>
@@ -513,8 +531,8 @@
                 this.$el.addEventListener('hidden.bs.modal', () => {
                     this.$emit('close');
                 });
-
-                // Use the preloaded comments
+                
+                // Load initial comments if available
                 if (this.activity.commentsList && this.activity.commentsList.length > 0) {
                     this.comments = this.activity.commentsList
                         .map(comment => ({
@@ -522,8 +540,8 @@
                             timeAgo: this.calculateTimeSince(comment.createdAt)
                         }))
                         .sort((a, b) => {
-                            const dateA = a.createdAt._seconds ? new Date(a.createdAt._seconds * 1000) : new Date(a.createdAt);
-                            const dateB = b.createdAt._seconds ? new Date(b.createdAt._seconds * 1000) : new Date(b.createdAt);
+                            const dateA = new Date(a.createdAt);
+                            const dateB = new Date(b.createdAt);
                             return dateB - dateA;
                         });
                 }
@@ -541,16 +559,7 @@
 
                 calculateTimeSince(timestamp) {
                     if (!timestamp) return 'Just now';
-
-                    let date;
-                    if (timestamp._seconds) {
-                        date = new Date(timestamp._seconds * 1000);
-                    } else if (typeof timestamp === 'string' || timestamp instanceof Date) {
-                        date = new Date(timestamp);
-                    } else {
-                        return 'Just now';
-                    }
-
+                    const date = new Date(timestamp);
                     const now = new Date();
                     const diffInSeconds = Math.floor((now - date) / 1000);
                     const intervals = [
@@ -561,13 +570,10 @@
                         { label: 'minute', seconds: 60 },
                         { label: 'second', seconds: 1 }
                     ];
-
                     for (const interval of intervals) {
                         const count = Math.floor(diffInSeconds / interval.seconds);
                         if (count >= 1) {
-                            return count === 1 
-                                ? `1 ${interval.label} ago` 
-                                : `${count} ${interval.label}s ago`;
+                            return `${count} ${interval.label}${count > 1 ? 's' : ''} ago`;
                         }
                     }
                     return 'Just now';
@@ -575,44 +581,25 @@
 
                 async submitComment() {
                     if (!this.newComment.trim()) return;
-
-                    const currentTime = Date.now();
-                    if (currentTime - this.lastApiCallTime < 1000) {
-                        return; // Rate limiting to prevent rapid submissions
-                    }
-                    this.lastApiCallTime = currentTime;
-                    this.disabledActions.comment = true;
-
                     try {
                         const response = await axios.post(
                             `${this.API_ENDPOINT}/api/posts/${this.activity.id}/comments`,
-                            {
-                                userID: window.currentUser.id,
-                                text: this.newComment
-                            }
+                            { userID: window.currentUser.id, text: this.newComment }
                         );
-
-                        // Add the new comment to the local list immediately
                         const newComment = {
                             id: response.data.id,
                             userID: window.currentUser.id,
                             text: this.newComment,
                             username: window.currentUser.username,
-                            createdAt: response.data.createdAt || new Date(),
+                            createdAt: new Date().toISOString(),
                             timeAgo: 'Just now'
                         };
-
-                        // Update both local comments and activity comments
                         this.comments.unshift(newComment);
                         this.activity.commentsList.unshift(newComment);
-
-                        this.newComment = ''; 
-
+                        this.newComment = '';
                     } catch (error) {
                         console.error('Error submitting comment:', error);
                         alert('Failed to submit comment. Please try again.');
-                    } finally {
-                        this.disabledActions.comment = false;
                     }
                 },
 
@@ -623,10 +610,18 @@
                     window.location.href = `addMaps.html?id=${this.activity.id}`;
                 },
                 handleShare() {
-                    // Update API and redirect
-                    const shareUrl = `homepage.html?id=${this.activity.id}`;
-                    this.$emit('share', this.activity); // Emit share event to parent
-                    window.location.href = shareUrl;
+                    // Generate the share URL
+                    const shareUrl = `${window.location.origin}/homepage.html?id=${this.activity.id}`;
+                    
+                    // Copy the URL to the clipboard
+                    navigator.clipboard.writeText(shareUrl)
+                        .then(() => {
+                            this.$root.setAlert('success', "Link copied to clipboard!");
+                        })
+                        .catch(err => {
+                            console.error("Failed to copy link: ", err);
+                            this.$root.setAlert('error', "Failed to copy link to clipboard.");
+                        });
                 },
             },
 
@@ -638,7 +633,9 @@
                             <div class="modal-header d-flex justify-content-between align-items-start">
                                 <div>
                                     <h5 class="modal-title">{{ activity.title }}</h5>
-                                    <h6 class="modal-author text-muted">by {{ activity.user }}</h6>
+                                    <h6 class="modal-author text-muted">                            
+                                        by <a :href="'profile_page.html?id=' + activity.userID" class="text-decoration-none">{{ activity.user }}</a>
+                                    </h6>
                                 </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
@@ -666,24 +663,15 @@
                                 <!-- Action Buttons -->
                                 <div class="d-flex border-top border-bottom py-3">
                                     <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
-                                        <button class="btn btn-link p-0 action-button" 
-                                                @click="likePost(activity.id)"
-                                                :class="{ 'liked': isLiked }"
-                                                :disabled="disabledActions.like">
+                                        <button class="btn btn-link p-0 action-button" @click="likePost(activity.id)" :class="{ 'liked': isLiked }" :disabled="disabledActions.like">
                                             <i :class="[activity.isLiked ? 'fas' : 'far', 'fa-thumbs-up me-1']"></i>
                                             <span>{{ activity.isLiked ? 'Liked' : 'Like' }}</span>
                                         </button>
-
-                                        <button class="btn btn-link p-0 action-button"
-                                                @click="useRoute"
-                                                :disabled="disabledActions.use">
+                                        <button class="btn btn-link p-0 action-button" @click="useRoute" :disabled="disabledActions.use">
                                             <i class="far fa-map me-1"></i>
                                             <span>Use</span>
                                         </button>
-
-                                        <button class="btn btn-link p-0 action-button"
-                                                @click="handleShare"
-                                                :disabled="disabledActions.share">
+                                        <button class="btn btn-link p-0 action-button" @click="handleShare" :disabled="disabledActions.share">
                                             <i class="far fa-share-square me-1"></i>
                                             <span>Share</span>
                                         </button>
@@ -692,16 +680,9 @@
 
                                 <!-- Comments Section -->
                                 <div class="mt-4">                                    
-                                    <!-- New Comment Input -->
                                     <div class="mb-3">
-                                        <textarea class="form-control mb-2"
-                                                placeholder="Add a comment..."
-                                                rows="2"
-                                                v-model="newComment"
-                                                :disabled="disabledActions.comment"></textarea>
-                                        <button class="btn btn-primary"
-                                                @click="submitComment"
-                                                :disabled="disabledActions.comment">
+                                        <textarea class="form-control mb-2" placeholder="Add a comment..." rows="2" v-model="newComment" :disabled="disabledActions.comment"></textarea>
+                                        <button class="btn btn-primary" @click="submitComment" :disabled="disabledActions.comment">
                                             <span v-if="!disabledActions.comment">Post Comment</span>
                                             <span v-else>
                                                 <i class="fas fa-spinner fa-spin"></i> Posting...
@@ -711,29 +692,20 @@
 
                                     <h6>Comments ({{ comments.length }})</h6>
 
-                                    
-                                    <!-- Display comments if they exist -->
                                     <div v-if="comments && comments.length > 0">
                                         <div v-for="comment in displayedComments" :key="comment.id" class="mb-3">
                                             <div class="comment-bubble">
-                                                <strong>{{ comment.username }}</strong>
+                                                <strong><a :href="'profile_page.html?id=' + comment.userID" class="text-decoration-none">{{ comment.username }}</a></strong>
                                                 <p>{{ comment.text }}</p>
                                             </div>
                                             <div class="comment-time text-muted">
                                                 {{ calculateTimeSince(comment.createdAt) }}
                                             </div>
                                         </div>
-                                        <!-- Show More Comments Button -->
                                         <div v-if="hasMoreComments" class="text-center mt-3 mb-3">
-                                            <button 
-                                                @click="loadMoreComments" 
-                                                class="btn btn-outline-primary btn-sm">
-                                                Show {{ remainingCommentsCount }} more comments
-                                            </button>
+                                            <button @click="loadMoreComments" class="btn btn-outline-primary btn-sm">Show {{ remainingCommentsCount }} more comments</button>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Display prompt if no comments -->
                                     <div v-else>
                                         <p>No comments yet. Be the first to comment!</p>
                                     </div>
@@ -859,7 +831,11 @@
                 isNewUser() {
                     return (!this.activities || this.activities.length === 0) || 
                         (!this.userProfile.stats.following || this.userProfile.stats.following === 0);
-                }
+                },
+                shouldShowSuggestions() {
+                    return this.userProfile.stats.following === 0 || 
+                        (this.activities && this.activities.length === 0);
+                },
             },
 
             methods: {
@@ -1107,7 +1083,7 @@
                     this.userProfile = {
                         name: userData.username,
                         username: `@${userData.username}`,
-                        avatar: userData.profilePicture || 'resources/download.jpeg',
+                        avatar: userData.profilePicture,
                         stats: {
                             routes: userData.postsCreated?.length || 0,
                             following: userData.following?.length || 0,  
@@ -1327,19 +1303,91 @@
                     }
                 },
 
-                viewRoute(route) {
-                    // Find the activity in `activities` that matches the route ID
-                    const matchedActivity = this.activities.find(activity => activity.id === route.id);
+                async viewRoute(route) {
+                    try {
+                        // Fetch the complete post data for the trending route
+                        const response = await axios.get(`${this.API_ENDPOINT}/api/posts/?id=${route.id}`);
+                        const post = response.data;
+                        
+                        if (!post) {
+                            console.error('No post data received');
+                            throw new Error('Post not found');
+                        }
 
-                    if (matchedActivity) {
-                        // Open the activity modal with the matched activity data
-                        this.openActivityModal(matchedActivity);
-                    } else {
-                        // Optional: fallback if no match found
-                        console.warn(`No matching activity found for route ID: ${route.id}`);
-                        alert('Activity details are currently unavailable.');
+                        // Create a complete activity object from the post data
+                        const activity = {
+                            id: post.postID,
+                            title: post.title,
+                            user: post.username || 'Unknown User',
+                            userImg: post.profilePicture || this.userProfile.avatar,
+                            date: this.calculateTimeSince(post.createdAt),
+                            location: post.waypoints[0].address,
+                            description: post.description,
+                            distance: `${post.distance} km`,
+                            time: post.time || '',
+                            mapImg: post.image,
+                            likes: post.likeCount,
+                            shares: post.shareCount,
+                            commentsList: [], // Initialize empty comments list
+                            isLiked: post.likedBy.includes(this.currentUser.id)
+                        };
+
+                        // Fetch comments for the post
+                        try {
+                            const commentsResponse = await axios.get(
+                                `${this.API_ENDPOINT}/api/posts/${post.postID}/comments`
+                            );
+                            const comments = commentsResponse.data;
+
+                            // Get unique user IDs from comments
+                            const commentUserIDs = [...new Set(comments.map(comment => comment.userID))];
+
+                            // Fetch user data for comment authors
+                            const commentUserPromises = commentUserIDs.map(userId =>
+                                axios.get(`${this.API_ENDPOINT}/api/${userId}`)
+                                    .then(response => ({
+                                        id: userId,
+                                        username: response.data.username
+                                    }))
+                                    .catch(() => ({
+                                        id: userId,
+                                        username: 'Unknown User'
+                                    }))
+                            );
+
+                            const commentUsers = await Promise.all(commentUserPromises);
+                            const commentUserMap = {};
+                            commentUsers.forEach(user => {
+                                commentUserMap[user.id] = user.username;
+                            });
+
+                            // Add usernames to comments
+                            activity.commentsList = comments.map(comment => ({
+                                ...comment,
+                                username: commentUserMap[comment.userID] || 'Unknown User'
+                            }));
+                        } catch (error) {
+                            if (error.response?.status !== 404) {
+                                console.error(`Error fetching comments:`, error);
+                            }
+                        }
+
+                        // Open the modal with the complete activity data
+                        this.selectedActivity = activity;
+                        
+                    } catch (error) {
+                        console.error('Error fetching route details:', error);
+                        this.$root.setAlert('error', 'Unable to load route details. Please try again.');
                     }
                 },
+
+                // scroll up btn
+                scrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
             }
         });
     </script>

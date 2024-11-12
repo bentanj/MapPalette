@@ -1,29 +1,41 @@
 @import 'footer/footer_style.css';
 @import 'navbar/navbar_style.css';
+@import 'loading-quotes/loading_quotes_style.css';
+
+/* Define Gradient Variables */
+:root {
+    --primary-gradient: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+    --primary-gradient-hover: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+}
+
 
 /* General Styles */
 body {
-    background-color: #f0f2f5;
+    background-color: var(--background-color);
     margin: 0;
     padding: 0;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Roboto', sans-serif;
+    color: var(--text-color);
 }
 
-/* Sample Header */
+/* Adjust the main content container for fixed navbar */
+#app-container {
+    padding-top: 60px; /* Adjust this value if navbar height changes */
+}
+
 .sample-header {
     position: relative;
     width: 100%;
     height: 400px;
-    background-image: url('resources/route_photos/run.jpg');
+    background-image: url('resources/friends.jpeg');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: fixed;
-    color: white;
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7); /* Added text shadow for readability */
 }
 
 /* Header Overlay */
@@ -34,38 +46,74 @@ body {
     right: 0;
     bottom: 0;
     left: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: #00000080;
 }
 
 /* Header Content */
 .sample-header-section {
-    position: relative;
     z-index: 1;
-    padding: 0 20px;
-    max-width: 800px;
+    text-align: center;
 }
 
 .sample-header-section h1 {
-    font-weight: 700;
     font-size: 3.5rem;
-    margin-bottom: 10px;
-    font-family: 'Open Sans', sans-serif;
 }
 
 .sample-header-section p {
     font-weight: 300;
-    font-size: 1.5rem;
-    font-family: 'Open Sans', sans-serif;
 }
 
-/* Main Content Wrapper */
-.sample-section-wrap {
-    width: 100%;
-    background-color: #fff;
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    color: #fff;
+    border-radius: 25px;
+    padding: 0.5em 1.5em;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background: var(--primary-gradient-hover);
+    color: #fff;
+}
+
+
+.btn-outline-primary {
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+    border-radius: 25px;
+    padding: 0.5em 1.5em;
+    font-size: 1rem;
+    transition: background 0.3s, color 0.3s, transform 0.2s;
+}
+
+.input-group .btn-primary {
+    background-color: #FF8E53 !important; /* Enforce orange color */
+}
+
+
+.btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.input-group .btn-primary {
+    background-color: #FF8E53; /* Set your orange color here */
+    border: none;
+    color: #fff;
+    border-radius: 0 25px 25px 0;
+    transition: background 0.3s;
+}
+
+.input-group .btn-primary:hover {
+    background-color: #FF6B3A; /* A darker orange for hover effect */
+    color: #fff;
 }
 
 .sample-section {
-    width: 100%;
     padding: 40px 20px;
 }
 
@@ -93,22 +141,21 @@ body {
     outline: none;
     box-shadow: none;
 }
-
-/* Friend Cards */
 .friend-card {
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
     height: 100%;
-}
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 
-.friend-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
 }
 
 .friend-card .card-body {
     display: flex;
+    flex-direction: column;
     align-items: center;
 }
 
@@ -117,47 +164,16 @@ body {
     height: 60px;
     border-radius: 50%;
     object-fit: cover;
-}
-
-.friend-card .card-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-}
-
-.friend-card .truncate-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 200px;
-}
-
-.friend-card .follow-btn {
-    width: 120px;
+    margin-bottom: 0.5rem;
 }
 
 .friend-card .btn {
-    border-radius: 25px;
+    width: 100%;
+    max-width: 140px; /* Limit button width */
+    margin: 0.25rem 0; /* Add spacing between buttons */
 }
 
-.friend-card .btn i {
-    margin-right: 5px;
-}
-
-/* Adjustments for Mobile */
-@media (max-width: 576px) {
-    .friend-card .card-body {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .friend-card .follow-btn {
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    .friend-card .btn {
-        width: 100%;
-        margin-bottom: 10px;
-    }
+.friend-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
 }

@@ -7,6 +7,11 @@
 /* loading quote styles */
 @import 'loading-quotes/loading_quotes_style.css';
 
+:root {
+    --primary-gradient: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+    --primary-gradient-hover: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+}
+
 /* General styles */
 body {
     min-height: 100vh;
@@ -297,6 +302,13 @@ body {
     overflow-wrap: break-word;
     word-break: break-word;
     hyphens: auto;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: calc(1.5em * 2 * 1.2);  /* font-size * number of lines * line-height */
+    line-height: 1.2;
 }
 
 .post > header .meta {
@@ -333,8 +345,15 @@ body {
     margin: 0.5rem 0 0 0;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    word-break: break-all;
+    word-break: break-word;
     hyphens: auto;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 7.5em; /* Approximately 5 lines of text */
+    line-height: 1.5em;
 }
 
 /* Action buttons container */
@@ -376,7 +395,7 @@ body {
 }
 
 .modal-header {
-    background: linear-gradient(90deg, #ff7e5f, #feb47b);
+    background: var(--primary-gradient);
     color: #fff;
     display: flex;
     justify-content: space-between;
@@ -387,6 +406,8 @@ body {
 
 .modal-header .modal-title {
     margin: 0;
+    overflow-wrap: break-word; /* Handles long words or strings */
+    word-break: break-word; /* Ensures text breaks in smaller viewports */
 }
 
 .modal-header .modal-author {
@@ -448,6 +469,8 @@ body {
     border-radius: 15px;
     max-width: 100%;
     word-wrap: break-word;
+    overflow-wrap: break-word; /* Handles long words or strings */
+    word-break: break-word; /* Ensures text breaks in smaller viewports */
     margin-bottom: 5px;
 }
 
@@ -482,13 +505,13 @@ body {
 
 /* Primary Button */
 .btn-primary {
-    background: linear-gradient(90deg, #43cea2, #185a9d);
+    background: var(--primary-gradient);
     border: none;
     color: #fff;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(90deg, #185a9d, #43cea2);
+    background: var(--primary-gradient-hover);
     color: #fff;
 }
 
@@ -545,6 +568,37 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     cursor: pointer;
+}
+
+/* scroll up btn */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    background: var(--primary-gradient);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+.back-to-top:hover {
+    background: var(--primary-gradient-hover);
+}
+
+@media (max-width: 576px) {
+    .back-to-top {
+        width: 40px;
+        height: 40px;
+        bottom: 15px;
+        right: 15px;
+    }
 }
 
 /* custom */

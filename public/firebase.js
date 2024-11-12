@@ -102,9 +102,18 @@ signupForm?.addEventListener('submit', async (e) => {
 
 // Login
 const loginForm = document.getElementById('login-form');
+const loginErrorAlert = document.getElementById('loginErrorAlert');
+// const loginErrorList = document.getElementById('loginErrorList');
+const loginButton = document.getElementById('loginButton');
+const loginSpinner = document.getElementById('loginSpinner');
+const loginButtonText = document.getElementById('loginButtonText');
+
 loginForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('email').value;
+  // loginErrorList.innerHTML = ''; // Clear previous errors
+  loginErrorAlert.style.display = 'none';
+
+  const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
 
   try {
@@ -116,6 +125,28 @@ loginForm?.addEventListener('submit', async (e) => {
     alert("Login failed: " + error.message);
   }
 });
+
+// Function to display errors in the login error alert
+function displayLoginErrors(errors) {
+  errors.forEach(error => {
+    const li = document.createElement('li');
+    li.textContent = error;
+    // loginErrorList.appendChild(li);
+  });
+  loginErrorAlert.style.display = 'block';
+  document.querySelector('.login-container').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Function to reset the login button state
+function resetLoginButtonState() {
+  loginSpinner.style.display = 'none';
+  loginButtonText.style.display = 'inline';
+  loginButton.disabled = false;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Helper Functions                              */
+/* -------------------------------------------------------------------------- */
 
 // Helper function to fetch document IDs in a subcollection
 async function fetchSubcollectionIds(userId, subcollection) {

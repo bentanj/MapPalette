@@ -29,13 +29,7 @@
 <body>
     <div id="app">
         <!-- Loading Spinner -->
-        <div id="loading-spinner" class="text-center"
-            style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-3">{{ currentQuote }}</p>
-        </div>
+        <loading-quotes></loading-quotes>
 
         <!-- Main Content, Hidden Initially -->
         <div id="app-container" style="display: none;">
@@ -46,7 +40,7 @@
             <header class="sample-header">
                 <div class="sample-header-section text-center text-white">
                     <h1>Routes</h1>
-                    <p>Discover, share, and engage with creative running routes</p>
+                    <h2>Discover, share, and engage with creative running routes</h2>
                 </div>
             </header>
 
@@ -159,7 +153,15 @@
 
                         <!-- Cards -->
                         <div class="row mt-4">
-                            <route-cards :routes="filteredRoutes"></route-cards>
+                            <template v-if="filteredRoutes.length > 0">
+                                <route-cards :routes="filteredRoutes"></route-cards>
+                            </template>
+                            <template v-else>
+                                <div class="text-center mt-4">
+                                    <p>Sorry! No routes found that matches your search 😢</p>
+                                    <p>Would you like to <a href="./addMaps.html">create</a> one?</p>
+                                </div>
+                            </template>
                         </div>
 
                         <!-- Load More Button -->
@@ -190,41 +192,22 @@
             return {
                 isDropdownOpen: false,
                 filters: {
-                    sortOption: null
+                    sortOption: 'Most Popular'
                 },
                 routes: [],
                 userMap: {},
                 filteredRoutes: [],
                 displayedRoutes: 8,
                 searchQuery: '',
-                isLoading: true,
                 userProfile: {
                     avatar: ''
                 },
-                quotes: [
-                    "Run like there's a fire behind you.",
-                    "One run can change your day, many runs can change your life.",
-                    "The only bad run is the one that didn’t happen.",
-                    "Running is the greatest metaphor for life because you get out of it what you put into it.",
-                    "Pain is temporary, pride is forever.",
-                    "The miracle isn’t that I finished. The miracle is that I had the courage to start.",
-                    "You’re only one run away from a good mood.",
-                    "Run when you can, walk if you have to, crawl if you must; just never give up.",
-                    "Don’t dream of winning, train for it."
-                ],
-                currentQuote: ""
             };
         },
         mounted() {
             const loadingSpinner = document.getElementById('loading-spinner');
             const appContainer = document.getElementById('app-container');
-
-            // Display a random quote initially
-            this.displayRandomQuote();
-
-            // Change the quote every 5 seconds
-            setInterval(this.displayRandomQuote, 5000);
-
+          
             // Check every 100ms if window.currentUser is populated
             const userCheckInterval = setInterval(() => {
                 if (window.currentUser) {
@@ -252,10 +235,6 @@
             }
         },
         methods: {
-            displayRandomQuote() {
-                const randomIndex = Math.floor(Math.random() * this.quotes.length);
-                this.currentQuote = this.quotes[randomIndex];
-            },
             fetchAllPosts(userID) {
                 const loadingSpinner = document.getElementById('loading-spinner');
                 const appContainer = document.getElementById('app-container');
@@ -679,7 +658,7 @@
                 }
 
                 // Generate the shareable link to `homepage.html` with the `postID`
-                const shareUrl = `${window.location.origin}/homepage.html?id=${route.postID}`;
+                const shareUrl = `${window.location.origin}/profile_page.html?id=${route.postID}`;
 
                 // Copy the share URL to the clipboard
                 navigator.clipboard.writeText(shareUrl)
@@ -726,7 +705,7 @@
                             <div>
                                 <h5 class="modal-title" :id="route.modalId + 'Label'">{{ route.title }}</h5>
                                 <h6 class="modal-author text-muted">
-                                    by <a :href="'homepage.html?id=' + route.userID" class="text-decoration-none">{{ route.username }}</a>
+                                    by <a :href="'profile_page.html?id=' + route.userID" class="text-decoration-none">{{ route.username }}</a>
                                 </h6>
                             </div>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -776,7 +755,7 @@
                                 <div v-for="(comment, index) in sortCommentsByDate(route.commentsList)" :key="index" class="mb-3">
                                     <div class="comment-bubble">
                                         <strong>
-                                            <a :href="'homepage.html?id=' + comment.userID" class="text-decoration-none">{{ comment.username }}</a>
+                                            <a :href="'profile_page.html?id=' + comment.userID" class="text-decoration-none">{{ comment.username }}</a>
                                         </strong>
                                         <p>{{ comment.text }}</p>
                                     </div>
@@ -801,6 +780,9 @@
 
 <!-- import footer from footer.js -->
 <script src="footer/footer.js"></script>
+
+<!--loading quotes-->
+<script src="loading-quotes/loading_quotes.js"></script>
 
 <script>
     app.mount('#app')
