@@ -2,6 +2,13 @@
 @import 'navbar/navbar_style.css';
 @import 'loading-quotes/loading_quotes_style.css';
 
+/* Define Gradient Variables */
+:root {
+    --primary-gradient: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+    --primary-gradient-hover: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
+}
+
+
 /* General Styles */
 body {
     background-color: var(--background-color);
@@ -56,23 +63,21 @@ body {
     font-weight: 300;
 }
 
-
-
 .btn-primary {
-    /* background: var(--primary-gradient); */
+    background: var(--primary-gradient);
     border: none;
     color: #fff;
     border-radius: 25px;
     padding: 0.5em 1.5em;
     font-size: 1rem;
-    transition: background 0.3s, transform 0.2s;
+    transition: background 0.3s;
 }
 
 .btn-primary:hover {
     background: var(--primary-gradient-hover);
-    transform: translateY(-2px);
     color: #fff;
 }
+
 
 .btn-outline-primary {
     border: 2px solid var(--primary-color);
