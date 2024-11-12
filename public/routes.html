@@ -201,10 +201,13 @@
                 searchQuery: '',
                 userProfile: {
                     avatar: ''
-                }
+                },
             };
         },
         mounted() {
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const appContainer = document.getElementById('app-container');
+          
             // Check every 100ms if window.currentUser is populated
             const userCheckInterval = setInterval(() => {
                 if (window.currentUser) {
@@ -778,6 +781,7 @@
 <!-- import footer from footer.js -->
 <script src="footer/footer.js"></script>
 
+<!--loading quotes-->
 <script src="loading-quotes/loading_quotes.js"></script>
 
 <script>

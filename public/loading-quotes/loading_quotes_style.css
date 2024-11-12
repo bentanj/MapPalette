@@ -1,43 +1,235 @@
-/* Loading Spinner */
-#loading-spinner {
+/* loading_quotes_style.css */
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    z-index: 9999;
+}
+
+.loading-content {
+    width: 80%;
+    max-width: 600px;
+    display: flex;
     flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+/* Progress Bar and Runner Layout */
+.progress-wrapper {
+    width: 100%;
+    padding: 0 20px;
+    position: relative;
+    height: 90px; /* Increased height to accommodate the runner above */
+}
+
+/* Runner positioned above progress bar */
+.gif-runner {
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    bottom: 20px; /* Position just above the progress bar */
+    left: -50px; /* Start outside the visible area */
+    background-image: url('../resources/running-kid.gif');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: runnerAnimation 3s linear infinite;
+    z-index: 2;
+}
+
+.custom-progress {
+    position: absolute;
+    bottom: 0;
+    left: 20px;
+    right: 20px;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
+    background-size: 200% 100%;
+    animation: gradientMove 2s linear infinite;
+    border-radius: 20px;
+    
+}
+
+/* SVG Runner Container (kept as is)
+.runner-container {
+    width: 100%;
+    height: 60px;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.svg-runner {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FF6B6B"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm4.5 9.5c0 2.5 2 4.5 4.5 4.5s4.5-2 4.5-4.5-2-4.5-4.5-4.5-4.5 2-4.5 4.5zm-9.8-3.6l-6.8-2.9c-.5-.2-1.1 0-1.3.5-.2.5 0 1.1.5 1.3l6.8 2.9c.5.2 1.1 0 1.3-.5.2-.5 0-1.1-.5-1.3z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    animation: svgRunningAnimation 3s linear infinite;
+} */
+
+/* Quote Styling */
+.quote-container {
+    text-align: center;
+    padding: 0 20px;
+    
 }
 
 .flashy-quote {
-    display: inline-block; 
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: #9b59b6; /* Set a default end color to prevent black flash */
+    font-size: 1.2rem;
+    font-weight: 500;
+    text-align: center;
+    opacity: 0;
+    animation: fadeInOut 5s ease-in-out infinite, colorCycle 10s linear infinite;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.flashy-quote:not(:empty) {
-    animation: rotateScaleColor 4s ease-in-out;
+@keyframes colorCycle {
+    0% { color: #185a9d; }    
+    25% { color: #6a4c93; }   /* Dark purple */
+    50% { color: #8d6cab; }   /* Muted lavender */
+    75% { color: #56cfe1; }   /* Bright teal */
+    100% { color: #185a9d; }  /* Loop back to blue */
 }
 
-@keyframes rotateScaleColor {
+/* Animations */
+@keyframes runnerAnimation {
     0% {
-        opacity: 0;
-        transform: scale(0.8) rotate(5deg);
-        color: #3498db;
-    }
-    20% {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-        color: #e74c3c;
-    }
-    80% {
-        opacity: 1;
-        transform: scale(1.05) rotate(-5deg);
-        color: #2ecc71;
+        left: -50px;
     }
     100% {
+        left: calc(100% - 100px);
+    }
+}
+
+@keyframes gradientMove {
+    0% {
+        background-position: 200% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes svgRunningAnimation {
+    0% {
+        left: -40px;
+        transform: translateY(-50%) scaleX(1);
+    }
+    49% {
+        transform: translateY(-50%) scaleX(1);
+    }
+    50% {
+        left: 100%;
+        transform: translateY(-50%) scaleX(1);
+    }
+    51% {
+        left: 100%;
+        transform: translateY(-50%) scaleX(-1);
+    }
+    99% {
+        transform: translateY(-50%) scaleX(-1);
+    }
+    100% {
+        left: -40px;
+        transform: translateY(-50%) scaleX(1);
+    }
+}
+
+@keyframes fadeInOut {
+    0%, 100% {
         opacity: 0;
-        transform: scale(0.8) rotate(5deg);
-        color: #9b59b6;
+        transform: translateY(10px);
+    }
+    20%, 80% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .loading-content {
+        width: 90%;
+        gap: 1.5rem;
+    }
+
+    .gif-runner {
+        width: 100px;  
+        height: 100px;
+    }
+
+    @keyframes runnerAnimation {
+        0% {
+            left: -20px;  
+        }
+        100% {
+            left: calc(100% - 100px);  
+        }
+    }
+
+    .svg-runner {
+        width: 30px;
+        height: 30px;
+    }
+
+    .flashy-quote {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .loading-content {
+        width: 95%;
+        gap: 1rem;
+    }
+
+    .custom-progress {
+        height: 6px;
+    }
+
+    .gif-runner {
+        width: 50px;
+        height: 50px;
+        bottom: 6px;
+    }
+
+    @keyframes runnerAnimation {
+        0% {
+            left: 10px;  
+        }
+        100% {
+            left: calc(100% - 50px);  
+        }
+    }
+
+    .svg-runner {
+        width: 25px;
+        height: 25px;
+    }
+
+    .flashy-quote {
+        font-size: 0.9rem;
     }
 }
