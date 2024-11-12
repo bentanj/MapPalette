@@ -42,7 +42,7 @@
             background-color: #ffffff;
             border-radius: 8px;
             margin-bottom: 1rem;
-            padding: 1.5rem;
+            padding: 1rem;
             transition: transform 0.2s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -53,10 +53,9 @@
         }
 
         .current-user-card {
-            background-color: #ffe6e6; /* Light pink background for visibility */
-            border: 2px solid #FF6B6B !important; /* Pink border to highlight current user */
+            background-color: #ffe6e6;
+            border: 2px solid #FF6B6B !important;
         }
-
 
         .profile-pic {
             width: 50px;
@@ -77,6 +76,9 @@
             border-radius: 4px;
             font-size: 0.875rem;
             font-weight: 500;
+            display: inline-block;
+            min-width: 80px;
+            text-align: center;
         }
 
         .rank-champion { background-color: #01d8dc; color: white; }
@@ -97,15 +99,16 @@
             color: #333;
             font-size: 0.95rem;
             font-weight: bold;
-            padding: 0.5rem 1rem;
-            border-bottom: 1px solid #dee2e6;
+            padding: 0.75rem;
             background-color: #f8f9fa;
             border-radius: 4px;
             margin-bottom: 1rem;
         }
 
-        @import 'footer/footer_style.css';
-        @import 'navbar/navbar_style.css';
+        .no-points {
+            color: #999;
+            font-style: italic;
+        }
 
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
@@ -119,6 +122,69 @@
 
         .player-card:hover.bounce {
             cursor: pointer;
+        }
+
+        .points-container {
+            position: relative;
+            padding: 0 20px;
+        }
+        
+        .points-circle {
+            background-color: rgba(248, 249, 250, 0.7);
+            border-radius: 12px;
+            padding: 12px 24px;
+            display: inline-block;
+            min-width: 120px;
+            backdrop-filter: blur(4px);
+        }
+        
+        .current-user-card .points-circle {
+            background-color: rgba(255, 230, 230, 0.7);
+        }
+
+        @media (max-width: 576px) {
+            .table-header {
+                font-size: 0.85rem;
+                padding: 0.5rem;
+            }
+
+            .player-card {
+                padding: 0.75rem;
+            }
+
+            .profile-pic {
+                width: 40px;
+                height: 40px;
+            }
+
+            .rank-badge {
+                min-width: 70px;
+                font-size: 0.75rem;
+                padding: 0.2rem 0.5rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .fs-5 {
+                font-size: 1.1rem !important;
+            }
+            
+            .points-circle {
+                min-width: 100px;
+                padding: 8px 16px;
+            }
+            
+            .fs-4 {
+                font-size: 1.2rem !important;
+            }
+            
+            .trophy-icon {
+                font-size: 40px !important;
+                margin-right: 10px !important;
+                margin-top: 10px !important;
+            }
         }
     </style>
 </head>
@@ -139,7 +205,7 @@
                                 class="player-card"
                                 :class="{ 'current-user-card bounce': isCurrentUser(user.userID) }"
                                 @mouseenter="triggerConfetti(user.userID, index)">
-                                <div class="d-flex align-items-center mb-3">
+                                <div class="d-flex align-items-center">
                                     <img :src="user.profilePicture" :alt="user.username" class="profile-pic me-3">
                                     <div>
                                         <h5 class="mb-1">{{ user.username }}</h5>
@@ -147,14 +213,14 @@
                                     </div>
                                     <div class="ms-auto">
                                         <i class="fas fa-trophy trophy-icon" 
-                                        :class="{'silver-trophy': index === 1, 'bronze-trophy': index === 2}"
-                                        style="font-size:55px; margin-right: 20px; margin-top: 20px;"></i>
+                                           :class="{'silver-trophy': index === 1, 'bronze-trophy': index === 2}"
+                                           style="font-size:55px; margin-right: 20px; margin-top: 20px;"></i>
                                     </div>
                                 </div>
-                                <div class="stats-container">
-                                    <div>
-                                        <div class="stat-label" style="margin-left:65px;">Points</div>
-                                        <div class="stat-value" style="margin-left:63px;">{{ user.points }}</div>
+                                <div class="text-center mt-4 points-container">
+                                    <div class="points-circle">
+                                        <div class="fw-bold text-muted mb-1">Points</div>
+                                        <div class="fs-4">{{ formatPoints(user.points) }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -163,25 +229,39 @@
                 </div>
 
                 <!-- Leaderboard Table -->
-                <div class="table-header d-flex">
-                    <div style="width: 150px">#</div>
-                    <div style="width: 220px">Player Name</div>
-                    <div style="width: 170px">Points</div>
-                    <div>Rank</div>
+                <div class="table-header">
+                    <div class="row align-items-center">
+                        <div class="col-1 col-sm-2">#</div>
+                        <div class="col-1 col-sm-1"></div><!-- Space for profile photo -->
+                        <div class="col-4 col-sm-3">Player Name</div>
+                        <div class="col-3">Points</div>
+                        <div class="col-3">Rank</div>
+                    </div>
                 </div>
 
                 <template v-for="(user, index) in remainingUsers" :key="user.userID">
-                    <div class="player-card d-flex align-items-center"
+                    <div class="player-card" 
                          :class="{ 'current-user-card': isCurrentUser(user.userID) }">
-                        <div style="width: 77px">{{ index + 4 }}</div>
-                        <div style="width: 288px" class="d-flex align-items-center">
-                            <img :src="user.profilePicture" :alt="user.username" class="profile-pic me-3" 
-                                 @click="goToProfile(user.userID)">
-                            {{ user.username }}
-                        </div>
-                        <div style="width: 163px">{{ user.points }}</div>
-                        <div>
-                            <span :class="'rank-badge rank-' + getRank(index + 3)">{{ getRankDisplay(index + 3) }}</span>
+                        <div class="row align-items-center">
+                            <div class="col-1 col-sm-2">{{ getSortedPosition(index) }}</div>
+                            <div class="col-1 col-sm-1">
+                                <img :src="user.profilePicture" 
+                                     :alt="user.username" 
+                                     class="profile-pic" 
+                                     @click="goToProfile(user.userID)">
+                            </div>
+                            <div class="col-4 col-sm-3">
+                                <span class="d-none d-sm-inline">{{ user.username }}</span>
+                                <span class="d-sm-none text-truncate">{{ user.username }}</span>
+                            </div>
+                            <div class="col-3" :class="{ 'no-points': !hasPoints(user) }">
+                                {{ formatPoints(user.points) }}
+                            </div>
+                            <div class="col-3">
+                                <span :class="'rank-badge rank-' + getRank(getSortedPosition(index) - 1)">
+                                    {{ getRankDisplay(getSortedPosition(index) - 1) }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -204,14 +284,46 @@
                 }
             },
             computed: {
+                sortedUsers() {
+                    return [...this.users].sort((a, b) => {
+                        const pointsA = a.points ?? 0;
+                        const pointsB = b.points ?? 0;
+                        
+                        if (pointsB !== pointsA) {
+                            return pointsB - pointsA;
+                        }
+                        
+                        return a.username.localeCompare(b.username);
+                    });
+                },
                 topPlayers() {
-                    return this.users.slice(0, 3);
+                    return this.sortedUsers
+                        .filter(user => this.hasPoints(user))
+                        .slice(0, 3);
                 },
                 remainingUsers() {
-                    return this.users.slice(3);
+                    const withPoints = this.sortedUsers
+                        .filter(user => this.hasPoints(user))
+                        .slice(3);
+                    
+                    const withoutPoints = this.sortedUsers
+                        .filter(user => !this.hasPoints(user))
+                        .sort((a, b) => a.username.localeCompare(b.username));
+                    
+                    return [...withPoints, ...withoutPoints];
                 }
             },
             methods: {
+                hasPoints(user) {
+                    return user.points != null && user.points > 0;
+                },
+                formatPoints(points) {
+                    return this.hasPoints({ points }) ? points : 'No points yet';
+                },
+                getSortedPosition(index) {
+                    const position = index + 4;
+                    return !this.hasPoints(this.remainingUsers[index]) ? '-' : position;
+                },
                 getRank(index) {
                     if (index === 0) return 'champion';
                     if (index === 1) return 'master';
@@ -239,7 +351,6 @@
                     return window.currentUser && window.currentUser.id === userId;
                 },
                 triggerConfetti(userId, index) {
-                    // Check if current user and in top 3
                     if (this.isCurrentUser(userId) && index < 3) {
                         confetti({
                             particleCount: 100,
@@ -251,20 +362,18 @@
                 async fetchLeaderboardData() {
                     try {
                         const response = await axios.get(`${this.baseURL}/api/challenge/leaderboard`);
-                        this.users = response.data.sort((a, b) => b.points - a.points);
+                        this.users = response.data;
                     } catch (error) {
                         console.error('Error fetching leaderboard data:', error);
                     }
                 }
             },
             async mounted() {
-                // Listen for `userLoaded` event before loading leaderboard
                 window.addEventListener('userLoaded', async () => {
-                    this.currentUser = window.currentUser; // Set local currentUser for use in template
+                    this.currentUser = window.currentUser;
                     await this.fetchLeaderboardData();
                 });
 
-                // Check if currentUser is already loaded (e.g., returning visitor)
                 if (window.currentUser) {
                     this.currentUser = window.currentUser;
                     await this.fetchLeaderboardData();
@@ -274,10 +383,7 @@
     </script>
 
     <script src="navbar/navbar.js"></script>
-
-    <!-- import footer from footer.js -->
     <script src="footer/footer.js"></script>
-
     <script>
         app.mount('#app')
     </script>
