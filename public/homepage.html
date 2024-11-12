@@ -385,14 +385,18 @@
                                 </ul>
                             </div>
                         </div>
-                        <p>by {{ activity.user }}</p>
+                        <p>
+                            by <a :href="'profile_page.html?id=' + activity.userID" class="text-decoration-none">{{ activity.user }}</a>
+                        </p>
                     </div>
                     <div class="meta">
                         <time class="published">{{ activity.date }}</time>
                         <div class="d-flex align-items-center justify-content-end mt-2">
                             <span class="me-2">{{ activity.user }}</span>
-                            <img :src="activity.userImg" alt="Profile" class="rounded-circle" 
-                                style="width: 40px; height: 40px; object-fit: cover;">
+                            <a :href="'profile_page.html?id=' + activity.userID">
+                                <img :src="activity.userImg" alt="Profile" class="rounded-circle" 
+                             style="width: 40px; height: 40px; object-fit: cover;">
+                            </a>
                         </div>
                     </div>
                 </header>
