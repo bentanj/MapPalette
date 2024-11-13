@@ -423,12 +423,7 @@
                         <div class="flex-grow-1">
                             <p v-if="activity.description" class="mb-0">{{ activity.description }}</p>
                         </div>
-                        <div class="d-flex ms-3">
-                            <div class="me-3">
-                                <small class="text-muted">
-                                    <i class="bi bi-geo-alt"></i> {{ activity.location }}
-                                </small>
-                            </div>
+                        <div class="stats d-flex ms-3">
                             <div class="me-3">
                                 <small class="text-muted">
                                     <i class="bi bi-heart"></i> {{ activity.likes || 0 }}
@@ -445,6 +440,11 @@
                                 </small>
                             </div>
                         </div>
+                    </div>
+                    <div class="location me-3">
+                        <small class="text-muted">
+                            <i class="bi bi-geo-alt"></i> {{ activity.location }}
+                        </small>
                     </div>
                 </div>
                 

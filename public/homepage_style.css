@@ -353,8 +353,24 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-height: 7.5em; /* Approximately 5 lines of text */
+    max-height: 7.5em; 
     line-height: 1.5em;
+}
+
+.post .content .location {
+    margin-top: 0.5rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.post .content .stats {
+    margin-left: auto;
 }
 
 /* Action buttons container */
