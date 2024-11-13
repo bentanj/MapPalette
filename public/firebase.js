@@ -219,27 +219,8 @@ async function fetchSubcollectionIds(userId, subcollection) {
 /* -------------------------------------------------------------------------- */
 /*                           Current user as Global                           */
 /* -------------------------------------------------------------------------- */
-// Function to show logged-out notification alert
-function showLoggedOutAlert() {
-  const alertContainer = document.createElement('div');
-  alertContainer.classList.add('alert', 'alert-warning', 'alert-dismissible', 'fade', 'show');
-  alertContainer.role = 'alert';
-  alertContainer.innerHTML = `
-    Logging you out. Come back soon! :D
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  `;
-  document.body.appendChild(alertContainer);
 
-  // Optionally remove alert after some time
-  setTimeout(() => {
-    alertContainer.classList.remove('show');
-    document.body.removeChild(alertContainer);
-    window.location.href = "index.html"; // Redirect to the login page after alert
-  }, 2000); // Adjust the delay as needed to match user expectations
-}
-
-
-// Handle session persistence and set global user data
+// Update the onAuthStateChanged logic to use the single logout alert function
 onAuthStateChanged(auth, async (user) => {
   const allowedPages = ["index.html", "signup.html", "login.html"];
   const currentPage = window.location.pathname.split("/").pop();
@@ -278,9 +259,8 @@ onAuthStateChanged(auth, async (user) => {
     console.log("No user is authenticated.");
     window.currentUser = null;
 
-    // Show alert and redirect if the user is not on an allowed page
-    if (!allowedPages.includes(currentPage)) {
-      showLoggedOutAlert(); // Use the Bootstrap alert for logged-out notification
+    if (!allowedPages.includes(currentPage) && !loggedOutAlertDisplayed) {
+      showLogoutAlert(); // Show logout alert only if not displayed already
     }
   }
 });
@@ -372,9 +352,14 @@ document.getElementById('logout')?.addEventListener('click', async () => {
   }
 });
 
+// Global variable to track if logout alert is already shown
+let loggedOutAlertDisplayed = false;
+
 // Function to show a logout notification alert
 function showLogoutAlert() {
-  console.log("Executing showLogoutAlert"); // Add this to check if the function is called
+  if (loggedOutAlertDisplayed) return; // Prevent multiple alerts
+  loggedOutAlertDisplayed = true;      // Set the flag to indicate alert has been shown
+
   const alertContainer = document.createElement('div');
   alertContainer.classList.add('alert', 'alert-warning', 'alert-dismissible', 'fade', 'show');
   alertContainer.role = 'alert';
@@ -382,11 +367,24 @@ function showLogoutAlert() {
     Signing out... You will be redirected shortly.
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   `;
+
+  // Apply styles to ensure visibility and spacing
+  alertContainer.style.zIndex = "9999";          // Ensure high stacking order
+  alertContainer.style.position = "fixed";       // Position the alert as a fixed overlay
+  alertContainer.style.top = "20px";             // Position it near the top of the screen
+  alertContainer.style.left = "50%";             // Center horizontally
+  alertContainer.style.transform = "translateX(-50%)"; // Center align
+  alertContainer.style.maxWidth = "90%";         // Increase max width
+  alertContainer.style.padding = "20px";         // Add padding for close button spacing
+  alertContainer.style.backgroundColor = "#ffc107"; // Yellow warning background
+  alertContainer.style.boxShadow = "0px 4px 8px rgba(0, 0, 0, 0.1)"; // Subtle shadow for depth
+
   document.body.appendChild(alertContainer);
 
   setTimeout(() => {
     alertContainer.classList.remove('show');
     document.body.removeChild(alertContainer);
+    window.location.href = "index.html"; // Redirect after alert
   }, 2000);
 }
 
