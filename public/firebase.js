@@ -292,14 +292,6 @@ export async function displayUserData() {
   }
 }
 
-
-// Upload profile picture and get URL
-async function uploadProfilePicture(user, file) {
-  const storageRef = ref(storage, `profile_pictures/${user.uid}/${file.name}`);
-  await uploadBytes(storageRef, file);
-  return await getDownloadURL(storageRef);
-}
-
 /* -------------------------------------------------------------------------- */
 /*                                Log out auth                                */
 /* -------------------------------------------------------------------------- */
