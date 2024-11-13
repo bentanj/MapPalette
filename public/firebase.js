@@ -56,7 +56,9 @@ document.getElementById('login-button')?.addEventListener('click', (e) => {
 
 // Handle signup and login form submissions
 
-// Sign Up
+/* -------------------------------------------------------------------------- */
+/*                                   Sign Up                                  */
+/* -------------------------------------------------------------------------- */
 const signupForm = document.getElementById('signupForm');
 signupForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
