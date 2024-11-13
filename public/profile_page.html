@@ -37,7 +37,24 @@
         <div id="app-container" style="display: none;" v-show="!isLoading">
             <!-- Navbar -->
             <nav-bar :user_profile="currentUser"></nav-bar>
-    
+            
+            <div class="alert alert-dismissible fade" 
+                :class="{'alert-warning': alertType === 'error', 'alert-success': alertType === 'success', 'show': showAlert}"
+                :hidden="hidden" 
+                role="alert">
+                <!-- Icons for Error or Success -->
+                <svg v-if="alertType === 'error'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                </svg>
+                <svg v-if="alertType === 'success'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                </svg>
+                <!-- Alert Message -->
+                {{ alertMessage }}
+                <!-- Close Button -->
+                <button type="button" class="btn-close" @click="dismissAlert()"></button>
+            </div>
+
             <!-- Profile Header Section -->
             <div class="main-content-wrapper">
                 <div class="profile-content-container">
@@ -267,11 +284,12 @@
                         // Emit the share event to parent component
                         this.$emit('share', this.activity);
                         
-                        // Notify the user that the link has been copied
-                        alert("Link copied to clipboard!");
+                        // Show success alert
+                        this.$root.setAlert('success', "Link copied to clipboard!");
                     })
                     .catch(err => {
                         console.error("Failed to copy link: ", err);
+                        this.$root.setAlert('error', "Failed to copy link to clipboard");
                     });
             },
             async likePost() {
@@ -552,11 +570,24 @@
                     window.location.href = `addMaps.html?id=${this.activity.id}`;
                 },
                 handleShare() {
-                    // Update API and redirect
-                    const shareUrl = `homepage.html?id=${this.activity.id}`;
-                    this.$emit('share', this.activity); // Emit share event to parent
-                    window.location.href = shareUrl;
-                },
+                    this.modal.hide();
+                    // Generate the share URL
+                    const shareUrl = `${window.location.origin}/homepage.html?id=${this.activity.id}`;
+                    
+                    // Copy the URL to the clipboard
+                    navigator.clipboard.writeText(shareUrl)
+                        .then(() => {
+                            // Emit the share event to parent component
+                            this.$emit('share', this.activity);
+                            
+                            // Show success alert
+                            this.$root.setAlert('success', "Link copied to clipboard!");
+                        })
+                        .catch(err => {
+                            console.error("Failed to copy link: ", err);
+                            this.$root.setAlert('error', "Failed to copy link to clipboard");
+                        });
+                }
             },
 
             template: `
@@ -716,7 +747,12 @@
                     },
                     activities: [],
                     routes: [],
-                    posts: []
+                    posts: [],
+                    showAlert: false,
+                    alertTimeout: null,
+                    hidden: true,
+                    alertType: '',
+                    alertMessage: ''
                 }
             },
             mounted() {
@@ -1102,6 +1138,38 @@
                         top: 0,
                         behavior: 'smooth'
                     });
+                },
+
+                dismissAlert() {
+                    this.showAlert = false;
+                    setTimeout(() => {
+                        this.hidden = true;
+                        this.alertMessage = '';
+                    }, 300);
+                    if (this.alertTimeout) {
+                        clearTimeout(this.alertTimeout);
+                        this.alertTimeout = null;
+                    }
+                },
+
+                setAlert(type, message) {
+                    if (this.alertTimeout) {
+                        clearTimeout(this.alertTimeout);
+                        this.alertTimeout = null;
+                    }
+
+                    this.hidden = false;
+                    this.alertType = type;
+                    this.alertMessage = message;
+
+                    setTimeout(() => {
+                        this.showAlert = true;
+                    }, 10);
+
+                    this.alertTimeout = setTimeout(() => {
+                        this.dismissAlert();
+                        this.alertTimeout = null;
+                    }, 3000);
                 }
             },
             computed: {

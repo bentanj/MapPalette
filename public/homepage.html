@@ -640,6 +640,9 @@
                     window.location.href = `addMaps.html?id=${this.activity.id}`;
                 },
                 handleShare() {
+                    // First, close the modal
+                    this.modal.hide();
+                    
                     // Generate the share URL
                     const shareUrl = `${window.location.origin}/homepage.html?id=${this.activity.id}`;
                     
@@ -652,7 +655,7 @@
                             console.error("Failed to copy link: ", err);
                             this.$root.setAlert('error', "Failed to copy link to clipboard.");
                         });
-                },
+                }
             },
 
             template: `
