@@ -169,15 +169,15 @@ function resetButtonState() {
 // Login
 const loginForm = document.getElementById('login-form');
 const loginErrorAlert = document.getElementById('loginErrorAlert');
-// const loginErrorList = document.getElementById('loginErrorList');
+const loginSuccessAlert = document.getElementById('loginSuccessAlert'); // Add success alert element
 const loginButton = document.getElementById('loginButton');
 const loginSpinner = document.getElementById('loginSpinner');
 const loginButtonText = document.getElementById('loginButtonText');
 
 loginForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  // loginErrorList.innerHTML = ''; // Clear previous errors
   loginErrorAlert.style.display = 'none';
+  loginSuccessAlert.style.display = 'none'; // Hide success alert initially
 
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
@@ -200,7 +200,16 @@ loginForm?.addEventListener('submit', async (e) => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
     startSessionTimeout(); // Start session timeout on login
-    window.location.href = 'homepage.html';
+
+    // Show success alert and scroll to top
+    loginSuccessAlert.style.display = 'block';
+    document.querySelector('.login-container').scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Delay redirection to allow user to see success message
+    setTimeout(() => {
+      window.location.href = 'homepage.html';
+    }, 3000); // Redirect after 3 seconds
+
   } catch (error) {
     console.error('Login error:', error);
     displayLoginErrors([`Login failed: ${error.message}`]);
@@ -346,7 +355,6 @@ document.getElementById('logout')?.addEventListener('click', async () => {
   try {
     await signOut(auth); // Log out the user
     window.currentUser = null; // Clear global user data
-    alert("Sad to see you leave, but love to watch you go (and run)! See you soon!");
     window.location.href = "index.html"; // Redirect to login page
   } catch (error) {
     console.error("Logout failed:", error);
