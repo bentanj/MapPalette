@@ -537,7 +537,20 @@ body {
     overflow: visible;
     border-radius: 8px;
     background: transparent;
-    font-size: 1.1rem;  
+    font-size: 1.1rem;
+}
+
+.button-container {
+    justify-content: space-between;
+    padding-left: 20%;
+    padding-right: 20%;
+}   
+
+@media (max-width: 991px) {
+    .button-container {
+        padding-left: 5%;
+        padding-right: 5%;
+    }
 }
 
 .action-button:hover {
