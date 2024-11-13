@@ -15,8 +15,8 @@
     
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    
-    <!-- Firebase -->
+
+    <!-- import firebase -->
     <script type="module" src="firebase.js"></script>
 
     <!-- Vue.js -->
@@ -267,24 +267,7 @@
                 });
             }
         });
-    </script>
-    
-    <!-- import navbar from navbar.js -->
-    <script src="navbar/navbar.js"></script>
-    
-    <!-- import footer from footer.js -->
-    <script src="footer/footer.js"></script>
 
-    <!--loading quotes-->
-    <script src="loading-quotes/loading_quotes.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Firebase functionality -->
-    <script type="module">
-        import { auth, storage, ref, uploadBytes, getDownloadURL, onAuthStateChanged } from './firebase.js';
-    
-        // Create the Vue app with all functionality
         app.mixin({
             created() {
                 if (window.currentUser) {
@@ -422,8 +405,20 @@
                 }
             }
         });
-    
-        // Mount the app
+        
+    </script>
+
+    <script src="navbar/navbar.js"></script>
+    <script src="footer/footer.js"></script>
+    <script src="loading-quotes/loading_quotes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase functionality -->
+    <script type="module">
+        import { auth, storage, ref, uploadBytes, getDownloadURL, onAuthStateChanged } from './firebase.js';
+    </script>
+
+    <script>
         app.mount('#app');
     </script>
 </body>
