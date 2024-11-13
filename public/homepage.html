@@ -423,12 +423,7 @@
                         <div class="flex-grow-1">
                             <p v-if="activity.description" class="mb-0">{{ activity.description }}</p>
                         </div>
-                        <div class="d-flex ms-3">
-                            <div class="me-3">
-                                <small class="text-muted">
-                                    <i class="bi bi-geo-alt"></i> {{ activity.location }}
-                                </small>
-                            </div>
+                        <div class="stats d-flex ms-3">
                             <div class="me-3">
                                 <small class="text-muted">
                                     <i class="bi bi-heart"></i> {{ activity.likes || 0 }}
@@ -445,6 +440,11 @@
                                 </small>
                             </div>
                         </div>
+                    </div>
+                    <div class="location me-3">
+                        <small class="text-muted">
+                            <i class="bi bi-geo-alt"></i> {{ activity.location }}
+                        </small>
                     </div>
                 </div>
                 
@@ -640,6 +640,9 @@
                     window.location.href = `addMaps.html?id=${this.activity.id}`;
                 },
                 handleShare() {
+                    // First, close the modal
+                    this.modal.hide();
+                    
                     // Generate the share URL
                     const shareUrl = `${window.location.origin}/homepage.html?id=${this.activity.id}`;
                     
@@ -652,7 +655,7 @@
                             console.error("Failed to copy link: ", err);
                             this.$root.setAlert('error', "Failed to copy link to clipboard.");
                         });
-                },
+                }
             },
 
             template: `
@@ -692,7 +695,7 @@
 
                                 <!-- Action Buttons -->
                                 <div class="d-flex border-top border-bottom py-3">
-                                    <div class="d-flex w-100 px-4" style="justify-content: space-between; padding-left: 20% !important; padding-right: 20% !important;">
+                                    <div class="d-flex w-100 button-container">
                                         <button class="btn btn-link p-0 action-button" data-action="like"
                                                 @click="likePost(activity.id)"
                                                 :class="{ 'liked': isLiked }"
@@ -1038,7 +1041,8 @@
                             // Add usernames to comments
                             activity.commentsList = comments.map(comment => ({
                                 ...comment,
-                                username: commentUserMap[comment.userID] || 'Unknown User'
+                                username: commentUserMap[comment.userID] || 'Unknown User',
+                                userID: comment.userID  
                             }));
                         } catch (error) {
                             if (error.response?.status !== 404) {
@@ -1233,7 +1237,8 @@
                                     // Add usernames to comments
                                     activity.commentsList = comments.map(comment => ({
                                         ...comment,
-                                        username: commentUserMap[comment.userID] || 'Unknown User'
+                                        username: commentUserMap[comment.userID] || 'Unknown User',
+                                        userID: comment.userID  
                                     }));
                                 } catch (error) {
                                     if (error.response?.status === 404) {
@@ -1369,6 +1374,7 @@
                             id: post.postID,
                             title: post.title,
                             user: post.username || 'Unknown User',
+                            userID: post.userID,  // Add this line to include the user ID
                             userImg: post.profilePicture || this.userProfile.avatar,
                             date: this.calculateTimeSince(post.createdAt),
                             location: post.waypoints[0].address,
@@ -1414,7 +1420,8 @@
                             // Add usernames to comments
                             activity.commentsList = comments.map(comment => ({
                                 ...comment,
-                                username: commentUserMap[comment.userID] || 'Unknown User'
+                                username: commentUserMap[comment.userID] || 'Unknown User',
+                                userID: comment.userID 
                             }));
                         } catch (error) {
                             if (error.response?.status !== 404) {

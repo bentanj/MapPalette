@@ -67,6 +67,7 @@ const submitButton = document.getElementById('submitButton');
 const spinner = document.getElementById('spinner');
 const buttonText = document.getElementById('buttonText');
 
+// Handle signup form submissions
 signupForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
   
@@ -86,23 +87,8 @@ signupForm?.addEventListener('submit', async (e) => {
 
   let isValid = true;
   
-  // Custom validation checks
-  if (password !== confirmPassword) {
-    const li = document.createElement('li');
-    li.textContent = "Passwords do not match.";
-    errorList.appendChild(li);
-    isValid = false;
-  }
-  
-  // Example email validation (if needed)
-  if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
-    const li = document.createElement('li');
-    li.textContent = "Please enter a valid email address (must contain @ and end with .com)";
-    errorList.appendChild(li);
-    isValid = false;
-  }
-  
-  // If any validation errors, show error alert and exit
+  // Validation checks...
+
   if (!isValid) {
     errorAlert.style.display = 'block';
     document.querySelector('.signup-container').scrollTo({ top: 0, behavior: 'smooth' });
@@ -118,7 +104,11 @@ signupForm?.addEventListener('submit', async (e) => {
     // Sign up user with Firebase Authentication
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    const profilePicURL = profilePicture ? await uploadProfilePicture(user, profilePicture) : '';
+
+    // If a profile picture file is uploaded, upload it, otherwise use default path
+    const profilePicURL = profilePicture 
+      ? await uploadProfilePicture(user, profilePicture) 
+      : '/resources/default-profile.png';
 
     // Save user information to Firestore
     await setDoc(doc(db, `users/${user.uid}`), {
@@ -158,9 +148,6 @@ signupForm?.addEventListener('submit', async (e) => {
     submitButton.disabled = false;
   }
 });
-
-
-
 
 /* -------------------------------------------------------------------------- */
 /*                                    Login                                   */
@@ -232,27 +219,8 @@ async function fetchSubcollectionIds(userId, subcollection) {
 /* -------------------------------------------------------------------------- */
 /*                           Current user as Global                           */
 /* -------------------------------------------------------------------------- */
-// Function to show logged-out notification alert
-function showLoggedOutAlert() {
-  const alertContainer = document.createElement('div');
-  alertContainer.classList.add('alert', 'alert-warning', 'alert-dismissible', 'fade', 'show');
-  alertContainer.role = 'alert';
-  alertContainer.innerHTML = `
-    Logging you out. Come back soon! :D
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  `;
-  document.body.appendChild(alertContainer);
 
-  // Optionally remove alert after some time
-  setTimeout(() => {
-    alertContainer.classList.remove('show');
-    document.body.removeChild(alertContainer);
-    window.location.href = "index.html"; // Redirect to the login page after alert
-  }, 2000); // Adjust the delay as needed to match user expectations
-}
-
-
-// Handle session persistence and set global user data
+// Update the onAuthStateChanged logic to use the single logout alert function
 onAuthStateChanged(auth, async (user) => {
   const allowedPages = ["index.html", "signup.html", "login.html"];
   const currentPage = window.location.pathname.split("/").pop();
@@ -291,9 +259,8 @@ onAuthStateChanged(auth, async (user) => {
     console.log("No user is authenticated.");
     window.currentUser = null;
 
-    // Show alert and redirect if the user is not on an allowed page
-    if (!allowedPages.includes(currentPage)) {
-      showLoggedOutAlert(); // Use the Bootstrap alert for logged-out notification
+    if (!allowedPages.includes(currentPage) && !loggedOutAlertDisplayed) {
+      showLogoutAlert(); // Show logout alert only if not displayed already
     }
   }
 });
@@ -385,23 +352,39 @@ document.getElementById('logout')?.addEventListener('click', async () => {
   }
 });
 
+// Global variable to track if logout alert is already shown
+let loggedOutAlertDisplayed = false;
+
 // Function to show a logout notification alert
 function showLogoutAlert() {
+  if (loggedOutAlertDisplayed) return; // Prevent multiple alerts
+  loggedOutAlertDisplayed = true;      // Set the flag to indicate alert has been shown
+
   const alertContainer = document.createElement('div');
-  alertContainer.classList.add('alert', 'alert-warning', 'alert-dismissible', 'fade', 'show');
+  alertContainer.classList.add('alert', 'alert-warning', 'fade', 'show'); // Default Bootstrap alert
   alertContainer.role = 'alert';
   alertContainer.innerHTML = `
     Signing out... You will be redirected shortly.
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   `;
+
+  // Center the alert with limited width
+  alertContainer.style.zIndex = "9999";            // High stacking order
+  alertContainer.style.position = "fixed";         // Fix alert in viewport
+  alertContainer.style.top = "20px";               // Position near top of screen
+  alertContainer.style.left = "50%";               // Center horizontally
+  alertContainer.style.transform = "translateX(-50%)"; // Center align
+  alertContainer.style.width = "300px";            // Set a fixed width for alert
+  alertContainer.style.maxWidth = "80%";           // Allow it to shrink on smaller screens
+
   document.body.appendChild(alertContainer);
 
-  // Optionally remove alert after some time
   setTimeout(() => {
     alertContainer.classList.remove('show');
     document.body.removeChild(alertContainer);
-  }, 2000); // Match delay with the redirect
+    window.location.href = "index.html"; // Redirect after alert
+  }, 2000);
 }
+
 
 /* -------------------------------------------------------------------------- */
 /*                             Reset Password auth                            */
