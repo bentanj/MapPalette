@@ -5,7 +5,7 @@ app.component('nav-bar', {
     data() {
         return {
             currentPage: '',
-            defaultAvatar: 'resources/download.jpeg'
+            defaultAvatar: 'resources/default-profile.png'
         }
     },
 

@@ -7,6 +7,8 @@
 /* loading quote styles */
 @import 'loading-quotes/loading_quotes_style.css';
 
+
+
 :root {
     --primary-gradient: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD54F);
     --primary-gradient-hover: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
@@ -14,7 +16,6 @@
 
 /* General styles */
 body {
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
     padding-top: 76px;
