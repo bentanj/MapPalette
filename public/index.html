@@ -15,13 +15,13 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
     <link rel="preload" as="image" href="./resources/index/run-background0.jpeg">
-    <link rel="preload" as="image" href="./resources/index/run-background1.jpg">
+    <link rel="preload" as="image" href="./resources/index/run-background1.jpeg">
     <link rel="preload" as="image" href="./resources/index/run-background2.jpg">
-    <link rel="preload" as="image" href="./resources/index/run-background3.jpg">
+    <link rel="preload" as="image" href="./resources/index/run-background3.jpeg">
     <link rel="preload" as="image" href="./resources/index/run-background4.jpeg">
-    <link rel="preload" as="image" href="./resources/index/run-background5.jpg">
+    <link rel="preload" as="image" href="./resources/index/run-background5.jpeg">
     <link rel="preload" as="image" href="./resources/index/run-background6.jpg">
-    <link rel="preload" as="image" href="./resources/index/run-background7.jpg">
+    <link rel="preload" as="image" href="./resources/index/run-background7.jpeg">
     
 
   <style>
@@ -38,6 +38,96 @@
     .fade-in.show {
         opacity: 1;
         transform: translateY(0);
+    }
+
+    /* --------------------------------------------------------------------------------------------------------------------------------------- */
+    /* SCROLL INDICATOR */ 
+
+    .scroll-indicator {
+        position: fixed;
+        bottom: 5vh;
+        left: 10vh;
+        z-index: 100;
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.3s ease, visibility 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        pointer-events: none;
+      }
+      
+      .scroll-indicator.hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+      
+      .scroll-arrow {
+        width: 30px;
+        height: 30px;
+        border: 2px solid white;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+        animation: fadeInOut 2s ease-in-out infinite;
+      }
+      
+      .scroll-arrow i {
+        color: white;
+        font-size: 16px;
+        animation: bounce 2s infinite;
+      }
+      
+      .scroll-text {
+        color: white;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+      }
+      
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(5px);
+        }
+        60% {
+          transform: translateY(3px);
+        }
+      }
+      
+      @keyframes fadeInOut {
+        0% {
+          opacity: 0.4;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.4;
+        }
+      }
+
+
+    /* --------------------------------------------------------------------------------------------------------------------------------------- */
+    /* BACK TO TOP BUTTON */
+
+      .back-to-top {
+        position: fixed;
+        bottom: 5vh !important;  /* Moved up from default position */
+        right: 10vh !important;   /* Moved left from right edge */
+        
+        z-index: 1000;
+    }
+    
+    .back-to-top i {
+        font-size: 20px;
     }
 
 
@@ -83,25 +173,25 @@
         background-image: url('./resources/index/run-background0.jpeg');
     } 
     .hero-carousel-item:nth-child(2) {
-        background-image: url('./resources/index/run-background1.jpg');
+        background-image: url('./resources/index/run-background1.jpeg');
     }
     .hero-carousel-item:nth-child(3) {
         background-image: url('./resources/index/run-background2.jpg');
     } 
     .hero-carousel-item:nth-child(4) {
-        background-image: url('./resources/index/run-background3.jpg');
+        background-image: url('./resources/index/run-background3.jpeg');
     }
     .hero-carousel-item:nth-child(5) {
         background-image: url('./resources/index/run-background4.jpeg');
     } 
     .hero-carousel-item:nth-child(6) {
-        background-image: url('./resources/index/run-background5.jpg');
+        background-image: url('./resources/index/run-background5.jpeg');
     }
     .hero-carousel-item:nth-child(7) {
         background-image: url('./resources/index/run-background6.jpg');
     }
     .hero-carousel-item:nth-child(8) {
-        background-image: url('./resources/index/run-background7.jpg');
+        background-image: url('./resources/index/run-background7.jpeg');
     }
       
     /* base styles for slide content */
@@ -401,7 +491,7 @@
     .slide-7 .hero-title {
         position: absolute;
         left: 15%;
-        top: 30%;
+        top: 33%;
         max-width: 500px;
         transform: translateX(-100vw);
         opacity: 0;
@@ -979,6 +1069,12 @@
 <div id="app">
     <nav-bar></nav-bar>
     <div style="padding-top: 67px">
+        <div class="scroll-indicator">
+            <div class="scroll-arrow">
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <span class="scroll-text">Scroll</span>
+          </div>
         <!-- Hero Section -->
         <div id="heroMainCarousel" class="carousel slide hero-main-carousel" data-bs-ride="carousel" data-bs-interval="4000" data-bs-pause="false">
             <div class="hero-carousel-inner carousel-inner">
@@ -1603,6 +1699,32 @@
             },
         }
     })
+
+    // SCROLL INDICATOR
+    document.addEventListener('DOMContentLoaded', function() {
+        const scrollIndicator = document.querySelector('.scroll-indicator');
+        let isScrolling;
+        
+        window.addEventListener('scroll', function() {
+          // Show/hide based on scroll position
+          if (window.scrollY > 100) {
+            scrollIndicator.classList.add('hidden');
+          } else {
+            scrollIndicator.classList.remove('hidden');
+          }
+          
+          // Clear the timeout throughout the scroll
+          window.clearTimeout(isScrolling);
+          
+          // Set a timeout to run after scrolling ends
+          isScrolling = setTimeout(function() {
+            // If we're at the top, show the indicator again
+            if (window.scrollY <= 100) {
+              scrollIndicator.classList.remove('hidden');
+            }
+          }, 66);
+        }, false);
+      });
 
     // HERO CAROUSEL
     document.addEventListener('DOMContentLoaded', function() {
