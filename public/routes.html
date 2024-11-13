@@ -39,6 +39,24 @@
             <!-- Navbar -->
             <nav-bar :user_profile="userProfile"></nav-bar>
 
+            <!-- Add this after nav-bar component -->
+            <div class="alert alert-dismissible fade" 
+                :class="{'alert-warning': alertType === 'error', 'alert-success': alertType === 'success', 'show': showAlert}"
+                :hidden="hidden" 
+                role="alert">
+                <!-- Icons for Error or Success -->
+                <svg v-if="alertType === 'error'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                </svg>
+                <svg v-if="alertType === 'success'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                </svg>
+                <!-- Alert Message -->
+                {{ alertMessage }}
+                <!-- Close Button -->
+                <button type="button" class="btn-close" @click="dismissAlert()"></button>
+            </div>
+
             <!-- Feed Header -->
             <header class="sample-header">
                 <div class="sample-header-section text-center text-white">
@@ -205,6 +223,11 @@
                 userProfile: {
                     avatar: ''
                 },
+                showAlert: false,
+                alertTimeout: null,
+                hidden: true,
+                alertType: '',
+                alertMessage: ''
             };
         },
         mounted() {
@@ -443,6 +466,37 @@
                 this.applyFilters();
                 // Refocus on the search input
                 this.$refs.searchInput.focus();
+            },
+            dismissAlert() {
+                this.showAlert = false;
+                setTimeout(() => {
+                    this.hidden = true;
+                    this.alertMessage = '';
+                }, 300);
+                if (this.alertTimeout) {
+                    clearTimeout(this.alertTimeout);
+                    this.alertTimeout = null;
+                }
+            },
+
+            setAlert(type, message) {
+                if (this.alertTimeout) {
+                    clearTimeout(this.alertTimeout);
+                    this.alertTimeout = null;
+                }
+
+                this.hidden = false;
+                this.alertType = type;
+                this.alertMessage = message;
+
+                setTimeout(() => {
+                    this.showAlert = true;
+                }, 10);
+
+                this.alertTimeout = setTimeout(() => {
+                    this.dismissAlert();
+                    this.alertTimeout = null;
+                }, 3000);
             }
         }
     });
@@ -654,10 +708,9 @@
 
             // Method for "Share" button to send a PUT request
             shareRoute(route) {
-                const currentUserID = window.currentUser?.id || 'defaultUserID';
-                if (!currentUserID) {
-                    alert('Please log in to share this route.');
-                    return;
+                const modal = bootstrap.Modal.getInstance(document.getElementById(route.modalId));
+                if (modal) {
+                    modal.hide();
                 }
 
                 // Generate the shareable link to `homepage.html` with the `postID`
@@ -666,26 +719,24 @@
                 // Copy the share URL to the clipboard
                 navigator.clipboard.writeText(shareUrl)
                     .then(() => {
-                        alert("Link copied to clipboard!"); // Notify the user
+                        this.$root.setAlert('success', "Link copied to clipboard!"); 
                         console.log("Share URL copied:", shareUrl);
                     })
                     .catch(err => {
                         console.error("Failed to copy share link:", err);
-                        alert("Failed to copy link. Please try again.");
+                        this.$root.setAlert('error', "Failed to copy link to clipboard");
                     });
 
                 // Send a PUT request to increment the share count
                 const apiEndpoint = `https://app-907670644284.us-central1.run.app/api/posts/share?id=${route.postID}`;
-                axios.put(apiEndpoint, { userID: currentUserID })
+                axios.put(apiEndpoint, { userID: window.currentUser?.id || 'defaultUserID' })
                     .then(response => {
                         console.log("Route shared successfully:", response.data);
                     })
                     .catch(error => {
                         if (error.response && error.response.status === 500) {
-                            // If it's a 500 error, log a simple message without a full error log
                             console.log("Route was already shared by the user; skipping increment.");
                         } else {
-                            // Log other unexpected errors
                             console.error("Error updating share count:", error);
                         }
                     });
