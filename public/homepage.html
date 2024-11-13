@@ -1041,7 +1041,8 @@
                             // Add usernames to comments
                             activity.commentsList = comments.map(comment => ({
                                 ...comment,
-                                username: commentUserMap[comment.userID] || 'Unknown User'
+                                username: commentUserMap[comment.userID] || 'Unknown User',
+                                userID: comment.userID  
                             }));
                         } catch (error) {
                             if (error.response?.status !== 404) {
@@ -1236,7 +1237,8 @@
                                     // Add usernames to comments
                                     activity.commentsList = comments.map(comment => ({
                                         ...comment,
-                                        username: commentUserMap[comment.userID] || 'Unknown User'
+                                        username: commentUserMap[comment.userID] || 'Unknown User',
+                                        userID: comment.userID  
                                     }));
                                 } catch (error) {
                                     if (error.response?.status === 404) {
@@ -1372,6 +1374,7 @@
                             id: post.postID,
                             title: post.title,
                             user: post.username || 'Unknown User',
+                            userID: post.userID,  // Add this line to include the user ID
                             userImg: post.profilePicture || this.userProfile.avatar,
                             date: this.calculateTimeSince(post.createdAt),
                             location: post.waypoints[0].address,
@@ -1417,7 +1420,8 @@
                             // Add usernames to comments
                             activity.commentsList = comments.map(comment => ({
                                 ...comment,
-                                username: commentUserMap[comment.userID] || 'Unknown User'
+                                username: commentUserMap[comment.userID] || 'Unknown User',
+                                userID: comment.userID 
                             }));
                         } catch (error) {
                             if (error.response?.status !== 404) {
