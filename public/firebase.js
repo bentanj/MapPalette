@@ -100,7 +100,9 @@ signupForm?.addEventListener('submit', async (e) => {
 });
 
 
-// Login
+/* -------------------------------------------------------------------------- */
+/*                                    Login                                   */
+/* -------------------------------------------------------------------------- */
 const loginForm = document.getElementById('login-form');
 const loginErrorAlert = document.getElementById('loginErrorAlert');
 const loginSuccessAlert = document.getElementById('loginSuccessAlert'); // Add success alert element
