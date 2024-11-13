@@ -1088,27 +1088,33 @@ app.get('/api/challenge/leaderboard', async (req, res) => {
         const userSnap = await userRef.get();
 
         if (!userSnap.exists) {
-          return {
-            userID,
-            points,
-            username: 'Unknown User',
-            profilePicture: 'default-profile-picture-url'
-          };
+          return null; // Exclude users that don't exist
         }
 
-        const { username, profilePicture } = userSnap.data();
+        const userData = userSnap.data();
+
+        // Exclude users with isProfilePrivate set to true
+        if (userData.isProfilePrivate) {
+          return null;
+        }
+
+        // Set default profile picture if none is found
+        const profilePicture = userData.profilePicture || '/resources/default-profile.png';
 
         // Return leaderboard data along with user details
         return {
           userID,
           points,
-          username: username || 'Unknown User',
-          profilePicture: profilePicture || 'default-profile-picture-url'
+          username: userData.username || 'Unknown User',
+          profilePicture: profilePicture,
         };
       })
     );
 
-    return res.status(200).json(leaderboard);
+    // Filter out any null values (for users that are private or don't exist)
+    const filteredLeaderboard = leaderboard.filter(entry => entry !== null);
+
+    return res.status(200).json(filteredLeaderboard);
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
     return res.status(500).json({ message: 'Error fetching leaderboard.' });
