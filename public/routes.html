@@ -658,7 +658,7 @@
                 }
 
                 // Generate the shareable link to `homepage.html` with the `postID`
-                const shareUrl = `${window.location.origin}/profile_page.html?id=${route.postID}`;
+                const shareUrl = `${window.location.origin}/homepage.html?id=${route.postID}`;
 
                 // Copy the share URL to the clipboard
                 navigator.clipboard.writeText(shareUrl)
@@ -719,26 +719,33 @@
                             <p><strong>Distance:</strong> {{ route.distance }} km</p>
                             <p>{{ route.description }}</p>
 
-                            <div class="d-flex justify-content-around border-top border-bottom py-3">
-                                <button 
-                                    class="btn btn-link p-0 action-button" 
-                                    @click="likeRoute(route)" 
-                                    :class="{'text-primary': route.isLiked}">
-                                    <i 
-                                        :class="route.isLiked ? 'fas fa-thumbs-up' : 'far fa-thumbs-up'" 
-                                        class="me-1">
-                                    </i>
-                                    <span>{{ route.isLiked ? 'Liked' : 'Like' }}</span>
-                                </button>
-                                <button class="btn btn-link p-0 action-button" @click="useRoute(route)">
-                                    <i class="fas fa-route me-1"></i>
-                                    <span>Use</span>
-                                </button>
-                                <button class="btn btn-link p-0 action-button" @click="shareRoute(route)">
-                                    <i class="far fa-share-square me-1"></i>
-                                    <span>Share</span>
-                                </button>
-                            </div>
+<!-- Action Buttons -->
+<div class="d-flex justify-content-around border-top border-bottom py-3">
+    <button 
+        class="btn btn-link p-0 action-button" 
+        @click="likeRoute(route)" 
+        :class="{ 'liked': route.isLiked }"
+        data-action="like">
+        <i :class="route.isLiked ? 'fas fa-thumbs-up' : 'far fa-thumbs-up'"></i>
+        <span>{{ route.isLiked ? 'Liked' : 'Like' }}</span>
+    </button>
+    <button 
+        class="btn btn-link p-0 action-button" 
+        @click="useRoute(route)" 
+        data-action="use">
+        <i class="far fa-map me-1"></i>
+        <span>Use</span>
+    </button>
+    <button 
+        class="btn btn-link p-0 action-button" 
+        @click="shareRoute(route)" 
+        data-action="share">
+        <i class="far fa-share-square me-1"></i>
+        <span>Share</span>
+    </button>
+</div>
+
+
                             <br>
 
                             <!-- Comments Section -->
