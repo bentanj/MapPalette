@@ -27,12 +27,90 @@
             padding-top: 80px;
         }
 
+        .title-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
         .page-title {
             color: #333;
-            margin-bottom: 2rem;
-            text-align: center;
             font-size: 2.5rem;
             font-weight: bold;
+            margin: 0;
+        }
+
+        .points-info {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            border: none;
+            color: #6c757d;
+            cursor: help;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .points-info:hover {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .points-tooltip {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 10px);
+            width: 220px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            transform: translateY(10px);
+            z-index: 1000;
+        }
+
+        .points-info:hover .points-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .tooltip-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .points-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .points-list li {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .points-value {
+            font-weight: 600;
+            color: #FF6B6B;
         }
 
         .leaderboard-container {
@@ -127,25 +205,17 @@
             cursor: pointer;
         }
 
-        .points-container {
-            position: relative;
-            padding: 0 20px;
-        }
-        
-        .points-circle {
-            background-color: rgba(248, 249, 250, 0.7);
-            border-radius: 12px;
-            padding: 12px 24px;
-            display: inline-block;
-            min-width: 120px;
-            backdrop-filter: blur(4px);
-        }
-        
-        .current-user-card .points-circle {
-            background-color: rgba(255, 230, 230, 0.7);
-        }
-
         @media (max-width: 576px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .points-info {
+                width: 24px;
+                height: 24px;
+                font-size: 14px;
+            }
+
             .table-header {
                 font-size: 0.85rem;
                 padding: 0.5rem;
@@ -166,27 +236,28 @@
                 padding: 0.2rem 0.5rem;
             }
 
-            .page-title {
-                font-size: 2rem;
-            }
-
-            .fs-5 {
-                font-size: 1.1rem !important;
-            }
-            
-            .points-circle {
-                min-width: 100px;
-                padding: 8px 16px;
-            }
-            
-            .fs-4 {
-                font-size: 1.2rem !important;
-            }
-            
             .trophy-icon {
                 font-size: 40px !important;
                 margin-right: 10px !important;
                 margin-top: 10px !important;
+            }
+
+            .table-header .row,
+            .player-card .row {
+                display: grid;
+                grid-template-columns: 30px 45px 1fr 80px 90px;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .player-card .row > div {
+                min-width: 0;
+            }
+
+            .player-card .row div:nth-child(3) {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         }
     </style>
@@ -197,12 +268,37 @@
         <loading-quotes v-if="isLoading"></loading-quotes>
 
         <div v-show="!isLoading">
-
             <nav-bar :user_profile="currentUser"></nav-bar>
 
             <div class="content-wrapper">
                 <div class="leaderboard-container">
-                    <h1 class="page-title">Leaderboard</h1>
+                    <div class="title-container">
+                        <h1 class="page-title">Leaderboard</h1>
+                        <button class="points-info" aria-label="Points information">
+                            ?
+                            <div class="points-tooltip">
+                                <div class="tooltip-title">How to Earn Points</div>
+                                <ul class="points-list">
+                                    <li>
+                                        <span>Create a post</span>
+                                        <span class="points-value">10 pts</span>
+                                    </li>
+                                    <li>
+                                        <span>Like a post</span>
+                                        <span class="points-value">3 pts</span>
+                                    </li>
+                                    <li>
+                                        <span>Comment on a post</span>
+                                        <span class="points-value">2 pts</span>
+                                    </li>
+                                    <li>
+                                        <span>Share a post</span>
+                                        <span class="points-value">2 pts</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </button>
+                    </div>
                     
                     <!-- Top Players Section -->
                     <div class="row mb-5">
@@ -224,11 +320,9 @@
                                             style="font-size:55px; margin-right: 20px; margin-top: 20px;"></i>
                                         </div>
                                     </div>
-                                    <div class="text-center mt-4 points-container">
-                                        <div class="points-circle">
-                                            <div class="fw-bold text-muted mb-1">Points</div>
-                                            <div class="fs-4">{{ formatPoints(user.points) }}</div>
-                                        </div>
+                                    <div class="text-center mt-4">
+                                        <div class="fw-bold text-muted mb-1">Points</div>
+                                        <div class="fs-4">{{ formatPoints(user.points) }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -239,7 +333,7 @@
                     <div class="table-header">
                         <div class="row align-items-center">
                             <div class="col-1 col-sm-2">#</div>
-                            <div class="col-1 col-sm-1"></div><!-- Space for profile photo -->
+                            <div class="col-1 col-sm-1"></div>
                             <div class="col-4 col-sm-3">Player Name</div>
                             <div class="col-3">Points</div>
                             <div class="col-3">Rank</div>

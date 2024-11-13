@@ -480,6 +480,7 @@
 
 /* --------------------------------------------------------------------------------------------------------------------------------------- */
 /* STEPPER SECTION */
+/* STEPPER SECTION */
 @media (max-width: 576px) {
     /* Stepper Section Container */
     .stepper-section {
@@ -498,25 +499,38 @@
 
     /* Stepper Items */
     .stepper-item {
+        display: flex;
         gap: 1rem;
         padding-bottom: 1.5rem;
+        position: relative;
+        width: 100%;
     }
 
     /* Adjust vertical line for mobile */
     .stepper-item:not(:last-child)::before {
-        left: 12px; /* Adjust based on smaller counter size */
+        content: '';
+        position: absolute;
+        left: 12px;
+        top: 26px; /* Height of the circle */
+        height: calc(100% - 26px); /* Subtract circle height */
+        width: 2px;
+        background: #e0e0e0;
+        z-index: -1;
     }
 
     /* Step Counter Circle */
     .step-counter {
         width: 26px;
         height: 26px;
-        font-size: 0.9rem;
+        flex-shrink: 0;
+        z-index: 1;
     }
 
     /* Step Content */
     .step-content {
-        margin-top: 0;
+        flex: 1;
+        width: calc(100% - 40px); /* Counter width (26px) + gap (14px) */
+        min-width: 0; /* Allow content to shrink below flex basis */
     }
 
     .step-title {
@@ -530,12 +544,24 @@
         margin-bottom: 0.4rem;
     }
 
+    .step-title,
+    .step-description {
+        width: 100%;
+        word-wrap: break-word;
+    }
+
+
     .step-details {
+        display: inline-block;
+        width: calc(100% - 40px); /* Counter width (26px) + gap (14px) */
+        max-width: min-content; /* Forces content-based width */
         padding: 0.75rem;
         font-size: 0.85rem;
         line-height: 1.4;
         background: #f8f9fa;
         border-radius: 6px;
+        word-wrap: break-word;
+        white-space: normal;
     }
 
     /* Container padding adjustments */
@@ -552,7 +578,7 @@
 
     /* Hover effect adjustment for touch devices */
     .stepper-item:hover .step-counter {
-        transform: scale(1.1); /* Slightly reduced scale for mobile */
+        transform: scale(1.1);
         transition: transform 0.2s ease;
     }
 }
