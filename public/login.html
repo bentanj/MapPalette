@@ -207,7 +207,18 @@
           <h5 class="modal-title" id="forgotPasswordModalLabel">Reset Password</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+        
         <div class="modal-body">
+          <!-- Password Reset Alert Container -->
+          <div class="alert-container">
+            <div id="resetSuccessAlert" class="alert alert-success" style="display: none;">
+              Password reset email sent! Please check your inbox.
+            </div>
+            <div id="resetErrorAlert" class="alert alert-danger" style="display: none;">
+              Failed to send password reset email. Please try again.
+            </div>
+          </div>
+        
           <form id="reset-password-form">
             <div class="mb-3">
               <label for="reset-email" class="form-label">Enter your email to reset password:</label>
@@ -216,6 +227,7 @@
             <button type="submit" class="btn btn-primary">Send Reset Link</button>
           </form>
         </div>
+        
       </div>
     </div>
   </div>

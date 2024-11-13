@@ -364,7 +364,24 @@ document.getElementById('logout')?.addEventListener('click', async () => {
     }, 2000); // Adjust delay as needed
   } catch (error) {
     console.error("Logout failed:", error);
-    alert("An error occurred during logout.");
+
+    // Create a Bootstrap alert element for logout error
+    const logoutErrorAlert = document.createElement('div');
+    logoutErrorAlert.classList.add('alert', 'alert-danger', 'alert-dismissible', 'fade', 'show');
+    logoutErrorAlert.role = 'alert';
+    logoutErrorAlert.innerHTML = `
+      <strong>Error!</strong> An error occurred during logout. Please try again.
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    // Append the alert to the body or a specific container on the page
+    document.body.prepend(logoutErrorAlert);
+
+    // Optionally, auto-remove the alert after a delay
+    setTimeout(() => {
+      logoutErrorAlert.classList.remove('show');
+      document.body.removeChild(logoutErrorAlert);
+    }, 5000); // Adjust delay as needed (5 seconds in this case)
   }
 });
 
@@ -392,18 +409,24 @@ function showLogoutAlert() {
 
 // Password reset functionality
 const resetPasswordForm = document.getElementById('reset-password-form');
+const resetSuccessAlert = document.getElementById('resetSuccessAlert');
+const resetErrorAlert = document.getElementById('resetErrorAlert');
+
 resetPasswordForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('reset-email').value;
+  resetSuccessAlert.style.display = 'none';
+  resetErrorAlert.style.display = 'none';
+
+  const email = document.getElementById('reset-email').value.trim();
 
   try {
     await sendPasswordResetEmail(auth, email);
-    alert('Password reset email sent! Please check your inbox.');
-    // Close the modal
-    document.getElementById('forgotPasswordModal').querySelector('.btn-close').click();
+    resetSuccessAlert.style.display = 'block';
+    resetErrorAlert.style.display = 'none';
   } catch (error) {
     console.error('Error sending password reset email:', error);
-    alert("Failed to send password reset email: " + error.message);
+    resetErrorAlert.textContent = "Failed to send password reset email: " + error.message;
+    resetErrorAlert.style.display = 'block';
   }
 });
 
