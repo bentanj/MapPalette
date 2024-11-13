@@ -1131,7 +1131,6 @@
                 updateUserProfile(userData) {
                     this.userProfile = {
                         name: userData.username,
-                        username: `@${userData.username}`,
                         avatar: userData.profilePicture,
                         stats: {
                             routes: userData.postsCreated?.length || 0,
