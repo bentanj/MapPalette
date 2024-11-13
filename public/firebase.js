@@ -233,18 +233,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-document.getElementById('logout')?.addEventListener('click', async () => {
-  try {
-    await signOut(auth); // Log out the user
-    window.currentUser = null; // Clear global user data
-    alert("Sad to see you leave, but love to watch you go (and run)! See you soon!");
-    window.location.href = "index.html"; // Redirect to login page
-  } catch (error) {
-    console.error("Logout failed:", error);
-    alert("An error occurred during logout.");
-  }
-});
-
 // Function to get user data by userID
 async function getCurrentUserObject() {
   return new Promise((resolve, reject) => {
