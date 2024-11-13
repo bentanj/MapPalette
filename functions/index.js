@@ -7,6 +7,7 @@ const { getFirestore, FieldValue } = require('firebase-admin/firestore'); // Mod
 require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const cors = require('cors');
+const { getAuth } = require('firebase-admin/auth'); // Add this to import Firebase Auth
 
 // These are used to store images in our backend later
 const multer = require('multer');
@@ -378,7 +379,6 @@ app.put('/api/posts/like', async (req, res) => {
   }
 });
 
-// UNLIKE a post by ID (only if user previously liked)
 app.put('/api/posts/unlike', async (req, res) => {
   const postID = req.query.id;
   const { userID } = req.body; // User ID should be in the request body
@@ -403,6 +403,13 @@ app.put('/api/posts/unlike', async (req, res) => {
       transaction.update(postRef, {
         likeCount: FieldValue.increment(-1),
       });
+
+      // Deduct points from the post creator
+      const postDoc = await postRef.get();
+      if (postDoc.exists) {
+        const creatorID = postDoc.data().userID;
+        await addPointsToCreator(creatorID, -3); // Deduct points as desired, e.g., -3
+      }
     });
 
     return res.status(200).json({ message: 'Post unliked successfully!' });
@@ -501,6 +508,51 @@ app.put('/api/posts/:postId/comments/:commentId', async (req, res) => {
   } catch (error) {
     console.error('Error updating comment:', error);
     return res.status(500).send(error);
+  }
+});
+
+// Delete a post by ID, remove from user's postsCreated subcollection, and delete all subcollections of the post
+app.delete('/api/posts', async (req, res) => {
+  const postID = req.query.id; // Retrieve ID from query parameter
+
+  if (!postID) {
+    return res.status(400).json({ message: 'Post ID is required.' });
+  }
+
+  try {
+    // Step 1: Retrieve the post document to get the userID
+    const postRef = db.collection('posts').doc(postID);
+    const postSnap = await postRef.get();
+
+    if (!postSnap.exists) {
+      return res.status(404).json({ message: 'Post not found.' });
+    }
+
+    const { userID } = postSnap.data(); // Extract userID from post data
+
+    // Step 2: Delete all subcollections of the post document
+    const subcollections = await postRef.listCollections();
+    const batch = db.batch(); // Use batch for atomic deletions
+
+    for (const subcollection of subcollections) {
+      const docs = await subcollection.get();
+      docs.forEach((doc) => {
+        batch.delete(doc.ref); // Add each document in the subcollection to the batch
+      });
+    }
+    await batch.commit(); // Commit all subcollection deletions
+
+    // Step 3: Delete the post from the main posts collection
+    await postRef.delete();
+
+    // Step 4: Delete the post from the user's postsCreated subcollection
+    const userPostRef = db.collection('users').doc(userID).collection('postsCreated').doc(postID);
+    await userPostRef.delete();
+
+    return res.status(200).json({ message: 'Post deleted from posts collection, user\'s postsCreated subcollection, and all its subcollections successfully!' });
+  } catch (error) {
+    console.error('Error deleting post and subcollections:', error);
+    return res.status(500).json({ message: 'Error deleting post and its subcollections.' });
   }
 });
 
@@ -633,16 +685,11 @@ app.post('/api/follow', async (req, res) => {
         numFollowers: FieldValue.increment(1),
       });
 
-      // Add points to user for following someone else
-      await addPointsToCreator(followUserID, 5); // Adjust points as desired
-
       // Increment numFollowing for the current user
       transaction.update(followingUserDoc, {
         numFollowing: FieldValue.increment(1),
       });
     });
-
-
 
     // Return a success message if the transaction completes without errors
     return res.status(200).json({ message: 'User followed successfully!' });
@@ -975,10 +1022,10 @@ app.put('/api/update/user/username/:userID', async (req, res) => {
 // const upload = multer({ storage });
 
 
-// Update user's profile picture with a URL
+// Update user's profile picture with a URL and delete any existing profile picture in Cloud Storage
 app.put('/api/update/user/profilePicture/:userID', async (req, res) => {
   const { userID } = req.params;
-  const { profilePicture } = req.body; // Only retrieve the profile picture URL
+  const { profilePicture } = req.body; // New profile picture URL
 
   if (!profilePicture) {
     return res.status(400).json({ message: 'Profile picture URL is required.' });
@@ -987,14 +1034,35 @@ app.put('/api/update/user/profilePicture/:userID', async (req, res) => {
   try {
     // Reference the user document in Firestore
     const userRef = db.collection('users').doc(userID);
+    const userSnap = await userRef.get();
 
-    // Update the profile picture field with the new URL
+    if (!userSnap.exists) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Get existing profile picture URL, if any
+    const existingProfilePicture = userSnap.data().profilePicture;
+
+    // Delete the existing profile picture file if a URL is present
+    if (existingProfilePicture && existingProfilePicture !== profilePicture) {
+      const fileName = existingProfilePicture.split('/').pop(); // Extract file name from URL
+      const file = bucket.file(fileName);
+
+      try {
+        await file.delete(); // Delete the file from Cloud Storage
+        console.log('Previous profile picture deleted successfully.');
+      } catch (error) {
+        console.error('Error deleting previous profile picture:', error);
+      }
+    }
+
+    // Update Firestore with the new profile picture URL
     await userRef.update({ profilePicture });
 
-    return res.status(200).json({ message: 'Profile picture URL updated successfully!' });
+    return res.status(200).json({ message: 'Profile picture updated and previous one deleted successfully!' });
   } catch (error) {
-    console.error('Error updating profile picture URL:', error);
-    return res.status(500).json({ message: 'Error updating profile picture URL.' });
+    console.error('Error updating profile picture:', error);
+    return res.status(500).json({ message: 'Error updating profile picture.' });
   }
 });
 
@@ -1100,6 +1168,179 @@ app.put('/api/users/:userID/privacy', async (req, res) => {
   } catch (error) {
       console.error('Error updating privacy settings:', error);
       return res.status(500).json({ message: 'Error updating privacy settings.' });
+  }
+});
+
+//
+// ADMIN ONLY API
+//
+
+// Delete a user and all related data including followers, following, profile picture, and all subcollections of their posts
+app.delete('/api/users/:userID/delete', async (req, res) => {
+  const { userID } = req.params;
+
+  if (!userID) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    const batch = db.batch();
+
+    // Reference to the user's document
+    const userRef = db.collection('users').doc(userID);
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Delete profile picture if it exists
+    const { email: userEmail, profilePicture } = userSnap.data();
+    if (profilePicture) {
+      const fileName = profilePicture.split('/').pop();
+      await bucket.file(fileName).delete();
+    }
+
+    // Retrieve posts created by the user
+    const postsCreatedSnap = await userRef.collection('postsCreated').get();
+    await Promise.all(postsCreatedSnap.docs.map(async (doc) => {
+      const postID = doc.id;
+      const postRef = db.collection('posts').doc(postID);
+
+      // Delete subcollections of each post
+      const subcollections = await postRef.listCollections();
+      for (const subcollection of subcollections) {
+        const docs = await subcollection.get();
+        docs.forEach((subDoc) => batch.delete(subDoc.ref));
+      }
+
+      // Delete post from 'posts' and 'postsCreated' collections
+      batch.delete(postRef);
+      batch.delete(doc.ref);
+    }));
+
+    // Remove followers and following references
+    const followersSnap = await userRef.collection('followers').get();
+    await Promise.all(followersSnap.docs.map(async (followerDoc) => {
+      const followingRef = db.collection('users').doc(followerDoc.id).collection('following').doc(userID);
+      batch.delete(followingRef);
+    }));
+    followersSnap.forEach((doc) => batch.delete(doc.ref));
+    
+    const followingSnap = await userRef.collection('following').get();
+    followingSnap.forEach((doc) => batch.delete(doc.ref));
+
+    // Delete user document
+    batch.delete(userRef);
+
+    // Commit batch deletion
+    await batch.commit();
+
+    // Delete from Firebase Authentication
+    const userRecord = await getAuth().getUserByEmail(userEmail);
+    await getAuth().deleteUser(userRecord.uid);
+
+    return res.status(200).json({ message: 'User and related data deleted successfully!' });
+  } catch (error) {
+    console.error('Error deleting user and related data:', error);
+    return res.status(500).json({ message: 'Error deleting user and related data.' });
+  }
+});
+
+
+
+// Function to recalculate and set numFollowers and numFollowing for each user
+app.put('/api/update/followerFollowingCounts', async (req, res) => {
+  try {
+    const usersSnap = await db.collection('users').get();
+
+    // Loop through each user and update numFollowers and numFollowing
+    await Promise.all(usersSnap.docs.map(async (userDoc) => {
+      const userID = userDoc.id;
+      const userRef = db.collection('users').doc(userID);
+
+      // Get followers and following subcollections count
+      const followersSnap = await userRef.collection('followers').get();
+      const followingSnap = await userRef.collection('following').get();
+
+      const numFollowers = followersSnap.size;
+      const numFollowing = followingSnap.size;
+
+      // Update the user's main document with the new counts
+      await userRef.update({ numFollowers, numFollowing });
+    }));
+
+    return res.status(200).json({ message: 'Follower and following counts updated successfully for all users.' });
+  } catch (error) {
+    console.error('Error updating follower and following counts:', error);
+    return res.status(500).json({ message: 'Error updating follower and following counts.' });
+  }
+});
+
+// Cleanup endpoint for deleting orphan posts and their subcollections
+app.delete('/api/cleanup/orphanPosts', async (req, res) => {
+  try {
+    const usersSnap = await db.collection('users').get();
+    const ownedPostIDs = new Set();
+
+    await Promise.all(usersSnap.docs.map(async (userDoc) => {
+      const postsCreatedSnap = await userDoc.ref.collection('postsCreated').get();
+      postsCreatedSnap.forEach(postDoc => ownedPostIDs.add(postDoc.id));
+    }));
+
+    const postsSnap = await db.collection('posts').get();
+    const batch = db.batch();
+
+    await Promise.all(postsSnap.docs.map(async (postDoc) => {
+      if (!ownedPostIDs.has(postDoc.id)) {
+        const postRef = postDoc.ref;
+
+        // Delete all subcollections of the orphan post
+        const subcollections = await postRef.listCollections();
+        for (const subcollection of subcollections) {
+          const docs = await subcollection.get();
+          docs.forEach((doc) => batch.delete(doc.ref));
+        }
+
+        // Delete the orphan post document itself
+        batch.delete(postRef);
+      }
+    }));
+
+    await batch.commit();
+    return res.status(200).json({ message: 'Orphan posts and their subcollections cleaned up successfully!' });
+  } catch (error) {
+    console.error('Error cleaning up orphan posts:', error);
+    return res.status(500).json({ message: 'Error cleaning up orphan posts.' });
+  }
+});
+
+// Cleanup endpoint to delete leaderboard entries for users who no longer exist
+app.delete('/api/cleanup/leaderboard', async (req, res) => {
+  try {
+    // Step 1: Get all user IDs from the `users` collection
+    const usersSnap = await db.collection('users').get();
+    const existingUserIDs = new Set(usersSnap.docs.map((doc) => doc.id));
+
+    // Step 2: Retrieve all entries from the `leaderboard` collection
+    const leaderboardSnap = await db.collection('leaderboard').get();
+    const batch = db.batch();
+
+    // Step 3: For each leaderboard entry, delete if `userID` is not in `existingUserIDs`
+    leaderboardSnap.forEach((doc) => {
+      const leaderboardUserID = doc.id;
+      if (!existingUserIDs.has(leaderboardUserID)) {
+        batch.delete(doc.ref);
+      }
+    });
+
+    // Step 4: Commit the batch delete operation
+    await batch.commit();
+
+    return res.status(200).json({ message: 'Leaderboard cleaned up successfully!' });
+  } catch (error) {
+    console.error('Error cleaning up leaderboard:', error);
+    return res.status(500).json({ message: 'Error cleaning up leaderboard.' });
   }
 });
 
