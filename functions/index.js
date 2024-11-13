@@ -14,7 +14,6 @@ const multer = require('multer');
 const storage = multer.memoryStorage(); // Store file in memory before uploading to Cloud Storage
 const upload = multer({ storage });
 
-
 // Initialize Firebase Admin SDK
 const serviceAccount = require('./serviceAccountKey.json');
 initializeApp({
@@ -37,9 +36,11 @@ app.use(express.json()); // Parse incoming JSON requests
 //   res.json({ apiKey });
 // });
 
-//
-// HELPER FUNCTIONS
-//
+
+/* -------------------------------------------------------------------------- */
+/*                              HELPER FUNCTIONS                              */
+/* -------------------------------------------------------------------------- */
+
 
 // Helper function to add points to the leaderboard
 async function addPointsToCreator(userID, points) {
@@ -75,10 +76,9 @@ app.get('/hello-world', (req, res) => {
   return res.status(200).send('Hello world!');
 });
 
-// 
-// POSTS CRUD API
-// CRUD operations for route posts
-// 
+/* -------------------------------------------------------------------------- */
+/*                               POSTS CRUD API                               */
+/* -------------------------------------------------------------------------- */
 
 // Create a post with auto-generated ID
 app.post('/api/create/:userID', async (req, res) => {
@@ -223,9 +223,10 @@ app.delete('/api/posts', async (req, res) => {
   }
 });
 
-//
-// POST RETRIEVAL API
-//
+
+ /* -------------------------------------------------------------------------- */
+ /*                             POST RETRIEVAL API                             */
+ /* -------------------------------------------------------------------------- */
 
 // Retrieve all posts from the posts collection and include username and profile picture
 app.get('/api/allposts', async (req, res) => {

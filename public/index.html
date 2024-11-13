@@ -15,13 +15,13 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
     <link rel="preload" as="image" href="./resources/index/run-background0.jpeg">
-    <link rel="preload" as="image" href="./resources/index/run-background1.jpeg">
+    <link rel="preload" as="image" href="./resources/index/run-background1.jpg">
     <link rel="preload" as="image" href="./resources/index/run-background2.jpg">
-    <link rel="preload" as="image" href="./resources/index/run-background3.jpeg">
+    <link rel="preload" as="image" href="./resources/index/run-background3.jpg">
     <link rel="preload" as="image" href="./resources/index/run-background4.jpeg">
-    <link rel="preload" as="image" href="./resources/index/run-background5.jpeg">
+    <link rel="preload" as="image" href="./resources/index/run-background5.jpg">
     <link rel="preload" as="image" href="./resources/index/run-background6.jpg">
-    <link rel="preload" as="image" href="./resources/index/run-background7.jpeg">
+    <link rel="preload" as="image" href="./resources/index/run-background7.jpg">
     
 
   <style>
@@ -65,7 +65,17 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.3);
+        /* Gradient overlay for better text contrast */
+        background: linear-gradient(
+            rgba(0, 0, 0, 0.4),
+            rgba(0, 0, 0, 0.2) 40%,
+            rgba(0, 0, 0, 0.2) 60%,
+            rgba(0, 0, 0, 0.4)
+        );
+    }
+
+    .slide-1::before, .slide-3::before, .slide-5::before, .slide-7::before {
+        background: rgba(0, 0, 0, 0.4);
     }
   
     /* hero carousel background images */
@@ -73,25 +83,25 @@
         background-image: url('./resources/index/run-background0.jpeg');
     } 
     .hero-carousel-item:nth-child(2) {
-        background-image: url('./resources/index/run-background1.jpeg');
+        background-image: url('./resources/index/run-background1.jpg');
     }
     .hero-carousel-item:nth-child(3) {
         background-image: url('./resources/index/run-background2.jpg');
     } 
     .hero-carousel-item:nth-child(4) {
-        background-image: url('./resources/index/run-background3.jpeg');
+        background-image: url('./resources/index/run-background3.jpg');
     }
     .hero-carousel-item:nth-child(5) {
         background-image: url('./resources/index/run-background4.jpeg');
     } 
     .hero-carousel-item:nth-child(6) {
-        background-image: url('./resources/index/run-background5.jpeg');
+        background-image: url('./resources/index/run-background5.jpg');
     }
     .hero-carousel-item:nth-child(7) {
         background-image: url('./resources/index/run-background6.jpg');
     }
     .hero-carousel-item:nth-child(8) {
-        background-image: url('./resources/index/run-background.jpeg');
+        background-image: url('./resources/index/run-background7.jpg');
     }
       
     /* base styles for slide content */
@@ -490,14 +500,23 @@
     .hero-slide-content h1 {
         font-size: 3.5rem;
         margin-bottom: 1.5rem;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        /* Multiple text shadows for better visibility */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6),
+                     -2px -2px 4px rgba(0, 0, 0, 0.6),
+                     2px -2px 4px rgba(0, 0, 0, 0.6),
+                     -2px 2px 4px rgba(0, 0, 0, 0.6);
     }
     
     .hero-slide-content p {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         margin-bottom: 2rem;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        /* Multiple text shadows for better visibility */
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6),
+                     -1px -1px 3px rgba(0, 0, 0, 0.6),
+                     1px -1px 3px rgba(0, 0, 0, 0.6),
+                     -1px 1px 3px rgba(0, 0, 0, 0.6);
     }
+    
 
     .btn {
         padding: 0.75rem 2rem;
@@ -817,16 +836,39 @@
         display: flex;
         gap: 2rem;
         padding-bottom: 2rem;
+        transition: background-color 0.3s ease;
+        border-radius: 8px;
+    }
+    
+    .step-content {
+        margin-top: 3px;
+        /* Add max-width to limit the content width */
+        max-width: 600px; /* or whatever width you prefer */
+    }
+    
+    .step-details {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        color: #495057;
+        /* Add these properties */
+        display: inline-block;
+        max-width: 100%;
     }
     
     .stepper-item:not(:last-child)::before {
         content: '';
         position: absolute;
         left: 15px;
-        top: 40px;
-        bottom: 0;
+        /* Start from the middle of the first circle */
+        top: 32px; /* Full height of the circle */
+        /* Extend to where the next circle begins */
+        height: calc(100% - 32px); /* Subtract circle height to stop at next circle */
         width: 2px;
         background: #e0e0e0;
+        z-index: -1; /* Ensure line stays behind circles */
     }
     
     .step-counter {
@@ -843,9 +885,6 @@
         flex-shrink: 0;
     }
     
-    .step-content {
-        margin-top: 3px;
-    }
     
     .step-title {
         font-size: 1.25rem;
@@ -861,21 +900,16 @@
         margin-bottom: 0.5rem;
     }
     
-    .step-details {
-        background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
-        margin-top: 0.5rem;
-        font-size: 0.9rem;
-        color: #495057;
+    .stepper-item:hover {
+        background-color: rgba(0, 0, 0, 0.03);
     }
-    
+
     .stepper-item:hover .step-counter {
         /* background: linear-gradient(90deg, #185a9d, #43cea2);*/
         background: linear-gradient(135deg, #FFD54F, #FF8E53, #FF6B6B);
         transform: scale(1.2);
         transition: all 0.2s ease;
-    }      
+    }
 
 
     /* --------------------------------------------------------------------------------------------------------------------------------------- */
@@ -1457,41 +1491,41 @@
                             <div class="stepper-item">
                                 <div class="step-counter">2</div>
                                 <div class="step-content">
-                                    <div class="step-title">Design Your Route</div>
+                                    <div class="step-title">Explore Our Community-Made Routes</div>
                                     <div class="step-description">
-                                        Use our intuitive map interface to draw your running route in creative shapes and patterns.
+                                        Discover routes crafted by fellow runners and find inspiration for your next run.
                                     </div>
                                     <div class="step-details">
-                                        Click points on the map to create your route. Our smart algorithm helps you follow roads and paths automatically.
+                                        Browse through creative routes shared by the community and see what others have drawn.
                                     </div>
                                 </div>
                             </div>
-
+                            
                             <div class="stepper-item">
                                 <div class="step-counter">3</div>
                                 <div class="step-content">
-                                    <div class="step-title">Customize Your Experience</div>
+                                    <div class="step-title">Make Your Own Routes!</div>
                                     <div class="step-description">
-                                        Add personal touches to your route with custom markers, descriptions, and difficulty ratings.
+                                        Use our intuitive tools to design your own running route in unique shapes and patterns.
                                     </div>
                                     <div class="step-details">
-                                        Mark interesting spots, add notes about terrain, and set privacy settings for your routes.
+                                        Click on the map to create points, and our smart algorithm will help you trace roads and paths easily.
                                     </div>
                                 </div>
                             </div>
-
+                            
                             <div class="stepper-item">
                                 <div class="step-counter">4</div>
                                 <div class="step-content">
-                                    <div class="step-title">Share and Connect</div>
+                                    <div class="step-title">Connect with Like-Minded Runners</div>
                                     <div class="step-description">
-                                        Share your creative routes with friends or discover routes created by other runners.
+                                        Share your routes, discover new ones, and connect with runners who share your interests.
                                     </div>
                                     <div class="step-details">
-                                        Connect with fellow runners, join challenges, and get inspired by the community's creative routes.
+                                        Challenge each other on the leaderboard, share tips, and get inspired by the community’s creative routes.
                                     </div>
                                 </div>
-                            </div>
+                            </div>                            
                         </div>
                     </div>
                 </div>
@@ -1512,7 +1546,7 @@
                                 <div class="team-carousel-item carousel-item active">
                                     <img src="./resources/index/about_us/bentan.jpg" alt="Ben Tan Kiat" class="d-block w-100 person-image">
                                     <h3 class="person-name">Ben Tan Kiat</h3>
-                                    <p class="person-description">Resident Homepage Artist</p>
+                                    <p class="person-description">Resident Landing Page/Leaderboard Artist</p>
                                 </div>
                                 <div class="team-carousel-item carousel-item">
                                     <img src="./resources/index/about_us/bendan.jpeg" alt="Benjamin Daniel Loh Wayne" class="d-block w-100 person-image">
@@ -1522,17 +1556,17 @@
                                 <div class="team-carousel-item carousel-item">
                                     <img src="./resources/index/about_us/alvin.jpeg" alt="Koh En Wei, Alvin" class="d-block w-100 person-image">
                                     <h3 class="person-name">Koh En Wei, Alvin</h3>
-                                    <p class="person-description">Social Media Influencer</p>
+                                    <p class="person-description">Our Local Modal and Cards Specialist</p>
                                 </div>
                                 <div class="team-carousel-item carousel-item">
                                     <img src="./resources/index/about_us/weishen.png" alt="Lo Wei Shen" class="d-block w-100 person-image">
                                     <h3 class="person-name">Lo Wei Shen</h3>
-                                    <p class="person-description">Accounts Manager (Account..ant?)</p>
+                                    <p class="person-description">Homepage and Accounts Manager (Account...ant?)</p>
                                 </div>
                                 <div class="team-carousel-item carousel-item">
                                     <img src="./resources/index/about_us/zhongyan.png" alt="Tan Zhong Yan" class="d-block w-100 person-image">
                                     <h3 class="person-name">Tan Zhong Yan</h3>
-                                    <p class="person-description">Ingenious Route Drawer</p>
+                                    <p class="person-description">Ingenious Routes Drawer/Google Maps API Expert</p>
                                 </div>
                             </div>
                             <button class="carousel-control-prev" type="button" data-bs-target="#teamCarousel" data-bs-slide="prev">
