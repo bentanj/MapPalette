@@ -24,6 +24,9 @@
     <!-- Firebase -->
     <script type="module" src="firebase.js"></script>
 
+    <link rel="icon" href="resources/mappalettelogo.png">
+
+
     <!-- Vue.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
@@ -100,7 +103,7 @@
                     </div>
 
                     <!-- Other Users Section with Load More -->
-                    <h1 class="text-center mb-4 mt-4">Other Users ({{filteredOtherUsers.length}})</h1>
+                    <h1 class="text-center mb-4 mt-4">Other Users</h1>
                     <div v-if="filteredOtherUsers.length > 0" class="col-md-4 mb-4"
                         v-for="user in filteredOtherUsers.slice(0, displayedOtherUsers)" :key="user.id">
                         <other-user-card :user="user" @follow="followUser" :disabled="disableButtons"></other-user-card>
