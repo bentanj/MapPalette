@@ -361,23 +361,20 @@ function showLogoutAlert() {
   loggedOutAlertDisplayed = true;      // Set the flag to indicate alert has been shown
 
   const alertContainer = document.createElement('div');
-  alertContainer.classList.add('alert', 'alert-warning', 'alert-dismissible', 'fade', 'show');
+  alertContainer.classList.add('alert', 'alert-warning', 'fade', 'show'); // Default Bootstrap alert
   alertContainer.role = 'alert';
   alertContainer.innerHTML = `
     Signing out... You will be redirected shortly.
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   `;
 
-  // Apply styles to ensure visibility and spacing
-  alertContainer.style.zIndex = "9999";          // Ensure high stacking order
-  alertContainer.style.position = "fixed";       // Position the alert as a fixed overlay
-  alertContainer.style.top = "20px";             // Position it near the top of the screen
-  alertContainer.style.left = "50%";             // Center horizontally
+  // Center the alert with limited width
+  alertContainer.style.zIndex = "9999";            // High stacking order
+  alertContainer.style.position = "fixed";         // Fix alert in viewport
+  alertContainer.style.top = "20px";               // Position near top of screen
+  alertContainer.style.left = "50%";               // Center horizontally
   alertContainer.style.transform = "translateX(-50%)"; // Center align
-  alertContainer.style.maxWidth = "90%";         // Increase max width
-  alertContainer.style.padding = "20px";         // Add padding for close button spacing
-  alertContainer.style.backgroundColor = "#ffc107"; // Yellow warning background
-  alertContainer.style.boxShadow = "0px 4px 8px rgba(0, 0, 0, 0.1)"; // Subtle shadow for depth
+  alertContainer.style.width = "300px";            // Set a fixed width for alert
+  alertContainer.style.maxWidth = "80%";           // Allow it to shrink on smaller screens
 
   document.body.appendChild(alertContainer);
 
@@ -387,6 +384,7 @@ function showLogoutAlert() {
     window.location.href = "index.html"; // Redirect after alert
   }, 2000);
 }
+
 
 /* -------------------------------------------------------------------------- */
 /*                             Reset Password auth                            */
