@@ -135,19 +135,20 @@ loginForm?.addEventListener('submit', async (e) => {
 
   } catch (error) {
     console.error('Login error:', error);
-    alert("Login failed: " + error.message);
+    displayLoginErrors();
+    resetLoginButtonState(); // Reset button state after a failed login attempt
   }
 });
 
 // Function to display errors in the login error alert
-function displayLoginErrors(errors) {
-  errors.forEach(error => {
-    const li = document.createElement('li');
-    li.textContent = error;
-    // loginErrorList.appendChild(li);
-  });
+function displayLoginErrors() {
+  // errors.forEach(error => {
+  //   const li = document.createElement('li');
+  //   li.textContent = error;
+  //   // loginErrorList.appendChild(li);
+  // });
   loginErrorAlert.style.display = 'block';
-  document.querySelector('.login-container').scrollTo({ top: 0, behavior: 'smooth' });
+  document.querySelector('.alert-container').scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Function to reset the login button state
