@@ -164,56 +164,75 @@ async function fetchSubcollectionIds(userId, subcollection) {
   return snapshot.docs.map(doc => doc.id); // Returns an array of document IDs
 }
 
+/* -------------------------------------------------------------------------- */
+/*                           Current user as Global                           */
+/* -------------------------------------------------------------------------- */
+// Function to show logged-out notification alert
+function showLoggedOutAlert() {
+  const alertContainer = document.createElement('div');
+  alertContainer.classList.add('alert', 'alert-warning', 'alert-dismissible', 'fade', 'show');
+  alertContainer.role = 'alert';
+  alertContainer.innerHTML = `
+    Logging you out. Come back soon! :D
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  `;
+  document.body.appendChild(alertContainer);
+
+  // Optionally remove alert after some time
+  setTimeout(() => {
+    alertContainer.classList.remove('show');
+    document.body.removeChild(alertContainer);
+    window.location.href = "index.html"; // Redirect to the login page after alert
+  }, 2000); // Adjust the delay as needed to match user expectations
+}
+
+
 // Handle session persistence and set global user data
 onAuthStateChanged(auth, async (user) => {
-  // List of pages where unauthenticated users are allowed
   const allowedPages = ["index.html", "signup.html", "login.html"];
   const currentPage = window.location.pathname.split("/").pop();
 
   if (user) {
-      console.log("User is authenticated with UID:", user.uid);
-      startSessionTimeout(); // Reset session timeout on page load
+    console.log("User is authenticated with UID:", user.uid);
+    startSessionTimeout(); // Reset session timeout on page load
 
-      // Fetch user document and store in global variable
-      try {
-          const userDocRef = doc(db, `users/${user.uid}`);
-          const userDoc = await getDoc(userDocRef);
+    try {
+      const userDocRef = doc(db, `users/${user.uid}`);
+      const userDoc = await getDoc(userDocRef);
 
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            // Fetch subcollection document IDs
-            const postsCreated = await fetchSubcollectionIds(user.uid, 'postsCreated');
-            const followers = await fetchSubcollectionIds(user.uid, 'followers');
-            const following = await fetchSubcollectionIds(user.uid, 'following');
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const postsCreated = await fetchSubcollectionIds(user.uid, 'postsCreated');
+        const followers = await fetchSubcollectionIds(user.uid, 'followers');
+        const following = await fetchSubcollectionIds(user.uid, 'following');
 
-            // Set `window.currentUser` with user data and subcollection IDs
-            window.currentUser = {
-                id: user.uid,
-                ...userDoc.data(),
-                postsCreated: postsCreated || [],
-                followers: followers || [],
-                following: following || [],
-                isProfilePrivate: userData.isProfilePrivate || false,
-                isPostPrivate: userData.isPostPrivate || false,  
-            };
-            window.dispatchEvent(new Event("userLoaded"));
-          } else {
-              console.error("User document does not exist!");
-          }
-      } catch (error) {
-          console.error("Failed to fetch user data:", error);
+        window.currentUser = {
+          id: user.uid,
+          ...userDoc.data(),
+          postsCreated: postsCreated || [],
+          followers: followers || [],
+          following: following || [],
+          isProfilePrivate: userData.isProfilePrivate || false,
+          isPostPrivate: userData.isPostPrivate || false,
+        };
+        window.dispatchEvent(new Event("userLoaded"));
+      } else {
+        console.error("User document does not exist!");
       }
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    }
   } else {
-      console.log("No user is authenticated.");
-      window.currentUser = null;
+    console.log("No user is authenticated.");
+    window.currentUser = null;
 
-      // Only redirect if the current page is not in the allowed list
-      if (!allowedPages.includes(currentPage)) {
-          alert("You are logged out. Redirecting to the login page.");
-          window.location.href = "index.html";
-      }
+    // Show alert and redirect if the user is not on an allowed page
+    if (!allowedPages.includes(currentPage)) {
+      showLoggedOutAlert(); // Use the Bootstrap alert for logged-out notification
+    }
   }
 });
+
 
 // Upload profile picture and get URL
 async function uploadProfilePicture(user, file) {
@@ -287,14 +306,40 @@ async function uploadProfilePicture(user, file) {
 
 document.getElementById('logout')?.addEventListener('click', async () => {
   try {
+    // Display the signing out alert
+    showLogoutAlert();
+
+    // Perform logout
     await signOut(auth); // Log out the user
     window.currentUser = null; // Clear global user data
-    window.location.href = "index.html"; // Redirect to login page
+
+    // Redirect to login page after a delay to show alert
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 2000); // Adjust delay as needed
   } catch (error) {
     console.error("Logout failed:", error);
     alert("An error occurred during logout.");
   }
 });
+
+// Function to show a logout notification alert
+function showLogoutAlert() {
+  const alertContainer = document.createElement('div');
+  alertContainer.classList.add('alert', 'alert-warning', 'alert-dismissible', 'fade', 'show');
+  alertContainer.role = 'alert';
+  alertContainer.innerHTML = `
+    Signing out... You will be redirected shortly.
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  `;
+  document.body.appendChild(alertContainer);
+
+  // Optionally remove alert after some time
+  setTimeout(() => {
+    alertContainer.classList.remove('show');
+    document.body.removeChild(alertContainer);
+  }, 2000); // Match delay with the redirect
+}
 
 /* -------------------------------------------------------------------------- */
 /*                             Reset Password auth                            */
