@@ -1,7 +1,3 @@
-<!-- TODO:
-1. need to implement limit as to how many comments can show on the modal? same at homepage.
--->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,15 +30,15 @@
     <div id="app">
         <!-- Loading Spinner -->
         <loading-quotes v-if="isLoading"></loading-quotes>
-
+    
         <!-- main content-->
         <div id="app-container" style="display: none;" v-show="!isLoading">
             <!-- Navbar -->
             <nav-bar :user_profile="currentUser"></nav-bar>
-
+    
             <!-- Profile Header Section -->
             <div class="main-content-wrapper">
-                <div v-else>
+                <div class="profile-content-container">
                     <div class="profile-header">
                         <div class="cover-photo">
                             <img :src="userProfile.coverPhoto" alt="Cover Photo">
@@ -75,71 +71,70 @@
                                         </button>
                                     </div>
                                 </div>
-                                
                             </div>
                         </div>
                     </div>
-
-                <!-- Main Content -->
-                <div class="container mt-4">
-                    <div class="row">
-                        <!-- Left Sidebar -->
-                        <div class="col-lg-4">
-                            <div class="card mb-4">
-                                <div class="card-body">
-                                    <h5 class="card-title mb-3">About</h5>
-                                    <div class="about-items">
-                                        <div class="about-item">
-                                            <i class="bi bi-geo-alt"></i>
-                                            <span>Lives in {{ userProfile.location }}</span>
+    
+                    <!-- Main Content -->
+                    <div class="container mt-4">
+                        <div class="row">
+                            <!-- Left Sidebar -->
+                            <div class="col-lg-4">
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">About</h5>
+                                        <div class="about-items">
+                                            <div class="about-item">
+                                                <i class="bi bi-geo-alt"></i>
+                                                <span>Lives in {{ userProfile.location }}</span>
+                                            </div>
+                                            <div class="about-item">
+                                                <i class="bi bi-calendar3"></i>
+                                                <span>Birthday {{ userProfile.BirthdayDate }}</span>
+                                            </div>
                                         </div>
-                                        <div class="about-item">
-                                            <i class="bi bi-calendar3"></i>
-                                            <span>Birthday {{ userProfile.BirthdayDate }}</span>
+                                    </div>
+                                </div>
+    
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">Stats</h5>
+                                        <div class="stats-grid">
+                                            <div class="stat-item">
+                                                <h3>{{ userProfile.stats.routes }}</h3>
+                                                <span>Routes</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <h3>{{ userProfile.stats.following }}</h3>
+                                                <span>Following</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <h3>{{ userProfile.stats.followers }}</h3>
+                                                <span>Followers</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <h3>{{ userProfile.stats.totalDistance }}km</h3>
+                                                <span>Total Distance</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="card mb-4">
-                                <div class="card-body">
-                                    <h5 class="card-title mb-3">Stats</h5>
-                                    <div class="stats-grid">
-                                        <div class="stat-item">
-                                            <h3>{{ userProfile.stats.routes }}</h3>
-                                            <span>Routes</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <h3>{{ userProfile.stats.following }}</h3>
-                                            <span>Following</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <h3>{{ userProfile.stats.followers }}</h3>
-                                            <span>Followers</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <h3>{{ userProfile.stats.totalDistance }}km</h3>
-                                            <span>Total Distance</span>
-                                        </div>
+    
+                            <!-- Main Content Area -->
+                            <div class="col-lg-8">
+                                <!-- Profile Navigation -->
+                                <div class="profile-nav mb-4">
+                                    <div class="nav nav-tabs">
+                                        <button class="nav-link" 
+                                                :class="{ 'active': currentTab === 'activities' }"
+                                                @click="currentTab = 'activities'">Activities</button>
+                                        <button class="nav-link" 
+                                                :class="{ 'active': currentTab === 'routes' }"
+                                                @click="currentTab = 'routes'">Routes</button>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Main Content Area -->
-                        <div class="col-lg-8">
-                            <!-- Profile Navigation -->
-                            <div class="profile-nav mb-4">
-                                <div class="nav nav-tabs">
-                                    <button class="nav-link" 
-                                            :class="{ 'active': currentTab === 'activities' }"
-                                            @click="currentTab = 'activities'">Activities</button>
-                                    <button class="nav-link" 
-                                            :class="{ 'active': currentTab === 'routes' }"
-                                            @click="currentTab = 'routes'">Routes</button>
-                                </div>
-                            </div>
-
+    
                                 <!-- Activities Tab -->
                                 <div v-if="currentTab === 'activities'" id="activity-feed">
                                     <div v-if="activities.length === 0 && !isLoading" class="text-center py-4">
@@ -165,11 +160,16 @@
                                         @open-modal="openActivityModal">
                                     </activity-card>
                                 </div>
-
-                                <!-- Routes Tab -->
+                                <!-- Inside the Main Content Area under the "Routes Tab" -->
                                 <div v-if="currentTab === 'routes'">
                                     <div v-if="routes.length === 0 && !isLoading" class="text-center py-4">
-                                        <div class="card shadow-sm">
+                                        <div v-if="!isCurrentUserProfile" class="card shadow-sm">
+                                            <div class="card-body">
+                                                <h5 class="mb-3">No Routes Yet</h5>
+                                                <p class="text-muted">This user has not created any routes yet.</p>
+                                            </div>
+                                        </div>
+                                        <div v-else class="card shadow-sm">
                                             <div class="card-body">
                                                 <h5 class="mb-3">No Routes Yet</h5>
                                                 <p class="text-muted">Start creating your running routes!</p>
@@ -199,14 +199,16 @@
                         </div>
                     </div>
                 </div>
-        
+            </div>
+    
+            <!-- Comment Modal -->
             <comment-modal
                 v-if="selectedActivity"
                 :activity="selectedActivity"
                 @close="selectedActivity = null"
                 @like="likeActivity">
             </comment-modal>
-
+    
             <!-- scroll up btn -->
             <button @click="scrollToTop" class="btn back-to-top">
                 <i class="fas fa-chevron-up"></i>
@@ -563,7 +565,9 @@
                             <div class="modal-header d-flex justify-content-between align-items-start">
                                 <div>
                                     <h5 class="modal-title">{{ activity.title }}</h5>
-                                    <h6 class="modal-author text-muted">by {{ activity.user }}</h6>
+                                    <h6 class="modal-author text-muted">
+                                        by <a :href="'profile_page.html?id=' + activity.userID" class="text-decoration-none">{{ activity.user }}</a>
+                                    </h6>
                                 </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
@@ -641,7 +645,7 @@
                                     <div v-if="comments && comments.length > 0">
                                         <div v-for="comment in displayedComments" :key="comment.id" class="mb-3">
                                             <div class="comment-bubble">
-                                                <strong>{{ comment.username }}</strong>
+                                                <strong><a :href="'profile_page.html?id=' + comment.userID" class="text-decoration-none">{{ comment.username }}</a></strong>
                                                 <p>{{ comment.text }}</p>
                                             </div>
                                             <div class="comment-time text-muted">
@@ -688,7 +692,7 @@
                         id: '',
                         username: '',
                         profilePicture: '',
-                        avatar: 'resources/default-profile-picture.jpg', // Initialize with default image
+                        avatar: ''
                         // Other properties if needed
                     },
                     currentUserId: '',
@@ -720,7 +724,7 @@
                         clearInterval(checkUser);
                         this.currentUser = window.currentUser;
                         this.currentUserId = this.currentUser.id;
-                        this.currentUser.avatar = this.currentUser.profilePicture || 'resources/default-profile-picture.jpg';
+                        this.currentUser.avatar = this.currentUser.profilePicture
 
                         // Call the async initialization method
                         this.initializeApp();
@@ -740,11 +744,11 @@
                 },
                 async loadUserProfile(userId) {
                     try {
-                        // Load specific user's profile and posts
+                        // Load specific user's profile
                         const response = await axios.get(`${this.API_ENDPOINT}/api/${userId}`);
                         this.userProfile = {
                             name: response.data.username,
-                            avatar: response.data.profilePicture || 'default-profile-picture.jpg',
+                            avatar: response.data.profilePicture,
                             coverPhoto: 'resources/coverphoto_profile.jpg',
                             bio: response.data.bio || '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
                             location: response.data.location || 'Singapore',
@@ -756,20 +760,24 @@
                                 totalDistance: 0
                             }
                         };
+
+                        // Attempt to load user's posts
                         const postsResponse = await axios.get(`${this.API_ENDPOINT}/api/users/${userId}/posts`);
-                        this.posts = postsResponse.data;
+                        this.posts = postsResponse.data || []; // Handle empty response by setting an empty array
                         const totalDistance = this.posts.reduce(
                             (sum, post) => sum + (parseFloat(post.distance) || 0),
                             0
                         );
                         this.userProfile.stats.totalDistance = parseFloat(totalDistance.toFixed(1));
-
-                        // Process activities and routes
-                        await this.processActivitiesAndRoutes();
+                        
+                        // Process activities and routes if posts exist
+                        if (this.posts.length > 0) {
+                            await this.processActivitiesAndRoutes();
+                        }
                     } catch (error) {
                         console.error("Error loading profile:", error);
-                        // If there's an error, load current user's profile
-                        await this.loadCurrentUserProfile();
+                        // Show error message if any issue in loading the profile or posts
+                        this.userProfile.bio = "This user has no posts available.";
                     } finally {
                         this.isLoading = false;
                         this.checkFollowing();
@@ -990,7 +998,7 @@
                 updateUserProfile(userData) {
                     this.userProfile = {
                         name: userData.username,
-                        avatar: userData.profilePicture || 'resources/download.jpeg',
+                        avatar: userData.profilePicture,
                         // Hardcoded elements
                         coverPhoto: 'resources/coverphoto_profile.jpg',
                         bio: '🏃‍♂️ Running enthusiast | Exploring Singapore one route at a time',
@@ -1087,10 +1095,16 @@
                         alert('Failed to update like. Please try again.');
                     }
                 },
+                // scroll up btn
+                scrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
             },
             computed: {
                 isCurrentUserProfile() {
-                    // If profileUserID is null or matches currentUserId, it's the current user's profile
                     return !profileUserID || profileUserID === this.currentUserId;
                 }
             },

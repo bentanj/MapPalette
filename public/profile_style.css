@@ -1,15 +1,35 @@
 /* Profile Header Styles */
 .main-content-wrapper {
     flex: 1;
-    padding-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 76px); 
+    padding-bottom: 0; 
 }
 
+/* Container for all profile content */
+.profile-content-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Profile header section */
 .profile-header {
-    background: white;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    padding-top: 76px; 
-    position: relative;
+    flex-shrink: 0; 
+}
+
+/* Main container adjustments */
+.container.mt-4 {
+    flex: 1;
+    margin-bottom: 3rem;
+}
+
+/* Ensure app container takes full height */
+#app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .cover-photo {
