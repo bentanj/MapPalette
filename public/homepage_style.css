@@ -531,11 +531,12 @@ body {
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    padding: 10px 20px;
+    padding: 12px 24px;
     position: relative;
     overflow: visible;
     border-radius: 8px;
     background: transparent;
+    font-size: 1.1rem;  
 }
 
 .action-button:hover {
