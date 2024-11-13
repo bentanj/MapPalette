@@ -60,46 +60,106 @@ document.getElementById('login-button')?.addEventListener('click', (e) => {
 /*                                   Sign Up                                  */
 /* -------------------------------------------------------------------------- */
 const signupForm = document.getElementById('signupForm');
+const errorAlert = document.getElementById('errorAlert');
+const errorList = document.getElementById('errorList');
+const successAlert = document.getElementById('successAlert');
+const submitButton = document.getElementById('submitButton');
+const spinner = document.getElementById('spinner');
+const buttonText = document.getElementById('buttonText');
+
 signupForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('email').value;
-  const username = document.getElementById('username').value;
+  
+  // Clear previous errors and reset alert displays
+  errorList.innerHTML = '';
+  errorAlert.style.display = 'none';
+  successAlert.style.display = 'none';
+  
+  // Validate form fields
+  const email = document.getElementById('email').value.trim();
+  const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
   const birthday = document.getElementById('birthday').value;
   const gender = document.getElementById('gender').value;
   const profilePicture = document.getElementById('profilePicture').files[0];
 
+  let isValid = true;
+  
+  // Custom validation checks
   if (password !== confirmPassword) {
-    alert("Passwords do not match.");
+    const li = document.createElement('li');
+    li.textContent = "Passwords do not match.";
+    errorList.appendChild(li);
+    isValid = false;
+  }
+  
+  // Example email validation (if needed)
+  if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+    const li = document.createElement('li');
+    li.textContent = "Please enter a valid email address (must contain @ and end with .com)";
+    errorList.appendChild(li);
+    isValid = false;
+  }
+  
+  // If any validation errors, show error alert and exit
+  if (!isValid) {
+    errorAlert.style.display = 'block';
+    document.querySelector('.signup-container').scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
 
+  // Display spinner and disable button during async operation
+  spinner.style.display = 'inline-block';
+  buttonText.style.display = 'none';
+  submitButton.disabled = true;
+
   try {
+    // Sign up user with Firebase Authentication
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     const profilePicURL = profilePicture ? await uploadProfilePicture(user, profilePicture) : '';
 
-    // Create user document with attributes and initialize subcollections
+    // Save user information to Firestore
     await setDoc(doc(db, `users/${user.uid}`), {
       email,
       username,
       birthday,
       gender,
       profilePicture: profilePicURL,
-      numFollowers: 0,  // Initialize numFollowers to 0
-      numFollowing: 0,   // Initialize numFollowing to 0
-      isProfilePrivate: false, // Default privacy setting
-      isPostPrivate: false     // Default post privacy setting
+      numFollowers: 0,
+      numFollowing: 0,
+      isProfilePrivate: false,
+      isPostPrivate: false
     });
+
     startSessionTimeout(); // Start session timeout on signup
-    alert("You've signed up successfully! Welcome to MapPalette :)");
-    window.location.href = 'homepage.html';
+
+    // Show success alert
+    successAlert.style.display = 'block';
+    document.querySelector('.signup-container').scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Redirect to homepage after delay
+    setTimeout(() => {
+      window.location.href = 'homepage.html';
+    }, 3000);
+
   } catch (error) {
     console.error('Signup error:', error);
-    alert("Signup failed: " + error.message);
+    const li = document.createElement('li');
+    li.textContent = `Signup failed: ${error.message}`;
+    errorList.appendChild(li);
+    errorAlert.style.display = 'block';
+    document.querySelector('.signup-container').scrollTo({ top: 0, behavior: 'smooth' });
+  } finally {
+    // Reset button and spinner state after completion
+    spinner.style.display = 'none';
+    buttonText.style.display = 'inline';
+    submitButton.disabled = false;
   }
 });
+
+
 
 
 /* -------------------------------------------------------------------------- */
