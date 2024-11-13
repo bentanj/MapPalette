@@ -67,6 +67,7 @@ const submitButton = document.getElementById('submitButton');
 const spinner = document.getElementById('spinner');
 const buttonText = document.getElementById('buttonText');
 
+// Handle signup form submissions
 signupForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
   
@@ -86,23 +87,8 @@ signupForm?.addEventListener('submit', async (e) => {
 
   let isValid = true;
   
-  // Custom validation checks
-  if (password !== confirmPassword) {
-    const li = document.createElement('li');
-    li.textContent = "Passwords do not match.";
-    errorList.appendChild(li);
-    isValid = false;
-  }
-  
-  // Example email validation (if needed)
-  if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
-    const li = document.createElement('li');
-    li.textContent = "Please enter a valid email address (must contain @ and end with .com)";
-    errorList.appendChild(li);
-    isValid = false;
-  }
-  
-  // If any validation errors, show error alert and exit
+  // Validation checks...
+
   if (!isValid) {
     errorAlert.style.display = 'block';
     document.querySelector('.signup-container').scrollTo({ top: 0, behavior: 'smooth' });
@@ -118,7 +104,11 @@ signupForm?.addEventListener('submit', async (e) => {
     // Sign up user with Firebase Authentication
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    const profilePicURL = profilePicture ? await uploadProfilePicture(user, profilePicture) : '';
+
+    // If a profile picture file is uploaded, upload it, otherwise use default path
+    const profilePicURL = profilePicture 
+      ? await uploadProfilePicture(user, profilePicture) 
+      : '/resources/default-profile.png';
 
     // Save user information to Firestore
     await setDoc(doc(db, `users/${user.uid}`), {
@@ -158,9 +148,6 @@ signupForm?.addEventListener('submit', async (e) => {
     submitButton.disabled = false;
   }
 });
-
-
-
 
 /* -------------------------------------------------------------------------- */
 /*                                    Login                                   */
@@ -387,6 +374,7 @@ document.getElementById('logout')?.addEventListener('click', async () => {
 
 // Function to show a logout notification alert
 function showLogoutAlert() {
+  console.log("Executing showLogoutAlert"); // Add this to check if the function is called
   const alertContainer = document.createElement('div');
   alertContainer.classList.add('alert', 'alert-warning', 'alert-dismissible', 'fade', 'show');
   alertContainer.role = 'alert';
@@ -396,11 +384,10 @@ function showLogoutAlert() {
   `;
   document.body.appendChild(alertContainer);
 
-  // Optionally remove alert after some time
   setTimeout(() => {
     alertContainer.classList.remove('show');
     document.body.removeChild(alertContainer);
-  }, 2000); // Match delay with the redirect
+  }, 2000);
 }
 
 /* -------------------------------------------------------------------------- */
