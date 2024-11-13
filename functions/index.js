@@ -1344,6 +1344,41 @@ app.delete('/api/cleanup/leaderboard', async (req, res) => {
   }
 });
 
+// Cleanup endpoint to remove comments by users that no longer exist
+app.delete('/api/cleanup/orphanComments', async (req, res) => {
+  try {
+    // Step 1: Get all user IDs from the `users` collection
+    const usersSnap = await db.collection('users').get();
+    const existingUserIDs = new Set(usersSnap.docs.map(doc => doc.id));
+
+    // Step 2: Retrieve all posts and iterate over each post to check its comments
+    const postsSnap = await db.collection('posts').get();
+    const batch = db.batch();
+
+    await Promise.all(postsSnap.docs.map(async postDoc => {
+      const commentsSnap = await postDoc.ref.collection('comments').get();
+      
+      commentsSnap.forEach(commentDoc => {
+        const commentUserID = commentDoc.data().userID;
+
+        // If the user ID in the comment does not exist in the `users` collection, mark it for deletion
+        if (!existingUserIDs.has(commentUserID)) {
+          batch.delete(commentDoc.ref);
+        }
+      });
+    }));
+
+    // Step 3: Commit the batch delete operation
+    await batch.commit();
+
+    return res.status(200).json({ message: 'Orphan comments cleaned up successfully!' });
+  } catch (error) {
+    console.error('Error cleaning up orphan comments:', error);
+    return res.status(500).json({ message: 'Error cleaning up orphan comments.' });
+  }
+});
+
+
 // // FUNCTION TO RESET LEADERBOARD
 // exports.resetLeaderboard = onSchedule('59 23 * * 0', async (context) => {
 //   try {
