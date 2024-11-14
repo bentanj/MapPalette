@@ -60,23 +60,25 @@ document.getElementById('login-button')?.addEventListener('click', (e) => {
 /*                                   Sign Up                                  */
 /* -------------------------------------------------------------------------- */
 const signupForm = document.getElementById('signupForm');
-const errorAlert = document.getElementById('errorAlert');
-const errorList = document.getElementById('errorList');
-const successAlert = document.getElementById('successAlert');
+
 const submitButton = document.getElementById('submitButton');
 const spinner = document.getElementById('spinner');
 const buttonText = document.getElementById('buttonText');
 
-// Handle signup form submissions
+
+// Elements for Firebase error handling
+const firebaseErrorAlert = document.getElementById('firebaseErrorAlert');
+const firebaseErrorList = document.getElementById('firebaseErrorList');
+
+// Signup form submission handler in firebase.js
 signupForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  
-  // Clear any previous Firebase error messages
-  errorList.innerHTML = '';
-  errorAlert.style.display = 'none';
+
+  // Clear Firebase-specific error messages
+  firebaseErrorList.innerHTML = '';
+  firebaseErrorAlert.style.display = 'none';
   successAlert.style.display = 'none';
-  
-  // Validate form fields
+
   const email = document.getElementById('email').value.trim();
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
@@ -87,44 +89,27 @@ signupForm?.addEventListener('submit', async (e) => {
 
   let isValid = true;
 
-  // Check that passwords match
-  if (password !== confirmPassword) {
-    isValid = false;
-    // console.error("Passwords do not match.");
-  }
+  // Form-level validation checks
+  if (password !== confirmPassword) isValid = false;
+  if (!birthday || isNaN(new Date(birthday).getTime())) isValid = false;
+  if (gender === "Select your gender") isValid = false;
 
-  // Check that birthdate is not empty and valid
-  if (!birthday || isNaN(new Date(birthday).getTime())) {
-    isValid = false;
-    // console.error("Invalid birthdate.");
-  }
+  if (!isValid) return; // Stop if validation fails
 
-  // Check that gender is selected (not default)
-  if (gender === "Select your gender") {
-    isValid = false;
-    // console.error("Gender not selected.");
-  }
-
-  if (!isValid) {
-    return; // Stop if validation fails
-  }
-
-  // Display spinner and disable button during async operation
+  // Show spinner and disable button during async operation
   spinner.style.display = 'inline-block';
   buttonText.style.display = 'none';
   submitButton.disabled = true;
 
   try {
-    // Sign up user with Firebase Authentication
+    // Firebase signup attempt
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // If a profile picture file is uploaded, upload it, otherwise use default path
-    const profilePicURL = profilePicture 
-      ? await uploadProfilePicture(user, profilePicture) 
+    const profilePicURL = profilePicture
+      ? await uploadProfilePicture(user, profilePicture)
       : '/resources/default-profile.png';
 
-    // Save user information to Firestore
     await setDoc(doc(db, `users/${user.uid}`), {
       email,
       username,
@@ -134,30 +119,28 @@ signupForm?.addEventListener('submit', async (e) => {
       numFollowers: 0,
       numFollowing: 0,
       isProfilePrivate: false,
-      isPostPrivate: false
+      isPostPrivate: false,
     });
 
-    startSessionTimeout(); // Start session timeout on signup
+    startSessionTimeout();
 
-    // Show success alert
+    // Display success message and redirect
     successAlert.style.display = 'block';
     document.querySelector('.signup-container').scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Redirect to homepage after delay
     setTimeout(() => {
       window.location.href = 'homepage.html';
     }, 3000);
 
   } catch (error) {
+    // Display Firebase-specific error in the new alert
     console.error('Firebase signup error:', error);
-    // Display the error in the sign-up container alert div
     const li = document.createElement('li');
     li.textContent = `Signup failed: ${error.message}`;
-    errorList.appendChild(li);
-    errorAlert.style.display = 'block';
+    firebaseErrorList.appendChild(li);
+    firebaseErrorAlert.style.display = 'block';
     document.querySelector('.signup-container').scrollTo({ top: 0, behavior: 'smooth' });
   } finally {
-    // Reset button and spinner state after completion
     spinner.style.display = 'none';
     buttonText.style.display = 'inline';
     submitButton.disabled = false;

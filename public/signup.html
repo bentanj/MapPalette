@@ -250,15 +250,21 @@
               </a>
             <!-- <h1 class="signup-title">Join Us!</h1> -->
 
-            <!-- Alert Container -->
+            <!-- Existing Error Alert for Field Validation -->
             <div class="alert-container">
-              <!-- Error Alert -->
               <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorAlert">
                   <strong>Sorry! You are unable to sign in because:</strong>
                   <ul class="alert-list" id="errorList"></ul>
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
               </div>
-          
+
+              <!-- New Firebase Error Alert -->
+              <div class="alert alert-warning alert-dismissible fade show" role="alert" id="firebaseErrorAlert" style="display: none;">
+                  <strong>Firebase Error:</strong>
+                  <ul class="alert-list" id="firebaseErrorList"></ul>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+
               <!-- Success Alert -->
               <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert" style="display: none;">
                   <strong>Signup successful!</strong> You have successfully signed up. Redirecting you to the homepage...
@@ -549,6 +555,7 @@
             if (!value) {
                 error.isValid = false;
                 error.message = `${field.previousElementSibling.textContent.replace('*', '')} is required`;
+                console.log(`Validation error for ${field.id}: ${error.message}`)
                 return error;
             }
     
@@ -577,6 +584,7 @@
         }
     
         function showErrors(errors) {
+            console.log('Errors:', errors);
             errorList.innerHTML = ''; // Clear previous errors
             
             errors.forEach(error => {
@@ -584,7 +592,7 @@
                 li.textContent = error;
                 errorList.appendChild(li);
             });
-            
+            console.log('Updated errorList innerHTML:', errorList.innerHTML);
             errorAlert.style.display = 'block';
             
             // Scroll to top of container to show error
