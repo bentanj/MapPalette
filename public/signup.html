@@ -438,191 +438,209 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-    // Profile picture upload handling
-    const profileUpload = document.getElementById('profileUpload');
-    const profileInput = document.getElementById('profilePicture');
-    const profilePreview = document.getElementById('profilePreview');
-    const uploadText = document.querySelector('.upload-text');
-    const form = document.getElementById('signupForm');
-    const submitButton = document.getElementById('submitButton');
-    const spinner = document.getElementById('spinner');
-    const buttonText = document.getElementById('buttonText');
-    const errorAlert = document.getElementById('errorAlert');
-    const errorList = document.getElementById('errorList');
-
-    // Profile Upload Functionality
-    profileUpload.addEventListener('click', () => profileInput.click());
-    profileUpload.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        profileUpload.style.borderColor = '#FF6B6B';
-    });
-    profileUpload.addEventListener('dragleave', () => profileUpload.style.borderColor = '#ccc');
-    // Update the drop event listener
-    profileUpload.addEventListener('drop', async (e) => {
-        e.preventDefault();
+        // Profile picture upload handling
+        const profileUpload = document.getElementById('profileUpload');
+        const profileInput = document.getElementById('profilePicture');
+        const profilePreview = document.getElementById('profilePreview');
+        const uploadText = document.querySelector('.upload-text');
+        const form = document.getElementById('signupForm');
+        const submitButton = document.getElementById('submitButton');
+        const spinner = document.getElementById('spinner');
+        const buttonText = document.getElementById('buttonText');
+        const errorAlert = document.getElementById('errorAlert');
+        const errorList = document.getElementById('errorList');
+    
+        // Profile Upload Functionality
+        profileUpload.addEventListener('click', () => profileInput.click());
+        profileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            profileUpload.style.borderColor = '#FF6B6B';
+        });
+        profileUpload.addEventListener('dragleave', () => profileUpload.style.borderColor = '#ccc');
         
-        if (e.dataTransfer.files.length > 0) {
-            // If it's a real file, handle normally
-            handleProfileUpload(e.dataTransfer.files[0]);
-        } else if (e.dataTransfer.items.length > 0) {
-            const item = e.dataTransfer.items[0];
-            if (item.kind === 'string' && item.type === 'text/uri-list') {
-                item.getAsString(async (url) => {
-                    try {
-                        // Fetch the image from the URL
-                        const response = await fetch(url);
-                        const blob = await response.blob();
-                        
-                        // Convert blob to a File
-                        const file = new File([blob], "downloaded-image.jpg", { type: blob.type });
-                        handleProfileUpload(file); // Process the file as needed
-                    } catch (error) {
-                        console.error("Error fetching image:", error);
-                        alert("Unable to retrieve image from URL.");
-                    }
-                });
+        // Update the drop event listener
+        profileUpload.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            
+            if (e.dataTransfer.files.length > 0) {
+                // If it's a real file, handle normally
+                handleProfileUpload(e.dataTransfer.files[0]);
+            } else if (e.dataTransfer.items.length > 0) {
+                const item = e.dataTransfer.items[0];
+                if (item.kind === 'string' && item.type === 'text/uri-list') {
+                    item.getAsString(async (url) => {
+                        try {
+                            // Fetch the image from the URL
+                            const response = await fetch(url);
+                            const blob = await response.blob();
+                            
+                            // Convert blob to a File
+                            const file = new File([blob], "downloaded-image.jpg", { type: blob.type });
+                            handleProfileUpload(file); // Process the file as needed
+                        } catch (error) {
+                            console.error("Error fetching image:", error);
+                            alert("Unable to retrieve image from URL.");
+                        }
+                    });
+                }
+            }
+        });
+    
+        profileInput.addEventListener('change', () => handleProfileUpload(profileInput.files[0]));
+    
+        // Updated handleProfileUpload function to accept static image formats and log file details
+        function handleProfileUpload(file) {
+            // Log file details for debugging
+            console.log("File name:", file.name);
+            console.log("File type:", file.type);
+    
+            // List of accepted image MIME types
+            const acceptedImageTypes = [
+                'image/jpeg',
+                'image/png',
+                'image/jpg',
+                'image/bmp',
+                'image/webp',
+                'image/tiff'
+            ];
+    
+            // List of accepted image extensions as a fallback check
+            const acceptedExtensions = ['.jpeg', '.jpg', '.png', '.bmp', '.webp', '.tiff'];
+    
+            // Check if the file type is an accepted MIME type or if the file extension matches
+            const isAcceptedType = file && (acceptedImageTypes.includes(file.type) ||
+                                            acceptedExtensions.some(ext => file.name.toLowerCase().endsWith(ext)));
+    
+            if (isAcceptedType) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    profilePreview.src = e.target.result;
+                    profilePreview.style.display = 'block';
+                    uploadText.style.display = 'none';
+    
+                    // Programmatically assign the file to the input
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    profileInput.files = dataTransfer.files; // Assign the file to the input field
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please select a valid static image file (JPG, JPEG, PNG, BMP, WEBP, or TIFF).');
             }
         }
-    });
-
-    profileInput.addEventListener('change', () => handleProfileUpload(profileInput.files[0]));
-
-    // Updated handleProfileUpload function to accept static image formats and log file details
-    function handleProfileUpload(file) {
-        // Log file details for debugging
-        console.log("File name:", file.name);
-        console.log("File type:", file.type);
-
-        // List of accepted image MIME types
-        const acceptedImageTypes = [
-            'image/jpeg',
-            'image/png',
-            'image/jpg',
-            'image/bmp',
-            'image/webp',
-            'image/tiff'
-        ];
-
-        // List of accepted image extensions as a fallback check
-        const acceptedExtensions = ['.jpeg', '.jpg', '.png', '.bmp', '.webp', '.tiff'];
-
-        // Check if the file type is an accepted MIME type or if the file extension matches
-        const isAcceptedType = file && (acceptedImageTypes.includes(file.type) ||
-                                        acceptedExtensions.some(ext => file.name.toLowerCase().endsWith(ext)));
-
-        if (isAcceptedType) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                profilePreview.src = e.target.result;
-                profilePreview.style.display = 'block';
-                uploadText.style.display = 'none';
-
-                // Programmatically assign the file to the input
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                profileInput.files = dataTransfer.files; // Assign the file to the input field
+    
+        // Helper Functions for Validation
+        function validateEmail(email) {
+            return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+        }
+    
+        function validatePassword(password) {
+            return password.length >= 8 && /[A-Z]/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        }
+    
+        function validateField(field) {
+            const error = {
+                isValid: true,
+                message: ''
             };
-            reader.readAsDataURL(file);
-        } else {
-            alert('Please select a valid static image file (JPG, JPEG, PNG, BMP, WEBP, or TIFF).');
-        }
-    }
-
-    // Helper Functions for Validation
-    function validateEmail(email) {
-        return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
-    }
-
-    function validatePassword(password) {
-        return password.length >= 8 && /[A-Z]/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    }
-
-    function validateField(field) {
-        const error = {
-            isValid: true,
-            message: null
-        };
-
-        switch (field.id) {
-            case 'email':
-                if (!validateEmail(field.value.trim())) {
-                    error.isValid = false;
-                    error.message = 'Please enter a valid email address (must contain @ and end with .com)';
-                }
-                break;
-            case 'password':
-                if (!validatePassword(field.value)) {
-                    error.isValid = false;
-                    error.message = 'Password must be at least 8 characters, contain 1 uppercase letter and 1 special character';
-                }
-                break;
-            case 'confirmPassword':
-                if (field.value !== document.getElementById('password').value) {
-                    error.isValid = false;
-                    error.message = 'Passwords do not match';
-                }
-                break;
-            case 'username':
-            case 'birthday':
-            case 'gender':
-                if (!field.value.trim()) {
-                    error.isValid = false;
-                    error.message = `${field.previousElementSibling.textContent} is required`;
-                }
-                break;
-        }
-
-        field.classList.toggle('is-invalid', !error.isValid);
-        return error;
-    }
-
-    // Form Event Listener for Blur and Input
-    form.querySelectorAll('input, select').forEach(field => {
-        field.addEventListener('blur', () => {
-            const validation = validateField(field);
-            errorAlert.style.display = validation.isValid ? 'none' : 'block';
-        });
-
-        field.addEventListener('input', () => field.classList.remove('is-invalid'));
-    });
-
-    // Form Submit Event
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        errorList.innerHTML = ''; // Clear previous errors
-        errorAlert.style.display = 'none';
-
-        let isValid = true;
-
-        // Validate all fields
-        form.querySelectorAll('input, select').forEach(field => {
-            const validation = validateField(field);
-            if (!validation.isValid) {
-                isValid = false;
-                const li = document.createElement('li');
-                li.textContent = validation.message;
-                errorList.appendChild(li);
+    
+            const value = field.value.trim();
+            
+            if (!value) {
+                error.isValid = false;
+                error.message = `${field.previousElementSibling.textContent.replace('*', '')} is required`;
+                return error;
             }
-        });
-
-        if (!isValid) {
+    
+            switch (field.id) {
+                case 'email':
+                    if (!validateEmail(value)) {
+                        error.isValid = false;
+                        error.message = 'Please enter a valid email address (must contain @ and end with .com)';
+                    }
+                    break;
+                case 'password':
+                    if (!validatePassword(value)) {
+                        error.isValid = false;
+                        error.message = 'Password must be at least 8 characters, contain 1 uppercase letter and 1 special character';
+                    }
+                    break;
+                case 'confirmPassword':
+                    if (value !== document.getElementById('password').value) {
+                        error.isValid = false;
+                        error.message = 'Passwords do not match';
+                    }
+                    break;
+            }
+    
+            return error;
+        }
+    
+        function showErrors(errors) {
+            errorList.innerHTML = ''; // Clear previous errors
+            
+            errors.forEach(error => {
+                const li = document.createElement('li');
+                li.textContent = error;
+                errorList.appendChild(li);
+            });
+            
             errorAlert.style.display = 'block';
+            
+            // Scroll to top of container to show error
             document.querySelector('.signup-container').scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
-            return; // Prevent form submission due to validation errors
         }
-
-        // Show Spinner and Disable Button
-        spinner.style.display = 'inline-block';
-        buttonText.style.display = 'none';
-        submitButton.disabled = true;
-
-        // Allow Firebase's submit handler in firebase.js to take over
-    });
-
-</script>
+    
+        // Form Event Listener for Input Fields
+        form.querySelectorAll('input, select').forEach(field => {
+            field.addEventListener('blur', () => {
+                const validation = validateField(field);
+                field.classList.toggle('is-invalid', !validation.isValid);
+                if (!validation.isValid) {
+                    field.nextElementSibling.textContent = validation.message;
+                }
+            });
+    
+            field.addEventListener('input', () => {
+                field.classList.remove('is-invalid');
+                errorAlert.style.display = 'none';
+            });
+        });
+    
+        // Form Submit Event
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errors = [];
+            let isValid = true;
+    
+            // Validate all fields
+            form.querySelectorAll('input, select').forEach(field => {
+                const validation = validateField(field);
+                field.classList.toggle('is-invalid', !validation.isValid);
+                
+                if (!validation.isValid) {
+                    isValid = false;
+                    errors.push(validation.message);
+                }
+            });
+    
+            if (!isValid) {
+                showErrors(errors);
+                return;
+            }
+    
+            // If valid, show spinner and disable button
+            spinner.style.display = 'inline-block';
+            buttonText.style.display = 'none';
+            submitButton.disabled = true;
+    
+            // Allow Firebase's submit handler to take over
+        });
+    </script>
     <script type="module" src="firebase.js"></script>
 </body>
 </html>
