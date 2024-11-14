@@ -172,11 +172,11 @@
 
         .player-card:hover {
             transform: translateX(5px);
-            background-color: #f8f9fa;
+            background-color: #f8f9fa !important;
         }
 
         .current-user-card {
-            background-color: #ffe6e6;
+            background-color: #ffe6e6 !important;
             border: 2px solid #FF6B6B !important;
         }
 
@@ -302,6 +302,77 @@
                 white-space: nowrap;
             }
         }
+
+        .podium-container {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(200px, 300px));
+            gap: 2rem;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 3rem auto;
+            padding: 0 1rem;
+        }
+        
+        .podium-position {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .podium-second { order: 1; }
+        .podium-first { order: 2; }
+        .podium-third { order: 3; }
+        
+        .player-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .podium-first .player-card { height: 310px; }
+        .podium-second .player-card { height: 270px; }
+        .podium-third .player-card { height: 250px; }
+        
+        .player-info {
+            flex-grow: 1;
+        }
+        
+        .points-section {
+            border-top: 1px solid #eee;
+            margin-top: auto;
+            padding-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            height: 80px; /* Fixed height for alignment */
+        }
+        
+        .trophy-icon {
+            font-size: 2rem;
+        }
+        
+        .gold-trophy { color: #FFD700; }
+        .silver-trophy { color: #C0C0C0; }
+        .bronze-trophy { color: #CD7F32; }
+        
+        .points-data {
+            text-align: left;
+        }
+        
+        .points-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .points-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FF6B6B;
+        }
+        
     </style>
 </head>
 
@@ -343,34 +414,29 @@
                     </div>
                     
                     <!-- Top Players Section -->
-                    <div class="row mb-5">
+                    <div class="podium-container">
                         <template v-for="(user, index) in topPlayers" :key="user.userID">
-                            <div class="col-md-4">
-                                <div 
-                                    class="player-card"
-                                    :class="{ 'current-user-card bounce': isCurrentUser(user.userID) }"
-                                    @mouseenter="triggerConfetti(user.userID, index)">
-                                    <div class="d-flex align-items-center">
-                                        <img :src="user.profilePicture" :alt="user.username" class="profile-pic me-3">
-                                        <div>
-                                            <h5 class="mb-1">{{ user.username }}</h5>
-                                            <span :class="'rank-badge rank-' + getRank(index)">{{ getRankDisplay(index) }}</span>
-                                        </div>
-                                        <div class="ms-auto">
-                                            <i class="fas fa-trophy trophy-icon" 
-                                            :class="{'silver-trophy': index === 1, 'bronze-trophy': index === 2}"
-                                            style="font-size:55px; margin-right: 20px; margin-top: 20px;"></i>
-                                        </div>
-                                    </div>
-                                    <div class="text-center mt-4">
-                                        <div class="fw-bold text-muted mb-1">Points</div>
-                                        <div class="fs-4">{{ formatPoints(user.points) }}</div>
-                                    </div>
+                          <div :class="['podium-position', `podium-${index === 0 ? 'first' : index === 1 ? 'second' : 'third'}`]">
+                            <div class="player-card text-center">
+                              <div class="player-info">
+                                <img :src="user.profilePicture" :alt="user.username" class="profile-pic mb-2"  @click="goToProfile(user.userID)"/>
+                                <h5 class="mb-1">{{ user.username }}</h5>
+                                <span :class="'rank-badge rank-' + getRank(index)">{{ getRankDisplay(index) }}</span>
+                              </div>
+                              <div class="points-section">
+                                <i class="fas fa-trophy trophy-icon" 
+                                  :class="{ 'gold-trophy': index === 0, 'silver-trophy': index === 1, 'bronze-trophy': index === 2 }"></i>
+                                <div class="points-data">
+                                  <div class="points-label">Points</div>
+                                  <div class="points-number">{{ formatPoints(user.points) }}</div>
                                 </div>
+                              </div>
                             </div>
+                          </div>
                         </template>
-                    </div>
-
+                      </div>
+                      
+                    
                     <!-- Leaderboard Table -->
                     <div class="table-header">
                         <div class="row align-items-center">
