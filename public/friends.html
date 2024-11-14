@@ -163,12 +163,12 @@
             // Filters friends and other users based on the search query
             filteredFriends() {
                 return this.friends.filter(friend =>
-                    friend.username.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    friend && friend.username && friend.username.toLowerCase().includes((this.searchQuery || '').toLowerCase())
                 );
             },
             filteredOtherUsers() {
                 return this.otherUsers.filter(user =>
-                    user.username.toLowerCase().includes(this.searchQuery.toLowerCase()) && (!user.isProfilePrivate || user.isFollowing)
+                    user && user.username && user.username.toLowerCase().includes((this.searchQuery || '').toLowerCase()) && (!user.isProfilePrivate || user.isFollowing)
                 );
             }
         },
