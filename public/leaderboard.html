@@ -428,8 +428,8 @@
                     currentUser: {
                         id: '',
                         username: '',
-                        avatar: 'resources/default-profile-picture.jpg',
-                        profilePicture: 'resources/default-profile-picture.jpg'
+                        avatar: 'resources/default-profile.png',
+                        profilePicture: 'resources/default-profile.png'
                     }
                 }
             },
@@ -522,8 +522,8 @@
                 const initUser = (user) => {
                     this.currentUser = {
                         ...user,
-                        avatar: user.profilePicture || 'resources/default-profile-picture.jpg',
-                        profilePicture: user.profilePicture || 'resources/default-profile-picture.jpg'
+                        avatar: user.profilePicture || 'resources/default-profile.png',
+                        profilePicture: user.profilePicture || 'resources/default-profile.png'
                     };
                 };
 
