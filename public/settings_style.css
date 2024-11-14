@@ -11,6 +11,10 @@
     margin-bottom: 2rem;
 }
 
+#app{
+    min-height: 50vh;
+}
+
 #file-preview-wrapper {
     display: flex;
     justify-content: center;
