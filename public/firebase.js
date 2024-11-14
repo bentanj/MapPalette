@@ -90,19 +90,19 @@ signupForm?.addEventListener('submit', async (e) => {
   // Check that passwords match
   if (password !== confirmPassword) {
     isValid = false;
-    console.error("Passwords do not match.");
+    // console.error("Passwords do not match.");
   }
 
   // Check that birthdate is not empty and valid
   if (!birthday || isNaN(new Date(birthday).getTime())) {
     isValid = false;
-    console.error("Invalid birthdate.");
+    // console.error("Invalid birthdate.");
   }
 
   // Check that gender is selected (not default)
   if (gender === "Select your gender") {
     isValid = false;
-    console.error("Gender not selected.");
+    // console.error("Gender not selected.");
   }
 
   if (!isValid) {
