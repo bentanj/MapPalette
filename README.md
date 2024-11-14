@@ -58,3 +58,6 @@ KNOWN BUGS/USER ISSUES:
 
 2) LONG LOAD TIMES
    Loading bar hides this? The reason it takes awhile to pull all our data is due to the amount of attributes and subcollections each object has. (for users and posts)
+
+3) BOUNTYRUSH NOT ACTUALLY INCORPORATED INTO BACK-END
+   Bountyrush is supposedly a faster way to make backend API calls. However by the time we found out, was 2 days to submission. Bountyrush API syntax completely different from normal firebase, so I could have imeplemented it, but no time to test, too risky.
