@@ -16,10 +16,7 @@ app.component('site-footer', {
                 </div>
 
                 <div class="col-lg-4 col-md-12 text-md-end">
-                    <a href="#" class="me-3"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="me-3"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#" class="me-3"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.instagram.com/mappa_lette/" class="text-white">Check our instagram page -> <i class="fab fa-instagram"></i></a>
                 </div>
             </div>
             <hr class="my-4">
