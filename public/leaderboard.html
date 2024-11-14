@@ -419,7 +419,7 @@
                           <div :class="['podium-position', `podium-${index === 0 ? 'first' : index === 1 ? 'second' : 'third'}`]">
                             <div class="player-card text-center">
                               <div class="player-info">
-                                <img :src="user.profilePicture" :alt="user.username" class="profile-pic mb-2" />
+                                <img :src="user.profilePicture" :alt="user.username" class="profile-pic mb-2"  @click="goToProfile(user.userID)"/>
                                 <h5 class="mb-1">{{ user.username }}</h5>
                                 <span :class="'rank-badge rank-' + getRank(index)">{{ getRankDisplay(index) }}</span>
                               </div>
