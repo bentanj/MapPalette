@@ -77,7 +77,7 @@
                                             <!-- Profile picture preview container -->
                                             <div id="file-preview-wrapper">
                                                 <div id="file-preview">
-                                                    <img :src="userProfile.avatar || 'resources/default-avatar.png'" 
+                                                    <img :src="userProfile.avatar || 'resources/default-profile.png'" 
                                                         alt="Profile Picture" 
                                                         id="profile-pic-img">
                                                 </div>
@@ -92,7 +92,7 @@
                                                     <i class="bi bi-camera-fill me-1"></i>
                                                     Change Picture
                                                 </button>
-                                                <button v-if="userProfile.avatar !== 'resources/default-avatar.png'" 
+                                                <button v-if="userProfile.avatar !== 'resources/default-profile.png'" 
                                                         class="btn btn-outline-danger" 
                                                         @click="removeProfilePicture">
                                                     <i class="bi bi-trash me-1"></i>
@@ -203,7 +203,7 @@
                     currentUserId: null,
                     userProfile: {
                         username: '',
-                        avatar: 'resources/default-avatar.png',
+                        avatar: 'resources/default-profile.png',
                     },
                     navItems: [
                         {
@@ -364,11 +364,11 @@
                     },
 
                     async removeProfilePicture() {
-                        this.userProfile.avatar = 'resources/default-avatar.png';
+                        this.userProfile.avatar = 'resources/default-profile.png';
                         const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
                         try {
                             await axios.put(`${API_ENDPOINT}/api/update/user/profilePicture/${this.currentUserId}`, {
-                                profilePicture: 'resources/default-avatar.png'
+                                profilePicture: 'resources/default-profile.png'
                             });
                             this.photoAlert.type = 'danger';
                             this.photoAlert.message = 'Profile picture removed successfully.';
@@ -421,7 +421,7 @@
                             // Set up user profile
                             this.userProfile = {
                                 username: window.currentUser.username || '',
-                                avatar: window.currentUser.profilePicture || 'resources/default-avatar.png'
+                                avatar: window.currentUser.profilePicture || 'resources/default-profile.png'
                             };
 
                             // Set up privacy settings
