@@ -71,7 +71,7 @@ const buttonText = document.getElementById('buttonText');
 signupForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
   
-  // Clear previous errors and reset alert displays
+  // Clear any previous Firebase error messages
   errorList.innerHTML = '';
   errorAlert.style.display = 'none';
   successAlert.style.display = 'none';
@@ -86,13 +86,27 @@ signupForm?.addEventListener('submit', async (e) => {
   const profilePicture = document.getElementById('profilePicture').files[0];
 
   let isValid = true;
-  
-  // Validation checks...
+
+  // Check that passwords match
+  if (password !== confirmPassword) {
+    isValid = false;
+    console.error("Passwords do not match.");
+  }
+
+  // Check that birthdate is not empty and valid
+  if (!birthday || isNaN(new Date(birthday).getTime())) {
+    isValid = false;
+    console.error("Invalid birthdate.");
+  }
+
+  // Check that gender is selected (not default)
+  if (gender === "Select your gender") {
+    isValid = false;
+    console.error("Gender not selected.");
+  }
 
   if (!isValid) {
-    errorAlert.style.display = 'block';
-    document.querySelector('.signup-container').scrollTo({ top: 0, behavior: 'smooth' });
-    return;
+    return; // Stop if validation fails
   }
 
   // Display spinner and disable button during async operation
@@ -135,7 +149,8 @@ signupForm?.addEventListener('submit', async (e) => {
     }, 3000);
 
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error('Firebase signup error:', error);
+    // Display the error in the sign-up container alert div
     const li = document.createElement('li');
     li.textContent = `Signup failed: ${error.message}`;
     errorList.appendChild(li);

@@ -77,7 +77,7 @@
                                             <!-- Profile picture preview container -->
                                             <div id="file-preview-wrapper">
                                                 <div id="file-preview">
-                                                    <img :src="userProfile.avatar || 'resources/default-avatar.png'" 
+                                                    <img :src="userProfile.avatar || 'resources/default-profile.png'" 
                                                         alt="Profile Picture" 
                                                         id="profile-pic-img">
                                                 </div>
@@ -92,7 +92,7 @@
                                                     <i class="bi bi-camera-fill me-1"></i>
                                                     Change Picture
                                                 </button>
-                                                <button v-if="userProfile.avatar !== 'resources/default-avatar.png'" 
+                                                <button v-if="userProfile.avatar !== 'resources/default-profile.png'" 
                                                         class="btn btn-outline-danger" 
                                                         @click="removeProfilePicture">
                                                     <i class="bi bi-trash me-1"></i>
@@ -128,7 +128,7 @@
                                     <h3 class="mb-4">Privacy</h3>
                                     
                                      <!-- Keep Profile Private Checkbox -->
-                                    <div class="form-check mb-3 privacy-checkbox-wrapper"
+                                     <label class="form-check mb-3 privacy-checkbox-wrapper"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="right"
                                         data-bs-html="true"
@@ -143,15 +143,14 @@
                                             type="checkbox" 
                                             v-model="privacySettings.keepProfilePrivate" 
                                             id="keepProfilePrivate"
-                                            @click="handlePrivacyCheckboxClick"
-                                        >
-                                        <label class="form-check-label" for="keepProfilePrivate">
+                                            @click="handlePrivacyCheckboxClick">
+                                        <span class="form-check-label">
                                             Keep Profile Private
-                                        </label>
-                                    </div>
+                                        </span>
+                                    </label>
 
                                     <!-- Keep Post Private Checkbox -->
-                                    <div class="form-check mb-3 privacy-checkbox-wrapper"
+                                    <label class="form-check mb-3 privacy-checkbox-wrapper"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="right"
                                         data-bs-html="true"
@@ -166,12 +165,11 @@
                                             type="checkbox" 
                                             v-model="privacySettings.keepPostPrivate" 
                                             id="keepPostPrivate"
-                                            @click="handlePrivacyCheckboxClick"
-                                        >
-                                        <label class="form-check-label" for="keepPostPrivate">
+                                            @click="handlePrivacyCheckboxClick">
+                                        <span class="form-check-label">
                                             Keep Post Private
-                                        </label>
-                                    </div>
+                                        </span>
+                                    </label>
 
                                     <!-- Save Button -->
                                     <button @click="savePrivacySettings" class="btn btn-primary mt-3">Save Changes</button>
@@ -203,7 +201,7 @@
                     currentUserId: null,
                     userProfile: {
                         username: '',
-                        avatar: 'resources/default-avatar.png',
+                        avatar: 'resources/default-profile.png',
                     },
                     navItems: [
                         {
@@ -228,30 +226,44 @@
                         show: false,
                         message: '',
                         type: 'success'
-                    }
+                    },
+                    tooltipInstances: [],
+                    tooltipInitTimeout: null
                 }
             },
             methods: {
                 initTooltips() {
-                    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-                    tooltipTriggerList.forEach(el => {
-                        new bootstrap.Tooltip(el);
-                    });
+                    // Clear any existing tooltip instances
+                    this.destroyTooltips();
+                    
+                    // Debounce the initialization
+                    clearTimeout(this.tooltipInitTimeout);
+                    this.tooltipInitTimeout = setTimeout(() => {
+                        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                        this.tooltipInstances = Array.from(tooltipTriggerList).map(el => {
+                            // Create tooltip with trigger option set to hover
+                            return new bootstrap.Tooltip(el, {
+                                trigger: 'hover' // This ensures tooltip only disappears on hover away
+                            });
+                        });
+                    }, 200);
                 },
+
+                destroyTooltips() {
+                    // Clean up existing tooltips
+                    this.tooltipInstances.forEach(tooltip => {
+                        if (tooltip) {
+                            tooltip.dispose();
+                        }
+                    });
+                    this.tooltipInstances = [];
+                },
+
                 switchTab(tabId) {
                     this.currentTab = tabId;
                     // Reinitialize tooltips after tab switch
                     this.$nextTick(() => {
                         this.initTooltips();
-                    });
-                },
-                handlePrivacyCheckboxClick() {
-                    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-                    tooltips.forEach(el => {
-                        const tooltip = bootstrap.Tooltip.getInstance(el);
-                        if (tooltip) {
-                            tooltip.hide();
-                        }
                     });
                 },
             },
@@ -268,14 +280,8 @@
                 });
             },
             beforeUnmount() {
-                // Cleanup tooltips
-                const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-                tooltips.forEach(el => {
-                    const tooltip = bootstrap.Tooltip.getInstance(el);
-                    if (tooltip) {
-                        tooltip.dispose();
-                    }
-                });
+                this.destroyTooltips();
+                clearTimeout(this.tooltipInitTimeout);
             }
         });
         </script>
@@ -364,11 +370,11 @@
                     },
 
                     async removeProfilePicture() {
-                        this.userProfile.avatar = 'resources/default-avatar.png';
+                        this.userProfile.avatar = 'resources/default-profile.png';
                         const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
                         try {
                             await axios.put(`${API_ENDPOINT}/api/update/user/profilePicture/${this.currentUserId}`, {
-                                profilePicture: 'resources/default-avatar.png'
+                                profilePicture: 'resources/default-profile.png'
                             });
                             this.photoAlert.type = 'danger';
                             this.photoAlert.message = 'Profile picture removed successfully.';
@@ -388,14 +394,7 @@
                     },
                             
                     savePrivacySettings() {
-                        // Dispose of any existing tooltips
-                        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-                        tooltips.forEach(el => {
-                            const tooltip = bootstrap.Tooltip.getInstance(el);
-                            if (tooltip) {
-                                tooltip.dispose();
-                            }
-                        });
+                        this.destroyTooltips(); 
 
                         const API_ENDPOINT = 'https://app-907670644284.us-central1.run.app';
                         axios.put(`${API_ENDPOINT}/api/users/${this.currentUserId}/privacy`, {
@@ -406,11 +405,13 @@
                             this.showAlert = true;
                             setTimeout(() => {
                                 this.showAlert = false;
+                                this.initTooltips(); 
                             }, 3000);
                         })
                         .catch(error => {
                             console.error('Error saving privacy settings:', error);
                             alert('An error occurred while saving privacy settings.');
+                            this.initTooltips(); // Reinitialize tooltips after error
                         });
                     },
         
@@ -421,7 +422,7 @@
                             // Set up user profile
                             this.userProfile = {
                                 username: window.currentUser.username || '',
-                                avatar: window.currentUser.profilePicture || 'resources/default-avatar.png'
+                                avatar: window.currentUser.profilePicture || 'resources/default-profile.png'
                             };
 
                             // Set up privacy settings

@@ -11,6 +11,10 @@
     margin-bottom: 2rem;
 }
 
+#app{
+    min-height: 50vh;
+}
+
 #file-preview-wrapper {
     display: flex;
     justify-content: center;
@@ -164,6 +168,11 @@
     margin: 0;
     display: flex;  
     align-items: center;  
+    cursor: pointer;  /* Add cursor pointer to show clickability */
+    -webkit-user-select: none;  /* Prevent text selection */
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .privacy-checkbox-wrapper .form-check-input {
@@ -171,6 +180,7 @@
     margin-right: 0.75rem;
     float: none;
     flex-shrink: 0;  
+    pointer-events: none;  
 }
 
 .privacy-checkbox-wrapper .form-check-label {
@@ -178,6 +188,7 @@
     font-weight: 500;
     color: #333;
     cursor: pointer;
+    pointer-events: none;  
 }
 
 .privacy-checkbox-wrapper:hover {
