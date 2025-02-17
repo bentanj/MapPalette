@@ -23,10 +23,6 @@ Steps on how to set up our website (Idk what's going on, I'm just following chat
    firebase init
    firebase deploy
 
-For firebase login, our admin account is:
-email => wad2shared@gmail.com
-password => ilovewebapplication123
-Project name => mappalette-9e0bd (I think)
 
 How our files are split (mainly 3 important areas):
 
@@ -40,11 +36,6 @@ How our files are split (mainly 3 important areas):
    back-end
    index.js contains all our endpoint APIs
 
-   IMPORTANT!!!!!!
-   We have a PostMan documentation listing all our APIs and what they do. Postman account details are:
-   email => wad2shared@gmail.com
-   password => ilovewebapplication1234
-   Can test whatever you want, mess with our database we are chill.
 
 3. ~ (root)
    Our firebase files are here i think(?)
